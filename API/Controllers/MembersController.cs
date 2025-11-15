@@ -35,7 +35,7 @@ namespace API.Controllers
             {
                 new { id = 1, username = "Sedad" },
                 new { id = 2, username = "Isar" },
-                new { id = 3, username = "VibeZoneAHH" }
+                new { id = 3, username = "Member" }
             });
         }
 
