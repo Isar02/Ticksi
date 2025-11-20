@@ -12,13 +12,13 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
 
-    // Prolazi kroz sve klase
+    // Goes through each class
     foreach (var entityType in modelBuilder.Model.GetEntityTypes())
     {
-        // Provjerava da li klasa nasljeduje BaseEntity
+        // Checks if class inherited BaseEntity.cs
         if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
         {
-            // Dodaje UNIQUE index na PublicId
+            // Adds UNIQUE index on PublicId
             modelBuilder.Entity(entityType.ClrType)
                 .HasIndex(nameof(BaseEntity.PublicId))
                 .IsUnique();
