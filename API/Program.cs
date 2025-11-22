@@ -20,30 +20,18 @@ builder.Services.AddCors(options =>
 
 
 var baseDirectory = AppContext.BaseDirectory;
-
 var solutionRoot = Path.GetFullPath(Path.Combine(baseDirectory, "..", "..", "..", ".."));
 var dbPath = Path.Combine(solutionRoot, "db-backups", "TicksiDb.mdf");
-// Get the full absolute path - SQL Server connection strings need absolute paths
 var dbPathAbsolute = Path.GetFullPath(dbPath);
 
-// Get the connection string and replace the AttachDbFilename value
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString))
-{
-    
-    if (connectionString.Contains("|DataDirectory|"))
-    {
-        connectionString = connectionString.Replace("|DataDirectory|\\..\\..\\..\\..\\db-backups\\TicksiDb.mdf", dbPathAbsolute);
-    }
-    
-    else if (connectionString.Contains("..\\..\\..\\..\\db-backups\\TicksiDb.mdf"))
-    {
-        connectionString = connectionString.Replace("..\\..\\..\\..\\db-backups\\TicksiDb.mdf", dbPathAbsolute);
-    }
-}
+Directory.CreateDirectory(Path.GetDirectoryName(dbPathAbsolute)!);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")?
+    .Replace("{DbPath}", dbPathAbsolute);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
+
 
 
 var app = builder.Build();
