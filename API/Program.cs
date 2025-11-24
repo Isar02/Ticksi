@@ -1,7 +1,11 @@
+using System.IO;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.IO;
+using Microsoft.OpenApi.Models;
+
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,9 +36,23 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Ticksi API",
+        Version = "v1"
+    });
+}
+);
 
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 // Configure the HTTP request pipeline.
 
