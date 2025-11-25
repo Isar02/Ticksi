@@ -10,8 +10,8 @@ namespace API.Entities
         public string Contact { get; set; } = string.Empty;
 
         // Foreign keys
-        public int UserId { get; set; } // Creator
-        public User? User { get; set; }
+        public int AppUserId { get; set; } // Creator
+        public AppUser? AppUser { get; set; }
 
         public int OrganizerCompanyId { get; set; }
         public OrganizerCompany? OrganizerCompany { get; set; }

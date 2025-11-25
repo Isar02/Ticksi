@@ -5,8 +5,8 @@ namespace API.Entities
         public int OrderId { get; set; }
         public Order? Order { get; set; }
 
-        public int UserId { get; set; }
-        public User? User { get; set; }
+        public int AppUserId { get; set; }
+        public AppUser? AppUser { get; set; }
 
         public decimal Amount { get; set; }
         public DateTime Date { get; set; } = DateTime.UtcNow;

@@ -5,8 +5,8 @@ namespace API.Entities
         public int EventId { get; set; }
         public Event? Event { get; set; }
 
-        public int UserId { get; set; } // Buyer
-        public User? User { get; set; }
+        public int AppUserId { get; set; } // Buyer
+        public AppUser? AppUser { get; set; }
 
         public int? SeatId { get; set; } // Nullable for standing tickets
         public Seat? Seat { get; set; }

@@ -2,8 +2,8 @@ namespace API.Entities
 {
     public class Cart : BaseEntity
     {
-        public int UserId { get; set; }
-        public User? User { get; set; }
+        public int AppUserId { get; set; }
+        public AppUser? AppUser { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

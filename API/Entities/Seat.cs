@@ -11,6 +11,6 @@ namespace API.Entities
         public string Status { get; set; } = "Available";
 
         // Navigation
-        //public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+        public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     }
 }

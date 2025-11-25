@@ -5,8 +5,8 @@ namespace API.Entities
         public int EventId { get; set; }
         public Event? Event { get; set; }
 
-        public int UserId { get; set; }
-        public User? User { get; set; }
+        public int AppUserId { get; set; }
+        public AppUser? AppUser { get; set; }
 
         public int Rating { get; set; }
         public string Comment { get; set; } = string.Empty;

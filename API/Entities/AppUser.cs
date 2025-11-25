@@ -1,6 +1,6 @@
 namespace API.Entities;
 
-public class User : BaseEntity
+public class AppUser : BaseEntity
 {
         
         public string FirstName { get; set; } = string.Empty;

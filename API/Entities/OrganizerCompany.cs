@@ -10,5 +10,5 @@ public class OrganizerCompany : BaseEntity
         public string TaxId { get; set; } = string.Empty;
 
         // Future: Navigation to Events they organize
-        //public ICollection<Event> Events { get; set; } = new List<Event>();
+        public ICollection<Event> Events { get; set; } = new List<Event>();
 }

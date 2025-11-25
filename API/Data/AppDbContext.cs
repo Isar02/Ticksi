@@ -6,7 +6,7 @@ namespace API.Data;
 
 public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
-    public DbSet<User> Users { get; set; }
+    public DbSet<AppUser> AppUsers { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<OrganizerCompany> OrganizerCompanies { get; set; }
     public DbSet<EventType> EventTypes { get; set; }
@@ -46,27 +46,27 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
         }
     }
     modelBuilder.Entity<Order>()
-    .HasOne(o => o.User)
+    .HasOne(o => o.AppUser)
     .WithMany(u => u.Orders)
-    .HasForeignKey(o => o.UserId)
+    .HasForeignKey(o => o.AppUserId)
     .OnDelete(DeleteBehavior.Restrict);
 
 modelBuilder.Entity<Review>()
-    .HasOne(r => r.User)
+    .HasOne(r => r.AppUser)
     .WithMany(u => u.Reviews)
-    .HasForeignKey(r => r.UserId)
+    .HasForeignKey(r => r.AppUserId)
     .OnDelete(DeleteBehavior.Restrict);
 
 modelBuilder.Entity<Ticket>()
-    .HasOne(t => t.User)
+    .HasOne(t => t.AppUser)
     .WithMany(u => u.Tickets)
-    .HasForeignKey(t => t.UserId)
+    .HasForeignKey(t => t.AppUserId)
     .OnDelete(DeleteBehavior.Restrict);
 
 modelBuilder.Entity<Transaction>()
-    .HasOne(tr => tr.User)
+    .HasOne(tr => tr.AppUser)
     .WithMany(u => u.Transactions)
-    .HasForeignKey(tr => tr.UserId)
+    .HasForeignKey(tr => tr.AppUserId)
     .OnDelete(DeleteBehavior.Restrict);
 
 modelBuilder.Entity<CartItem>()

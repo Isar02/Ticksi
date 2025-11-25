@@ -5,8 +5,8 @@ namespace API.Entities
         public int CartId { get; set; }
         public Cart? Cart { get; set; }
 
-        public int UserId { get; set; }
-        public User? User { get; set; }
+        public int AppUserId { get; set; }
+        public AppUser? AppUser { get; set; }
 
         public string OrderStatus { get; set; } = "Pending";
         public decimal TotalAmount { get; set; }
