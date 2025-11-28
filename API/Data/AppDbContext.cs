@@ -45,6 +45,48 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
                 .IsUnique();
         }
     }
+
+    // AppUser Configuration
+    modelBuilder.Entity<AppUser>(entity =>
+    {
+        entity.Property(u => u.Email)
+            .IsRequired()
+            .HasMaxLength(256);
+
+        entity.Property(u => u.FirstName)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        entity.Property(u => u.LastName)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        entity.Property(u => u.Phone)
+            .HasMaxLength(20);
+
+        entity.Property(u => u.PasswordHash)
+            .IsRequired();
+
+        entity.Property(u => u.Status)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        entity.HasIndex(u => u.Email)
+            .IsUnique();
+    });
+
+    // Role Configuration
+    modelBuilder.Entity<Role>(entity =>
+    {
+        entity.Property(r => r.Name)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        entity.HasIndex(r => r.Name)
+            .IsUnique();
+    });
+
+    // Relationships
     modelBuilder.Entity<Order>()
     .HasOne(o => o.AppUser)
     .WithMany(u => u.Orders)
