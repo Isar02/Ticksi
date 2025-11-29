@@ -2,6 +2,9 @@ using System.IO;
 using System.Text;
 using API.Data;
 using API.Services;
+using API.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +71,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryCreateDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryUpdateDtoValidator>();
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -102,6 +112,9 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+
+
 
 var app = builder.Build();
 

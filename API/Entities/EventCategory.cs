@@ -3,7 +3,7 @@ namespace API.Entities;
 public class EventCategory : BaseEntity
 {
     
-    
+    public Guid PublicId { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
