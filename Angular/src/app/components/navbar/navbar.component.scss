@@ -22,13 +22,13 @@ $tablet: 1024px;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 
-  // Scrolled state - slightly transparent
+  // Scrolled state, transparency
   &.scrolled {
     background-color: rgba(255, 255, 255, 0.98);
-    box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 
   // Zigzag
