@@ -1,0 +1,61 @@
+<div class="login-page">
+  <div class="login-card">
+    <h1 class="login-title">Login</h1>
+
+    @if (errorMessage) {
+      <div class="error-alert">{{ errorMessage }}</div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Email"
+          [class.invalid]="email?.invalid && email?.touched"
+        />
+        @if (email?.invalid && email?.touched) {
+          <span class="error-message">
+            @if (email?.errors?.['required']) { Email is required }
+            @else if (email?.errors?.['email']) { Please enter a valid email }
+          </span>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Password"
+          [class.invalid]="password?.invalid && password?.touched"
+        />
+        @if (password?.invalid && password?.touched) {
+          <span class="error-message">
+            @if (password?.errors?.['required']) { Password is required }
+            @else if (password?.errors?.['minlength']) { Password must be at least 6 characters }
+          </span>
+        }
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-submit" [disabled]="isLoading">
+        @if (isLoading) {
+          <span class="spinner"></span> Logging in...
+        } @else {
+          Login
+        }
+      </button>
+    </form>
+
+    <p class="register-link">
+      Don't have an account? <a routerLink="/register">Register here</a>
+    </p>
+  </div>
+</div>
+

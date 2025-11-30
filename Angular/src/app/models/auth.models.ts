@@ -17,6 +17,7 @@ export interface AuthResponse {
   token: string;
   email: string;
   publicId: string;
+  firstName: string;
 }
 
 // Error Response
@@ -30,5 +31,6 @@ export interface UserInfo {
   email: string;
   publicId: string;
   token: string;
+  firstName: string;
 }
 

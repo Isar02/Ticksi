@@ -46,7 +46,8 @@ public class AuthService : IAuthService
         {
             Token = token,
             Email = user.Email,
-            PublicId = user.PublicId
+            PublicId = user.PublicId,
+            FirstName = user.FirstName
         };
 
         return ServiceResult<AuthResponseDto>.Success(response);
@@ -100,7 +101,8 @@ public class AuthService : IAuthService
         {
             Token = token,
             Email = user.Email,
-            PublicId = user.PublicId
+            PublicId = user.PublicId,
+            FirstName = user.FirstName
         };
 
         return ServiceResult<AuthResponseDto>.Success(response);

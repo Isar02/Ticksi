@@ -58,7 +58,8 @@ export class AuthService {
     const userInfo: UserInfo = {
       email: response.email,
       publicId: response.publicId,
-      token: response.token
+      token: response.token,
+      firstName: response.firstName
     };
 
     localStorage.setItem(this.TOKEN_KEY, response.token);
