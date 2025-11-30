@@ -1,0 +1,19 @@
+<nav class="navbar" [class.scrolled]="isScrolled">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <a routerLink="/" class="navbar-logo">
+      <img src="assets/images/Ticksi_no_slogan-removebg_5.png" alt="Ticksi" class="logo-image" />
+    </a>
+
+    <!-- Auth -->
+    <div class="navbar-auth">
+      @if (authService.isAuthenticated()) {
+        <span class="user-name">{{ authService.getCurrentUser()?.firstName }}</span>
+        <button class="btn-logout" (click)="logout()">Log out</button>
+      } @else {
+        <a routerLink="/login" class="btn-login">Log in</a>
+      }
+    </div>
+  </div>
+</nav>
+
