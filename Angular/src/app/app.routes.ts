@@ -1,12 +1,34 @@
 import { Routes } from '@angular/router';
+import { CategoriesComponent } from './components/categories/categories.component';
+import { adminGuard } from './services/admin.guard';
 
 export const routes: Routes = [
+
   {
     path: 'login',
-    loadComponent: () => import('./components/auth/login/login.component').then(m => m.LoginComponent)
+    loadComponent: () => import('./components/auth/login/login.component')
+      .then(m => m.LoginComponent)
   },
+
+  {
+  path: 'admin/categories',
+  loadComponent: () => import('./components/categories/categories.component')
+    .then(m => m.CategoriesComponent),
+  canActivate: [adminGuard]
+},
+
+
+
+  {
+  path: '',
+  loadComponent: () =>
+    import('./components/home/home.component').then(m => m.HomeComponent)
+},
+
+
   {
     path: '**',
     redirectTo: ''
   }
+
 ];

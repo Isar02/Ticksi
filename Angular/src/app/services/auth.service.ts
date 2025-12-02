@@ -60,6 +60,7 @@ export class AuthService {
       publicId: response.publicId,
       token: response.token,
       firstName: response.firstName
+      
     };
 
     localStorage.setItem(this.TOKEN_KEY, response.token);
@@ -116,5 +117,18 @@ export class AuthService {
     
     return throwError(() => new Error(errorMessage));
   }
+
+  getUserRole(): string | null {
+  const token = this.getToken();
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.RoleId || null;
+  } catch {
+    return null;
+  }
+}
+
 }
 

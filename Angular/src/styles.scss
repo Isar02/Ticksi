@@ -1,5 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 
+
+
+
 html {
   overflow-y: scroll; /* Force scrollbar to always show */
   height: 100%;
@@ -10,3 +13,17 @@ body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
+
+.mat-dialog-container {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+
+
+

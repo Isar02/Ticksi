@@ -1,0 +1,50 @@
+<div class="page-container">
+  
+  <div class="content-card">
+    
+      <div class="toolbar">
+          <div class="toolbar-left">
+            <h2>Categories</h2>
+          </div>
+
+        <div class="toolbar-right">
+
+          <!-- FAKE SEARCH INPUT -->
+          <div class="search-wrapper">
+            <input type="text" placeholder="Search categories..." disabled>
+          </div>
+
+          <button mat-raised-button color="primary" (click)="openForm()">Add category</button>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="categories.length === 0">
+        <div class="empty-icon">📂</div>
+        <h3>No categories yet</h3>
+        <p>Create your first category to start organizing your content.</p>
+        <button mat-raised-button color="primary" (click)="openForm()">Add category</button>
+      </div>
+
+    <div class="table-responsive"> <table class="categories-table">
+        <thead>
+           <tr>
+             <th>Name</th>
+             <th>Description</th>
+             <th>Action</th>
+           </tr>
+         </thead>
+         <tbody>
+           <tr *ngFor="let category of categories">
+             <td>{{ category.name }}</td>
+             <td>{{ category.description }}</td>
+             <td>
+               <button mat-button color="accent" (click)="openForm(category)">Edit</button>
+               <button mat-button color="warn" (click)="deleteCategory(category.publicId)">Delete</button>
+             </td>
+           </tr>
+         </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
