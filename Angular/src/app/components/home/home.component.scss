@@ -1,0 +1,150 @@
+$primary-color: #9E6CAF;
+$primary-hover: #8a5c9a;
+$text-dark: #333;
+$text-light: #666;
+$bg-light: #faf7fb;
+
+.hero {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2rem;
+  background: linear-gradient(135deg, #f9f6fb, #ffffff);
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 700px;
+}
+
+.hero h1 {
+  font-size: 48px;
+  font-weight: 700;
+  color: $text-dark;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+
+  span {
+    color: $primary-color;
+  }
+}
+
+.hero p {
+  font-size: 17px;
+  color: $text-light;
+  margin: 1.2rem auto 2rem;
+  line-height: 1.6;
+  max-width: 620px;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #9E6CAF, #b48bc8);
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  padding: 14px 32px;
+  border-radius: 999px;
+  font-weight: 500;
+  transition: all .2s ease;
+  box-shadow: 0 6px 14px rgba(158,108,175,.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #8a5c9a, #a27bb8);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(158,108,175,.30);
+}
+
+
+
+.btn-secondary {
+  border: 2px solid rgba(158,108,175,.4);
+  color: $primary-color;
+  padding: 14px 32px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all .2s ease;
+  background: transparent;
+
+  &:hover {
+    background: rgba(158,108,175,.08);
+    transform: translateY(-2px);
+  }
+}
+
+.footer {
+  margin-top: 120px;
+  background: linear-gradient(135deg, #f9f6fb, #ffffff);
+  border-top: 1px solid rgba(158,108,175,.15);
+  padding: 60px 20px 25px;
+  font-size: 14px;
+}
+
+.footer-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.footer-brand {
+  max-width: 280px;
+
+  h3 {
+    color: $primary-color;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: $text-light;
+    line-height: 1.6;
+  }
+}
+
+.footer-links {
+  display: flex;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  span {
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 6px;
+  }
+
+  a {
+    color: $text-light;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
+}
+
+.footer-bottom {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(158,108,175,.15);
+  text-align: center;
+  color: $text-light;
+  font-size: 13px;
+}
+

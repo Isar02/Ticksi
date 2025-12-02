@@ -7,13 +7,21 @@
 
     <!-- Auth -->
     <div class="navbar-auth">
-      @if (authService.isAuthenticated()) {
-        <span class="user-name">{{ authService.getCurrentUser()?.firstName }}</span>
-        <button class="btn-logout" (click)="logout()">Log out</button>
-      } @else {
-        <a routerLink="/login" class="btn-login">Log in</a>
-      }
-    </div>
+
+  @if (authService.getUserRole() === 'Admin' || authService.getUserRole() === 'Organizer') {
+  <a routerLink="/admin/categories" class="nav-link">Your categories</a>
+}
+
+
+  @if (authService.isAuthenticated()) {
+    <span class="user-name">{{ authService.getCurrentUser()?.firstName }}</span>
+    <button class="btn-logout" (click)="logout()">Log out</button>
+  } @else {
+    <a routerLink="/login" class="btn-login">Log in</a>
+  }
+
+</div>
+
   </div>
 </nav>
 

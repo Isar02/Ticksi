@@ -1,0 +1,189 @@
+// --- Varijable (Koristi definiciju za Ticksi boje) ---
+$primary-color: #9E6CAF; // Tvoja dominantna ružičasto/ljubičasta boja
+$text-dark: #333333; // Tamni tekst
+$text-light: #666666;
+$white: #ffffff;
+$border-color: #e0e0e0;
+$error-color: #dc3545; 
+
+// --- GLAVNI STILOVI (Komponentni SCSS) ---
+
+// Naslov
+h2[mat-dialog-title] {
+  font-size: 24px;
+  font-weight: 600;
+  color: $text-dark;
+  text-align: center;
+  margin: 0 0 24px 0;
+}
+
+// Kontejner forme
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// Dugmad
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px; 
+}
+
+
+// --- KRITIČNI OVERRIDE BLOK (::ng-deep) ---
+
+::ng-deep {
+  
+  
+  // 1. FIKSIRANJE POZADINE I OBLIKA DIJALOGA
+  .mat-mdc-dialog-container {
+    background: transparent !important; 
+    
+    .mat-mdc-dialog-surface {
+        background: $white !important;
+        color: $text-dark !important;
+        border-radius: 16px !important; // Zaobljene ivice kao na Login kartici
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        padding: 40px 30px !important; 
+    }
+  }
+
+  // 2. FIKSIRANJE INPUT POLJA I TEKSTA
+  
+  // Labela u defaultnom stanju (tamna, čitljiva)
+  .mat-mdc-form-field-label {
+    color: $text-dark !important; 
+    font-weight: 500;
+  }
+
+  // Tekst unutar inputa
+  .mat-mdc-input-element {
+    color: $text-dark !important;
+  }
+  
+  // Pill Shape za inpute
+  .mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline {
+     border-radius: 25px !important; 
+     color: $border-color;
+  }
+
+  // 3. AGRESIVNA KOREKCIJA: FORCE ERROR STATE TO PRIMARY COLOR
+
+  // FORSIRANJE BOJE BORDERA NA PRIMARY BOJU (rješava narandžasti/ružičasti obrub)
+  .mat-mdc-form-field.mat-form-field-invalid .mat-mdc-form-field-outline-thick {
+      color: $primary-color !important;
+  }
+
+  // FORSIRANJE TEKSTA GREŠKE NA PRIMARY BOJU
+  .mat-error {
+      color: $primary-color !important;
+      font-size: 12px !important; 
+      margin-top: 6px !important; 
+      display: block !important;
+  }
+  
+  // 4. FIKSIRANJE DUGMADI (Save: Bijela, Cancel: Primary)
+  
+  // Save button (mat-raised-button) - Prilagođen zadnjem željenom izgledu
+  .button-row button[type="submit"] {
+      background-color: $white !important; 
+      color: $text-dark !important;
+      border: 1.5px solid $border-color !important; 
+      border-radius: 25px !important; 
+      box-shadow: none !important; 
+
+      &:hover:not(:disabled) {
+          border-color: $primary-color !important;
+          color: $primary-color !important;
+      }
+  }
+
+  // Cancel button (mat-button) - Tekst u primary boji
+  .button-row button[type="button"] {
+      color: $primary-color !important;
+      background: transparent !important;
+      border-radius: 25px !important;
+  }
+
+ 
+  
+  .mat-form-field-invalid
+  {
+    color: $error-color !important;
+
+  }
+  .mdc-text-field-invalid
+  {
+    color: $error-color !important;
+  }
+
+  
+ .mat-mdc-form-field-flex
+ {
+  padding: 0 12px !important;
+
+ }
+
+ .mat-mdc-form-field-flex:hover {
+        
+
+    color: $primary-color !important;
+    border-width: 1px !important; 
+        
+   }
+
+   .mat-mdc-form-field-flex:focus-within {
+        
+
+    color: $primary-color !important;
+    border-width: 1px !important; 
+        
+   }
+
+  .mat-form-field-invalid:hover
+{
+  color: $primary-color !important;
+  border-width: 1px !important;
+
+}
+  .mat-form-field-invalid:focus-within
+{
+  color: $primary-color !important;
+  border-width: 1px !important;
+
+}
+
+ .mdc-text-field-invalid:hover
+  {
+    color: $error-color !important;
+  }
+
+  .mdc-text-field-invalid:focus-within
+  {
+    color: $primary-color !important;
+  }
+
+
+.cancel-btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cancel-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,.15);
+  border: 1px solid $primary-color !important;
+}
+
+  .save-btn
+  {
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  }
+  .save-btn:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 12px rgba(0,0,0,.15) !important;
+
+    }
+}

@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>
+  {{ data.category ? 'Edit category' : 'Add category' }}
+</h2>
+
+<form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="form-container">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Name of category</mat-label>
+    <input matInput formControlName="name" autofocus/>
+    <mat-error *ngIf="categoryForm.get('name')?.hasError('required')">
+      Name is required.
+    </mat-error>
+    <mat-error *ngIf="categoryForm.get('name')?.hasError('minlength')">
+      Name has to be at least 2 characters long.
+    </mat-error>
+    <mat-error *ngIf="categoryForm.get('name')?.hasError('maxlength')">
+      Name can have a maximum of 100 characters.
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Description (optional)</mat-label>
+    <textarea matInput formControlName="description"></textarea>
+    <mat-error *ngIf="categoryForm.get('description')?.hasError('maxlength')">
+      The description can have a maximum of 500 characters.
+    </mat-error>
+  </mat-form-field>
+
+  <div class="button-row">
+    <button mat-button type="button" class ="cancel-btn" (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary" type="submit" class="save-btn">Save</button>
+  </div>
+</form>

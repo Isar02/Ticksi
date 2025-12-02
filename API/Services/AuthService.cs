@@ -123,7 +123,7 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.NameIdentifier, user.PublicId),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new Claim("RoleId", user.RoleId.ToString())
+            new Claim("RoleId", user.Role.Name)
         };
 
         var token = new JwtSecurityToken(
