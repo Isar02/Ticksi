@@ -46,7 +46,7 @@ public class AuthService : IAuthService
         {
             Token = token,
             Email = user.Email,
-            PublicId = user.PublicId,
+            PublicId = user.PublicId.ToString(),
             FirstName = user.FirstName
         };
 
@@ -101,7 +101,7 @@ public class AuthService : IAuthService
         {
             Token = token,
             Email = user.Email,
-            PublicId = user.PublicId,
+            PublicId = user.PublicId.ToString(),
             FirstName = user.FirstName
         };
 
@@ -120,7 +120,7 @@ public class AuthService : IAuthService
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.PublicId),
+            new Claim(ClaimTypes.NameIdentifier, user.PublicId.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
             new Claim("RoleId", user.Role.Name)

@@ -25,10 +25,19 @@ export const routes: Routes = [
     import('./components/home/home.component').then(m => m.HomeComponent)
 },
 
+ {
+    path: 'categories',
+    loadComponent: () =>
+      import('./components/public-categories/public-categories.component')
+        .then(m => m.PublicCategoriesComponent)
+  },
 
   {
     path: '**',
     redirectTo: ''
   }
+
+  
+
 
 ];

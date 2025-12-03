@@ -1,0 +1,61 @@
+.page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin: 20px 0 24px;
+
+  input, select {
+    padding: 10px 14px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    outline: none;
+
+    &:focus {
+      border-color: #9E6CAF;
+    }
+  }
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.05);
+  transition: all .2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  h3 {
+    margin-bottom: 6px;
+  }
+
+  button {
+    margin-top: 10px;
+    border-radius: 20px;
+    padding: 6px 16px;
+    border: none;
+    background: #9E6CAF;
+    color: white;
+    cursor: pointer;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 30px;
+}

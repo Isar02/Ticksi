@@ -1,7 +1,9 @@
 ﻿using API.DTOs;
+using API.Entities;
 using API.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -18,17 +20,62 @@ namespace API.Controllers
                 _repo = repo;
             }
 
-            //GET all
-            [HttpGet]
-            public async Task<ActionResult<IEnumerable<EventCategoryReadDto>>> GetEventCategories()
+        //GET all
+        [HttpGet]
+        public async Task<ActionResult<PagedResult<EventCategoryReadDto>>> GetAll(
+        [FromQuery] EventCategoryQueryDto query)
+        {
+            var categories = _repo.Query();
+
+            // SEARCH
+            if (!string.IsNullOrWhiteSpace(query.Search))
             {
-                var categories = await _repo.GetAllEventCategoriesAsync();
-                var categoriesDto = _mapper.Map<IEnumerable<EventCategoryReadDto>>(categories);
-                return Ok(categoriesDto);
+                var s = query.Search.Trim().ToLower();
+                categories = categories.Where(c =>
+                    c.Name.ToLower().Contains(s) ||
+                    (c.Description != null && c.Description.ToLower().Contains(s))
+                );
             }
 
-            //GET by PublicID
-            [HttpGet("{publicId:guid}")]
+            // FILTERING (READY INFRASTRUCTURE)
+            if (!string.IsNullOrWhiteSpace(query.Filter))
+            {
+                if (query.Filter == "active")
+                    categories = categories.Where(c => c.IsActive);
+                if (query.Filter == "inactive")
+                    categories = categories.Where(c => !c.IsActive);
+            }
+
+            // TOTAL COUNT
+            var totalCount = await categories.CountAsync();
+
+            // PAGING
+            var items = await categories
+                .OrderBy(c => c.Name)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .Select(c => new EventCategoryReadDto
+                {
+                    PublicId = c.PublicId,
+                    Name = c.Name,
+                    Description = c.Description
+                })
+                .ToListAsync();
+
+            var result = new PagedResult<EventCategoryReadDto>
+            {
+                Items = items,
+                Page = query.Page,
+                PageSize = query.PageSize,
+                TotalCount = totalCount
+            };
+
+            return Ok(result);
+        }
+
+
+        //GET by PublicID
+        [HttpGet("{publicId:guid}")]
             public async Task<ActionResult<EventCategoryReadDto>> GetEventCategoryByPublicID(Guid publicId)
             {
                 var existingCategory = await _repo.GetByPublicIDAsync(publicId);
@@ -46,7 +93,7 @@ namespace API.Controllers
                 await _repo.AddAsync(category);
 
                 var categoryDto = _mapper.Map<EventCategoryReadDto>(category);
-                return CreatedAtAction(nameof(GetEventCategories), new { publicId = category.PublicId }, categoryDto);
+                return CreatedAtAction(nameof(GetEventCategoryByPublicID), new { publicId = category.PublicId }, categoryDto);
             }
 
             //Put

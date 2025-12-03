@@ -1,37 +1,61 @@
-import {Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment.development';
 import { Category } from '../models/category.model';
 
-@Injectable({providedIn: 'root'})
-export class CategoryService
-{
-    private apiUrl = 'https://localhost:5001/api/eventcategories'; 
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
 
-    constructor(private http: HttpClient) {}
+@Injectable({ providedIn: 'root' })
+export class CategoryService {
 
-    getAll(): Observable<Category[]> 
-    {
-        return this.http.get<Category[]>(this.apiUrl);
-    }
+  private apiUrl = `${environment.apiUrl}/eventcategories`;
 
-    create(category: Category): Observable<Category> 
-    {
-        return this.http.post<Category>(this.apiUrl, category);
-    }
+  constructor(private http: HttpClient) {}
 
-    update(publicId: string, category: Category): Observable<Category>
-    {
-        const url = `${this.apiUrl}/${publicId}`;
-        return this.http.put<Category>(url, category);
-    }
+  getPublicCategories(params: {
+    search?: string;
+    filter?: string;
+    page: number;
+    pageSize: number;
+  }): Observable<PagedResult<Category>> {
 
-    delete(publicId: string): Observable<void> 
-    {
-        const url = `${this.apiUrl}/${publicId}`;
-        return this.http.delete<void>(url);
-    }
+    let httpParams = new HttpParams()
+      .set('page', params.page)
+      .set('pageSize', params.pageSize);
 
-    
+    if (params.search)
+      httpParams = httpParams.set('search', params.search);
+
+    if (params.filter)
+      httpParams = httpParams.set('filter', params.filter);
+
+    return this.http.get<PagedResult<Category>>(this.apiUrl, { params: httpParams });
+  }
+
+  // FOR ADMIN PANEL
+getAll(): Observable<PagedResult<Category>> {
+  return this.http.get<PagedResult<Category>>(this.apiUrl);
+}
+
+
+create(category: Category): Observable<Category> {
+  return this.http.post<Category>(this.apiUrl, category);
+}
+
+update(publicId: string, category: Category): Observable<Category> {
+  return this.http.put<Category>(`${this.apiUrl}/${publicId}`, category);
+}
+
+delete(publicId: string): Observable<void> {
+  return this.http.delete<void>(`${this.apiUrl}/${publicId}`);
+}
+
 
 }

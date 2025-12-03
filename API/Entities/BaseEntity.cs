@@ -6,5 +6,7 @@ public abstract class BaseEntity
     public int Id {get; set;}
 
     //Public key - used for API, Frontend
-    public string PublicId { get; set; } = Guid.NewGuid().ToString();
+    public Guid PublicId { get; set; } = Guid.NewGuid();
+
+
 }

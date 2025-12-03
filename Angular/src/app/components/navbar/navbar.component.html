@@ -12,6 +12,8 @@
   <a routerLink="/admin/categories" class="nav-link">Your categories</a>
 }
 
+  <a routerLink="/categories" class="nav-link">Categories</a>
+
 
   @if (authService.isAuthenticated()) {
     <span class="user-name">{{ authService.getCurrentUser()?.firstName }}</span>
