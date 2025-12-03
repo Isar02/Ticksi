@@ -33,7 +33,7 @@ builder.Services.AddCors(options =>
 
 
 var baseDirectory = AppContext.BaseDirectory;
-var solutionRoot = Path.GetFullPath(Path.Combine(baseDirectory, "..", "..", "..", ".."));
+var solutionRoot = Path.GetFullPath(Path.Combine(baseDirectory, "..", "..", "..", "..", ".."));
 var dbPath = Path.Combine(solutionRoot, "db-backups", "TicksiDb.mdf");
 var dbPathAbsolute = Path.GetFullPath(dbPath);
 

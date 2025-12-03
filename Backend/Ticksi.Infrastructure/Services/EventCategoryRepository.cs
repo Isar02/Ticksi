@@ -21,10 +21,8 @@ namespace Ticksi.Infrastructure.Services
         }
 
         public async Task<EventCategory?> GetByPublicIDAsync(Guid publicId)
-
         {
             return await _context.EventCategories.FirstOrDefaultAsync(e => e.PublicId == publicId);
-
         }
 
         public async Task AddAsync(EventCategory category)
