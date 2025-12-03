@@ -1,12 +1,11 @@
-﻿using Ticksi.Domain.Entities;
-using System.Threading.Tasks;
+﻿using Ticksi.Application.DTOs;
+using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Interfaces
 {
     public interface IEventCategoryRepository
     {
-
-        IQueryable<EventCategory> Query();
+        Task<PagedResult<EventCategory>> GetPagedCategoriesAsync(EventCategoryQueryDto query);
         Task<IEnumerable<EventCategory>> GetAllEventCategoriesAsync();
         Task<EventCategory?> GetByPublicIDAsync(Guid publicId);
         Task AddAsync(EventCategory eventCategory);

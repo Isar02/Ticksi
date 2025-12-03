@@ -3,6 +3,7 @@ using System.Text;
 using Ticksi.Infrastructure.Data;
 using Ticksi.Infrastructure.Services;
 using Ticksi.Application.Interfaces;
+using Ticksi.Application.Services;
 using Ticksi.Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -74,6 +75,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
+builder.Services.AddScoped<IEventCategoryService, EventCategoryService>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryCreateDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryUpdateDtoValidator>();
