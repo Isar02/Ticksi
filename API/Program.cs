@@ -1,8 +1,9 @@
 using System.IO;
 using System.Text;
-using API.Data;
-using API.Services;
-using API.Validators;
+using Ticksi.Infrastructure.Data;
+using Ticksi.Infrastructure.Services;
+using Ticksi.Application.Interfaces;
+using Ticksi.Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

@@ -22,4 +22,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Ticksi.Application\Ticksi.Application.csproj" />
+    <ProjectReference Include="..\Ticksi.Infrastructure\Ticksi.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

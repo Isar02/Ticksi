@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using API.Entities;
-using API.DTOs;
+using Ticksi.Domain.Entities;
+using Ticksi.Application.DTOs;
 
 namespace API.Profiles
 {
