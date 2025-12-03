@@ -1,4 +1,4 @@
-namespace API.Entities
+namespace Ticksi.Domain.Entities
 {
     public class OrderItem : BaseEntity
     {

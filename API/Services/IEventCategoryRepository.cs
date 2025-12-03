@@ -1,4 +1,4 @@
-﻿using API.Entities;
+﻿using Ticksi.Domain.Entities;
 using System.Threading.Tasks;
 
 namespace API.Services

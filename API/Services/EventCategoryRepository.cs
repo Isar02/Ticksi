@@ -1,5 +1,5 @@
 ﻿using API.Data;
-using API.Entities;
+using Ticksi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using API.Services;

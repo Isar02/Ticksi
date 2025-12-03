@@ -1,5 +1,5 @@
 using API.DTOs;
-using API.Entities;
+using Ticksi.Domain.Entities;
 using API.Models;
 
 namespace API.Services;

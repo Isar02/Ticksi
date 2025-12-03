@@ -1,5 +1,5 @@
 ﻿using API.DTOs;
-using API.Entities;
+using Ticksi.Domain.Entities;
 using API.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -89,7 +89,7 @@ namespace API.Controllers
             [HttpPost]
             public async Task<ActionResult<EventCategoryReadDto>> Create(EventCategoryCreateDto categoryCreateDto)
             {
-                var category = _mapper.Map<API.Entities.EventCategory>(categoryCreateDto);
+                var category = _mapper.Map<EventCategory>(categoryCreateDto);
                 await _repo.AddAsync(category);
 
                 var categoryDto = _mapper.Map<EventCategoryReadDto>(category);

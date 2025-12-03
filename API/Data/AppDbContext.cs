@@ -1,5 +1,5 @@
 using System;
-using API.Entities;
+using Ticksi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;

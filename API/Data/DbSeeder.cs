@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using API.Entities;
+using Ticksi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
