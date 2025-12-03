@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using API.DTOs;
+using Ticksi.Application.DTOs;
 
 namespace API.Validators
 {

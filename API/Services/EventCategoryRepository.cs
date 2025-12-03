@@ -2,7 +2,7 @@
 using Ticksi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using API.Services;
+using Ticksi.Application.Interfaces;
 
 namespace API.Services
 {

@@ -1,7 +1,7 @@
 ﻿using Ticksi.Domain.Entities;
 using System.Threading.Tasks;
 
-namespace API.Services
+namespace Ticksi.Application.Interfaces
 {
     public interface IEventCategoryRepository
     {

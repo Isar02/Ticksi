@@ -1,4 +1,4 @@
-namespace API.DTOs;
+namespace Ticksi.Application.DTOs;
 
 public class AuthResponseDto
 {

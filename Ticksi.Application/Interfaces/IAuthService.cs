@@ -1,8 +1,8 @@
-using API.DTOs;
+using Ticksi.Application.DTOs;
 using Ticksi.Domain.Entities;
-using API.Models;
+using Ticksi.Application.Models;
 
-namespace API.Services;
+namespace Ticksi.Application.Interfaces;
 
 public interface IAuthService
 {

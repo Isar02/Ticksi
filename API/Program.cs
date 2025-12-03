@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using API.Data;
 using API.Services;
+using Ticksi.Application.Interfaces;
 using API.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;

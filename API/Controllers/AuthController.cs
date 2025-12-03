@@ -1,5 +1,5 @@
-using API.DTOs;
-using API.Services;
+using Ticksi.Application.DTOs;
+using Ticksi.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;

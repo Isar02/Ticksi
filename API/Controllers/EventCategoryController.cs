@@ -1,6 +1,6 @@
-﻿using API.DTOs;
+﻿using Ticksi.Application.DTOs;
 using Ticksi.Domain.Entities;
-using API.Services;
+using Ticksi.Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
