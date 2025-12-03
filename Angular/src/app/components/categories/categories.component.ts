@@ -4,6 +4,8 @@ import { Category } from '../../models/category.model';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { CategoryFormComponent } from './category-form/category-form.component';
+import { PagedResult } from '../../services/category.service';
+
 
 @Component({
   selector: 'app-categories',
@@ -14,7 +16,10 @@ import { CategoryFormComponent } from './category-form/category-form.component';
 })
 export class CategoriesComponent implements OnInit {
   categories: Category[] = [];
+  pagedResult!: PagedResult<Category>;
 
+  
+  
   constructor(private categoryService: CategoryService , private dialog : MatDialog) {}
 
   ngOnInit(): void {
@@ -22,9 +27,11 @@ export class CategoriesComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.categoryService.getAll().subscribe((data: Category[]) => {
-      this.categories = data;
-    });
+    this.categoryService.getAll().subscribe(result => {
+  this.pagedResult = result;
+  this.categories = result.items;
+  });
+
   }
 
   deleteCategory(publicId: string): void {

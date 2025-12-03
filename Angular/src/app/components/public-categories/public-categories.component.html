@@ -1,0 +1,52 @@
+<div class="page-container">
+
+  <h2>Browse categories</h2>
+
+  <div class="filters">
+
+    <input 
+      type="text" 
+      placeholder="Search category..." 
+      (input)="onSearch($any($event.target).value)" 
+    />
+
+
+    <select (change)="onFilterChange($any($event.target).value)">
+      <option value="">All</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="isLoading" class="loading">Loading categories...</div>
+
+  <!-- EMPTY -->
+  <div *ngIf="!isLoading && categories.length === 0" class="empty-state">
+    No categories found
+  </div>
+
+  <!-- GRID -->
+  <div class="category-grid">
+
+    <div class="category-card" *ngFor="let category of categories">
+      <h3>{{ category.name }}</h3>
+      <p>{{ category.description }}</p>
+      <button>View events</button>
+    </div>
+
+  </div>
+
+  <!-- PAGING -->
+  <div class="pagination" *ngIf="totalPages > 1">
+
+    <button (click)="prevPage()" [disabled]="page === 1">&lt;</button>
+
+    <span>Page {{page}} of {{totalPages}}</span>
+
+    <button (click)="nextPage()" [disabled]="page === totalPages">&gt;</button>
+
+  </div>
+
+</div>

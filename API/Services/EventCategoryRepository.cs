@@ -21,6 +21,7 @@ namespace API.Services
         }
 
         public async Task<EventCategory?> GetByPublicIDAsync(Guid publicId)
+
         {
             return await _context.EventCategories.FirstOrDefaultAsync(e => e.PublicId == publicId);
 
@@ -44,7 +45,11 @@ namespace API.Services
             await _context.SaveChangesAsync();
         }
 
-       
+        public IQueryable<EventCategory> Query()
+        {
+            return _context.EventCategories.AsQueryable();
+        }
+
 
     }
 }

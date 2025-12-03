@@ -23,7 +23,7 @@ public static class DbSeeder
             var roles = roleNames.Select(roleName => new Role 
             { 
                 Name = roleName, 
-                PublicId = Guid.NewGuid().ToString() 
+                PublicId = Guid.NewGuid()
             }).ToArray();
 
             await context.Roles.AddRangeAsync(roles);
@@ -54,7 +54,7 @@ public static class DbSeeder
                 RegistrationDate = DateTime.UtcNow,
                 Status = defaultStatus,
                 RoleId = adminRole.Id,
-                PublicId = Guid.NewGuid().ToString()
+                PublicId = Guid.NewGuid()
             };
 
             await context.AppUsers.AddAsync(adminUser);
