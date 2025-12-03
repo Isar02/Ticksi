@@ -2,7 +2,7 @@ using System;
 using Ticksi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Data;
+namespace Ticksi.Infrastructure.Data;
 
 public class AppDbContext(DbContextOptions options) : DbContext(options)
 {

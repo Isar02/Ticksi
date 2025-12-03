@@ -1,10 +1,10 @@
-﻿using API.Data;
+﻿using Ticksi.Infrastructure.Data;
 using Ticksi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Ticksi.Application.Interfaces;
 
-namespace API.Services
+namespace Ticksi.Infrastructure.Services
 {
     public class EventCategoryRepository : IEventCategoryRepository
     {

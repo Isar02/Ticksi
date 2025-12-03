@@ -1,4 +1,4 @@
-using API.Data;
+using Ticksi.Infrastructure.Data;
 using Ticksi.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

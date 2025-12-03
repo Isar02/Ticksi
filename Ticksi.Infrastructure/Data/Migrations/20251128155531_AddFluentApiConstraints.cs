@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace API.Migrations
+namespace Ticksi.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
     public partial class AddFluentApiConstraints : Migration

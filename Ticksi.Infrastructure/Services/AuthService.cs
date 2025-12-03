@@ -2,15 +2,16 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using API.Data;
+using Ticksi.Infrastructure.Data;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
 using Ticksi.Domain.Entities;
 using Ticksi.Application.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace API.Services;
+namespace Ticksi.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {
@@ -96,7 +97,12 @@ public class AuthService : IAuthService
         _context.AppUsers.Add(user);
         await _context.SaveChangesAsync();
 
-        var token = GenerateJwtToken(user);
+        // Reload user with Role navigation property for token generation
+        user = await _context.AppUsers
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+        var token = GenerateJwtToken(user!);
 
         var response = new AuthResponseDto
         {

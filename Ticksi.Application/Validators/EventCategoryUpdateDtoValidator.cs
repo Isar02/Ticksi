@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
 using Ticksi.Application.DTOs;
 
-namespace API.Validators
+namespace Ticksi.Application.Validators
 {
-    public class EventCategoryCreateDtoValidator : AbstractValidator<EventCategoryCreateDto>
+    public class EventCategoryUpdateDtoValidator : AbstractValidator<EventCategoryCreateDto>
     {
-        public EventCategoryCreateDtoValidator()
+        public EventCategoryUpdateDtoValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")

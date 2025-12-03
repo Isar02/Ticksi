@@ -4,7 +4,7 @@ using Ticksi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace API.Data;
+namespace Ticksi.Infrastructure.Data;
 
 public static class DbSeeder
 {
