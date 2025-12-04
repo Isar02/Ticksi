@@ -1,0 +1,233 @@
+// Ticksi colors
+$primary-color: #9E6CAF;
+$primary-hover: #8a5c9a;
+$text-dark: #333333;
+$text-light: #666666;
+$white: #ffffff;
+$light-gray: #f5f5f5;
+$error-color: #dc3545;
+$border-color: #e0e0e0;
+
+$mobile: 768px;
+
+.register-page {
+  min-height: calc(100vh - 90px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $light-gray;
+  padding: 40px 20px;
+
+  @media (max-width: $mobile) {
+    padding: 20px 16px;
+  }
+}
+
+.register-card {
+  background: $white;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: $mobile) {
+    padding: 30px 24px;
+    border-radius: 12px;
+  }
+}
+
+.register-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: $text-dark;
+  margin: 0 0 30px 0;
+}
+
+.error-alert {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: $error-color;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+
+  .input-wrapper {
+    position: relative;
+
+    label {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: #888;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      background: $white;
+      padding: 0 4px;
+    }
+
+    input:focus ~ label,
+    &.has-value label {
+      top: 0;
+      font-size: 11px;
+      color: $text-light;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input:focus ~ label {
+      color: $primary-color;
+    }
+  }
+
+  input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 14px;
+    border: 1.5px solid $border-color;
+    border-radius: 25px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    background: $white;
+
+    &:focus {
+      border-color: $primary-color;
+    }
+
+    &.invalid {
+      border-color: $error-color;
+    }
+  }
+
+  .error-message {
+    display: block;
+    color: $error-color;
+    font-size: 12px;
+    margin-top: 6px;
+    padding-left: 16px;
+  }
+}
+
+// Password Strength Meter
+.password-strength {
+  margin-top: 10px;
+  padding: 0 16px;
+
+  .strength-bar {
+    height: 6px;
+    background-color: $border-color;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+
+    .strength-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+
+      &.weak {
+        background-color: #dc3545;
+      }
+
+      &.medium {
+        background-color: #fd7e14;
+      }
+
+      &.strong {
+        background-color: #ffc107;
+      }
+
+      &.very-strong {
+        background-color: #28a745;
+      }
+    }
+  }
+
+  .strength-label {
+    font-size: 12px;
+    font-weight: 500;
+
+    &.weak {
+      color: #dc3545;
+    }
+
+    &.medium {
+      color: #fd7e14;
+    }
+
+    &.strong {
+      color: #ffc107;
+    }
+
+    &.very-strong {
+      color: #28a745;
+    }
+  }
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 500;
+  color: $text-dark;
+  background-color: $white;
+  border: 1.5px solid $border-color;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+
+  &:hover:not(:disabled) {
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid $border-color;
+  border-top-color: $primary-color;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: $text-light;
+
+  a {
+    color: $primary-color;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
