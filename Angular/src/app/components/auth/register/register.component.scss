@@ -10,7 +10,7 @@ $border-color: #e0e0e0;
 
 $mobile: 768px;
 
-.login-page {
+.register-page {
   min-height: calc(100vh - 90px);
   display: flex;
   align-items: center;
@@ -23,7 +23,7 @@ $mobile: 768px;
   }
 }
 
-.login-card {
+.register-card {
   background: $white;
   border-radius: 16px;
   padding: 40px;
@@ -37,7 +37,7 @@ $mobile: 768px;
   }
 }
 
-.login-title {
+.register-title {
   font-size: 24px;
   font-weight: 600;
   color: $text-dark;
@@ -116,6 +116,63 @@ $mobile: 768px;
   }
 }
 
+// Password Strength Meter
+.password-strength {
+  margin-top: 10px;
+  padding: 0 16px;
+
+  .strength-bar {
+    height: 6px;
+    background-color: $border-color;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+
+    .strength-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+
+      &.weak {
+        background-color: #dc3545;
+      }
+
+      &.medium {
+        background-color: #fd7e14;
+      }
+
+      &.strong {
+        background-color: #ffc107;
+      }
+
+      &.very-strong {
+        background-color: #28a745;
+      }
+    }
+  }
+
+  .strength-label {
+    font-size: 12px;
+    font-weight: 500;
+
+    &.weak {
+      color: #dc3545;
+    }
+
+    &.medium {
+      color: #fd7e14;
+    }
+
+    &.strong {
+      color: #ffc107;
+    }
+
+    &.very-strong {
+      color: #28a745;
+    }
+  }
+}
+
 .btn-submit {
   width: 100%;
   padding: 14px;
@@ -157,7 +214,7 @@ $mobile: 768px;
   to { transform: rotate(360deg); }
 }
 
-.register-link {
+.login-link {
   text-align: center;
   margin-top: 24px;
   font-size: 14px;

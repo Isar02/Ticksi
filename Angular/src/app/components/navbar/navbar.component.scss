@@ -168,3 +168,26 @@ $tablet: 1024px;
     padding: 6px 16px;
   }
 }
+
+.btn-register {
+  background-color: transparent;
+  color: $text-dark;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 20px;
+  border: 1.5px solid $text-dark;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+
+  @media (max-width: $mobile) {
+    font-size: 13px;
+    padding: 6px 16px;
+  }
+}

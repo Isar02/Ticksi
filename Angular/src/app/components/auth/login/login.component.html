@@ -9,14 +9,15 @@
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <!-- Email -->
       <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          formControlName="email"
-          placeholder="Email"
-          [class.invalid]="email?.invalid && email?.touched"
-        />
+        <div class="input-wrapper" [class.has-value]="email?.value">
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            [class.invalid]="email?.invalid && email?.touched"
+          />
+          <label for="email">Email</label>
+        </div>
         @if (email?.invalid && email?.touched) {
           <span class="error-message">
             @if (email?.errors?.['required']) { Email is required }
@@ -27,14 +28,15 @@
 
       <!-- Password -->
       <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          placeholder="Password"
-          [class.invalid]="password?.invalid && password?.touched"
-        />
+        <div class="input-wrapper" [class.has-value]="password?.value">
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            [class.invalid]="password?.invalid && password?.touched"
+          />
+          <label for="password">Password</label>
+        </div>
         @if (password?.invalid && password?.touched) {
           <span class="error-message">
             @if (password?.errors?.['required']) { Password is required }
@@ -58,4 +60,3 @@
     </p>
   </div>
 </div>
-

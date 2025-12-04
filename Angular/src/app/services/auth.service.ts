@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment.development';
-import { LoginRequest, AuthResponse, UserInfo } from '../models/auth.models';
+import { LoginRequest, RegisterRequest, AuthResponse, UserInfo } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,15 @@ export class AuthService {
   // Login wtih password and email
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap(response => this.handleAuthSuccess(response)),
+        catchError(this.handleError)
+      );
+  }
+
+  // Register new user
+  register(data: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, data)
       .pipe(
         tap(response => this.handleAuthSuccess(response)),
         catchError(this.handleError)
