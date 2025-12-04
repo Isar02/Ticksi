@@ -55,14 +55,36 @@ $mobile: 768px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 
-  label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: $text-dark;
-    margin-bottom: 8px;
+  .input-wrapper {
+    position: relative;
+
+    label {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: #888;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      background: $white;
+      padding: 0 4px;
+    }
+
+    input:focus ~ label,
+    &.has-value label {
+      top: 0;
+      font-size: 11px;
+      color: $text-light;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input:focus ~ label {
+      color: $primary-color;
+    }
   }
 
   input {
@@ -74,10 +96,7 @@ $mobile: 768px;
     outline: none;
     transition: border-color 0.2s ease;
     box-sizing: border-box;
-
-    &::placeholder {
-      color: #aaa;
-    }
+    background: $white;
 
     &:focus {
       border-color: $primary-color;
