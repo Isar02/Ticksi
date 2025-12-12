@@ -4,6 +4,7 @@ using Ticksi.Infrastructure.Data;
 using Ticksi.Infrastructure.Services;
 using Ticksi.Application.Interfaces;
 using Ticksi.Application.Services;
+using FileStorageService = Ticksi.Infrastructure.Services.FileStorageService;
 using Ticksi.Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -77,6 +78,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Ticksi.Application.Interfaces.IEventCategoryService).Assembly));
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
 builder.Services.AddScoped<IEventCategoryService, EventCategoryService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryCreateDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryUpdateDtoValidator>();
@@ -148,6 +150,8 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 
 app.UseCors("AllowAngular");
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
