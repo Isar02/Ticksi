@@ -1,6 +1,8 @@
-using Ticksi.Application.DTOs;
-using Ticksi.Application.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Ticksi.Application.DTOs;
+using Ticksi.Application.Features.Auth.Commands.Login;
+using Ticksi.Application.Features.Auth.Commands.Register;
 
 namespace API.Controllers;
 
@@ -8,17 +10,19 @@ namespace API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly IMediator _mediator;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IMediator mediator)
     {
-        _authService = authService;
+        _mediator = mediator;
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
+    public async Task<ActionResult<AuthResponseDto>> Register(
+        [FromBody] RegisterCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await _authService.RegisterAsync(registerDto);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (!result.IsSuccess)
             return BadRequest(new { message = result.ErrorMessage, errors = result.Errors });
@@ -27,9 +31,11 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
+    public async Task<ActionResult<AuthResponseDto>> Login(
+        [FromBody] LoginCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await _authService.LoginAsync(loginDto);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (!result.IsSuccess)
             return Unauthorized(new { message = result.ErrorMessage, errors = result.Errors });
@@ -37,4 +43,3 @@ public class AuthController : ControllerBase
         return Ok(result.Data);
     }
 }
-

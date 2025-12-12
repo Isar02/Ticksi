@@ -1,10 +1,11 @@
 using System;
 using Ticksi.Domain.Entities;
+using Ticksi.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ticksi.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDbContext
 {
     public DbSet<AppUser> AppUsers { get; set; }
     public DbSet<Role> Roles { get; set; }

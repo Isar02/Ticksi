@@ -1,7 +1,12 @@
-﻿using Ticksi.Application.DTOs;
-using Ticksi.Application.Interfaces;
-using Ticksi.Domain.Entities;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Ticksi.Application.DTOs;
+using Ticksi.Application.Features.EventCategories.Commands.CreateEventCategory;
+using Ticksi.Application.Features.EventCategories.Commands.DeleteEventCategory;
+using Ticksi.Application.Features.EventCategories.Commands.UpdateEventCategory;
+using Ticksi.Application.Features.EventCategories.Queries.GetEventCategories;
+using Ticksi.Application.Features.EventCategories.Queries.GetEventCategoryById;
+using Ticksi.Domain.Entities;
 
 namespace API.Controllers
 {
@@ -9,27 +14,32 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class EventCategoriesController : ControllerBase
     {
-        private readonly IEventCategoryService _service;
+        private readonly IMediator _mediator;
 
-        public EventCategoriesController(IEventCategoryService service)
+        public EventCategoriesController(IMediator mediator)
         {
-            _service = service;
+            _mediator = mediator;
         }
 
         // GET all
         [HttpGet]
         public async Task<ActionResult<PagedResult<EventCategoryReadDto>>> GetAll(
-            [FromQuery] EventCategoryQueryDto query)
+            [FromQuery] GetEventCategoriesQuery query,
+            CancellationToken cancellationToken)
         {
-            var result = await _service.GetCategoriesAsync(query);
+            var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
 
         // GET by PublicID
         [HttpGet("{publicId:guid}")]
-        public async Task<ActionResult<EventCategoryReadDto>> GetEventCategoryByPublicID(Guid publicId)
+        public async Task<ActionResult<EventCategoryReadDto>> GetEventCategoryByPublicID(
+            Guid publicId,
+            CancellationToken cancellationToken)
         {
-            var categoryDto = await _service.GetByPublicIdAsync(publicId);
+            var query = new GetEventCategoryByIdQuery { PublicId = publicId };
+            var categoryDto = await _mediator.Send(query, cancellationToken);
+            
             if (categoryDto == null)
                 return NotFound();
 
@@ -38,17 +48,24 @@ namespace API.Controllers
 
         // POST
         [HttpPost]
-        public async Task<ActionResult<EventCategoryReadDto>> Create(EventCategoryCreateDto categoryCreateDto)
+        public async Task<ActionResult<EventCategoryReadDto>> Create(
+            CreateEventCategoryCommand command,
+            CancellationToken cancellationToken)
         {
-            var categoryDto = await _service.CreateAsync(categoryCreateDto);
+            var categoryDto = await _mediator.Send(command, cancellationToken);
             return CreatedAtAction(nameof(GetEventCategoryByPublicID), new { publicId = categoryDto.PublicId }, categoryDto);
         }
 
         // PUT
         [HttpPut("{publicId:guid}")]
-        public async Task<ActionResult> Update(Guid publicId, EventCategoryUpdateDto categoryUpdateDto)
+        public async Task<ActionResult> Update(
+            Guid publicId,
+            [FromBody] UpdateEventCategoryCommand command,
+            CancellationToken cancellationToken)
         {
-            var success = await _service.UpdateAsync(publicId, categoryUpdateDto);
+            command.PublicId = publicId;
+            var success = await _mediator.Send(command, cancellationToken);
+            
             if (!success)
                 return NotFound();
 
@@ -57,9 +74,13 @@ namespace API.Controllers
 
         // DELETE
         [HttpDelete("{publicId:guid}")]
-        public async Task<ActionResult> Delete(Guid publicId)
+        public async Task<ActionResult> Delete(
+            Guid publicId,
+            CancellationToken cancellationToken)
         {
-            var success = await _service.DeleteAsync(publicId);
+            var command = new DeleteEventCategoryCommand { PublicId = publicId };
+            var success = await _mediator.Send(command, cancellationToken);
+            
             if (!success)
                 return NotFound();
 

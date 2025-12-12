@@ -3,9 +3,7 @@ using System.Text;
 using Ticksi.Infrastructure.Data;
 using Ticksi.Infrastructure.Services;
 using Ticksi.Application.Interfaces;
-using Ticksi.Application.Services;
 using FileStorageService = Ticksi.Infrastructure.Services.FileStorageService;
-using Ticksi.Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -47,8 +45,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Register AuthService
-builder.Services.AddScoped<IAuthService, AuthService>();
+// Register IAppDbContext for CQRS handlers
+builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
@@ -75,13 +73,19 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Ticksi.Application.Interfaces.IEventCategoryService).Assembly));
+
+// Register MediatR for CQRS pattern
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly));
+
+// Register repositories
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
-builder.Services.AddScoped<IEventCategoryService, EventCategoryService>();
+
+// Register services
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+
+// Register FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryCreateDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<EventCategoryUpdateDtoValidator>();
+builder.Services.AddValidatorsFromAssembly(typeof(IAppDbContext).Assembly);
 
 
 builder.Services.AddEndpointsApiExplorer();
