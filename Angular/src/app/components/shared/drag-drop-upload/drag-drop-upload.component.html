@@ -1,0 +1,50 @@
+<div class="upload-container">
+  <div 
+    class="drop-zone"
+    [class.dragging]="isDragging"
+    [class.uploading]="isUploading"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    (click)="triggerFileInput()">
+    
+    <!-- Upload Icon and Text -->
+    <div class="upload-content" *ngIf="!previewUrl">
+      <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+      </svg>
+      
+      <div class="upload-text">
+        <p class="primary-text">
+          <span class="highlight">Click to upload</span> or drag and drop
+        </p>
+        <p class="secondary-text">
+          {{ allowedTypes.join(', ') }} (Max {{ maxSizeBytes / (1024 * 1024) }}MB)
+        </p>
+      </div>
+    </div>
+
+    <!-- Image Preview -->
+    <div class="preview-container" *ngIf="previewUrl && !isUploading">
+      <img [src]="previewUrl" alt="Preview" class="preview-image">
+      <div class="preview-overlay">
+        <p class="preview-filename">{{ selectedFileName }}</p>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="isUploading">
+      <div class="spinner"></div>
+      <p class="loading-text">Uploading...</p>
+    </div>
+  </div>
+
+  <!-- Hidden File Input -->
+  <input
+    type="file"
+    id="fileInput"
+    [accept]="allowedTypes.join(',')"
+    (change)="onFileSelected($event)"
+    style="display: none;">
+</div>
+
