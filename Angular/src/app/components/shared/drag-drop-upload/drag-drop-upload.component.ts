@@ -70,6 +70,13 @@ export class DragDropUploadComponent {
    * Process the selected file
    */
   private handleFile(file: File): void {
+    // Validate file before processing
+    const validationError = this.validateFile(file);
+    if (validationError) {
+      this.uploadError.emit(validationError);
+      return;
+    }
+
     // Create preview
     this.selectedFileName = file.name;
     const reader = new FileReader();
@@ -80,6 +87,31 @@ export class DragDropUploadComponent {
 
     // Upload the file
     this.uploadFile(file);
+  }
+
+  /**
+   * Validate file type and size
+   */
+  private validateFile(file: File): string | null {
+    // Check file type
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!this.allowedTypes.includes(fileExtension)) {
+      return `Invalid file type. Allowed types: ${this.allowedTypes.join(', ')}`;
+    }
+
+    // Check file size
+    if (file.size > this.maxSizeBytes) {
+      const maxSizeMB = (this.maxSizeBytes / (1024 * 1024)).toFixed(2);
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      return `File size (${fileSizeMB}MB) exceeds maximum allowed size (${maxSizeMB}MB)`;
+    }
+
+    // Check if file is actually an image
+    if (!file.type.startsWith('image/')) {
+      return 'Selected file is not a valid image';
+    }
+
+    return null;
   }
 
   /**

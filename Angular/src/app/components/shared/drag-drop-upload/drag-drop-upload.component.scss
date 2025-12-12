@@ -25,6 +25,48 @@ $ticksi-hover: rgba(158, 108, 175, 0.1);
     border-color: $ticksi-primary;
     background-color: $ticksi-hover;
   }
+
+  // Enhanced visual feedback when dragging
+  &.dragging {
+    border-color: $ticksi-primary;
+    border-width: 3px;
+    background-color: rgba(158, 108, 175, 0.15);
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(158, 108, 175, 0.3);
+
+    .upload-icon {
+      transform: scale(1.1);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    .highlight {
+      animation: glow 1s ease-in-out infinite;
+    }
+  }
+
+  // Disabled state during upload
+  &.uploading {
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .upload-content {
