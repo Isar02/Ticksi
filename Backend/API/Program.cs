@@ -74,6 +74,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Ticksi.Application.Interfaces.IEventCategoryService).Assembly));
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
 builder.Services.AddScoped<IEventCategoryService, EventCategoryService>();
 builder.Services.AddFluentValidationAutoValidation();
