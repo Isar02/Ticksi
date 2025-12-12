@@ -488,3 +488,6 @@ $RECYCLE.BIN/
 *.swp
 API/appsettings.json
 API/tickets.db*
+
+# Uploaded files (auto-created at runtime)
+Backend/API/wwwroot/images/
