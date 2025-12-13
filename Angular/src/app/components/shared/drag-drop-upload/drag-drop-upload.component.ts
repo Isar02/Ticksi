@@ -21,6 +21,7 @@ export class DragDropUploadComponent {
   isUploading = false;
   previewUrl: string | null = null;
   selectedFileName: string | null = null;
+  selectedFile: File | null = null;
 
   constructor(private posterService: PosterService) {}
 
@@ -77,16 +78,16 @@ export class DragDropUploadComponent {
       return;
     }
 
-    // Create preview
+    // Store the file for later upload
+    this.selectedFile = file;
     this.selectedFileName = file.name;
+
+    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       this.previewUrl = e.target?.result as string;
     };
     reader.readAsDataURL(file);
-
-    // Upload the file
-    this.uploadFile(file);
   }
 
   /**
@@ -129,9 +130,52 @@ export class DragDropUploadComponent {
         this.isUploading = false;
         this.previewUrl = null;
         this.selectedFileName = null;
+        this.selectedFile = null;
         this.uploadError.emit(error.message || 'Upload failed');
       }
     });
+  }
+
+  /**
+   * Confirm and upload the selected file
+   */
+  confirmUpload(): void {
+    if (this.selectedFile && !this.isUploading) {
+      this.uploadFile(this.selectedFile);
+    }
+  }
+
+  /**
+   * Get formatted file size
+   */
+  getFileSize(): string {
+    if (!this.selectedFile) return '';
+    
+    const bytes = this.selectedFile.size;
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    } else if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    } else {
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+  }
+
+  /**
+   * Get file type/extension
+   */
+  getFileType(): string {
+    if (!this.selectedFile) return '';
+    return this.selectedFile.type || 'Unknown';
+  }
+
+  /**
+   * Trigger file input to change the current image
+   */
+  changeImage(): void {
+    if (!this.isUploading) {
+      this.triggerFileInput();
+    }
   }
 
   /**
@@ -145,9 +189,13 @@ export class DragDropUploadComponent {
   /**
    * Clear current selection and preview
    */
-  clearSelection(): void {
+  clearSelection(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
     this.previewUrl = null;
     this.selectedFileName = null;
+    this.selectedFile = null;
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';

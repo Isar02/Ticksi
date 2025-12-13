@@ -3,10 +3,11 @@
     class="drop-zone"
     [class.dragging]="isDragging"
     [class.uploading]="isUploading"
+    [class.has-preview]="previewUrl"
     (dragover)="onDragOver($event)"
     (dragleave)="onDragLeave($event)"
     (drop)="onDrop($event)"
-    (click)="triggerFileInput()">
+    (click)="!previewUrl && triggerFileInput()">
     
     <!-- Upload Icon and Text -->
     <div class="upload-content" *ngIf="!previewUrl">
@@ -27,8 +28,40 @@
     <!-- Image Preview -->
     <div class="preview-container" *ngIf="previewUrl && !isUploading">
       <img [src]="previewUrl" alt="Preview" class="preview-image">
-      <div class="preview-overlay">
-        <p class="preview-filename">{{ selectedFileName }}</p>
+      
+      <!-- File Information -->
+      <div class="file-info">
+        <p class="file-info-name">{{ selectedFileName }}</p>
+        <div class="file-metadata">
+          <span class="file-meta-item">{{ getFileSize() }}</span>
+          <span class="file-meta-separator">•</span>
+          <span class="file-meta-item">{{ getFileType() }}</span>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="preview-actions">
+        <button 
+          type="button" 
+          class="btn-upload" 
+          (click)="confirmUpload()"
+          [disabled]="isUploading">
+          Upload
+        </button>
+        <button 
+          type="button" 
+          class="btn-change" 
+          (click)="changeImage()"
+          [disabled]="isUploading">
+          Change
+        </button>
+        <button 
+          type="button" 
+          class="btn-cancel" 
+          (click)="clearSelection($event)"
+          [disabled]="isUploading">
+          Cancel
+        </button>
       </div>
     </div>
 
