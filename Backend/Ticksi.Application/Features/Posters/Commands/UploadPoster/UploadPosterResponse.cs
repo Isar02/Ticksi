@@ -13,8 +13,14 @@ namespace Ticksi.Application.Features.Posters.Commands.UploadPoster
         public string OriginalFileName { get; set; } = string.Empty;
 
         /// <summary>
+        /// The generated filename stored on the server.
+        /// </summary>
+        public string StoredFileName { get; set; } = string.Empty;
+
+        /// <summary>
         /// The size of the uploaded file in bytes.
         /// </summary>
+
         public long FileSizeBytes { get; set; }
 
         /// <summary>

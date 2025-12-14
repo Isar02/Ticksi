@@ -4,30 +4,24 @@ import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
-
-
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule], // ⬅ maknut DragDropUploadComponent
   styleUrl: './home.component.scss',
   templateUrl: './home.component.html',
-  
-
 })
-export class HomeComponent 
-{
+export class HomeComponent {
   constructor(
-  private router: Router,
-  public authService: AuthService
-) {}
-organizeEvent(): void {
-  if (this.authService.isAuthenticated()) {
-    this.router.navigate(['/admin/categories']);
-  } else {
-    this.router.navigate(['/login']);
+    private router: Router,
+    public authService: AuthService
+  ) {}
+
+  organizeEvent(): void {
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/admin/categories']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
-}
-
-
 }

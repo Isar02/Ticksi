@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse,HttpEvent } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment.development';
 import { PosterUploadResponse } from '../models/poster.model';
 import { AuthService } from './auth.service';
+import { HttpEventType } from '@angular/common/http';
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -15,13 +18,16 @@ export class PosterService {
     private http: HttpClient,
     private authService: AuthService
   ) {}
+  uploadProgress = 0;
+  uploadCompleted = false;
 
   /**
    * Upload a poster file to the backend
    * @param file The image file to upload
    * @returns Observable with the upload response containing the file URL
    */
-  uploadPoster(file: File): Observable<PosterUploadResponse> {
+  uploadPoster(file: File): Observable<PosterUploadResponse>
+ {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -38,6 +44,29 @@ export class PosterService {
       catchError(this.handleError)
     );
   }
+
+  uploadPosterWithProgress(file: File): Observable<HttpEvent<PosterUploadResponse>> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const token = this.authService.getToken();
+  const headers = {
+    'Authorization': `Bearer ${token}`
+  };
+
+  return this.http.post<PosterUploadResponse>(
+    `${environment.apiUrl}/posters/upload`,
+    formData,
+    {
+      headers,
+      reportProgress: true,
+      observe: 'events'
+    }
+  ).pipe(
+    catchError(this.handleError)
+  );
+}
+
 
   /**
    * Handle HTTP errors
