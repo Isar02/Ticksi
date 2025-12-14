@@ -42,7 +42,8 @@ export class CategoriesComponent implements OnInit {
 
   openForm(category?: Category): void {
   const dialogRef = this.dialog.open(CategoryFormComponent, {
-    width: '400px',
+    width: '900px',
+    maxWidth: '90vw',
     panelClass: 'hide-error-outline-dialog',
     data: { category: category ?? null }
   });

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Ticksi.Application.Interfaces;
+using System.IO;
 
 namespace Ticksi.Application.Features.Posters.Commands.UploadPoster
 {
@@ -25,10 +26,14 @@ namespace Ticksi.Application.Features.Posters.Commands.UploadPoster
             // Save the file and get the URL
             var url = await _fileStorageService.SaveFileAsync(request.File, posterPath, cancellationToken);
 
+            var storedFileName = Path.GetFileName(url);
+
+
             return new UploadPosterResponse
             {
                 Url = url,
                 OriginalFileName = request.File.FileName,
+                StoredFileName = storedFileName,
                 FileSizeBytes = request.File.Length,
                 ContentType = request.File.ContentType
             };

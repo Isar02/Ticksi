@@ -24,6 +24,10 @@
       The description can have a maximum of 500 characters.
     </mat-error>
   </mat-form-field>
+  <app-drag-drop-upload
+  (uploadSuccess)="onPosterUploaded($event)"
+  (uploadError)="onPosterUploadError($event)"
+></app-drag-drop-upload>
 
   <div class="button-row">
     <button mat-button type="button" class ="cancel-btn" (click)="cancel()">Cancel</button>

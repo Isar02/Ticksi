@@ -256,3 +256,28 @@ $ticksi-hover: rgba(158, 108, 175, 0.1);
   margin: 0;
 }
 
+.upload-success {
+  margin-top: 10px;
+  color: #2e7d32;
+  font-weight: 600;
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: #9E6CAF; // Ticksi primary
+  transition: width 0.1s linear;
+}
+
+

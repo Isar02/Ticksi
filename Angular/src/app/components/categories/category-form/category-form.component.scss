@@ -186,4 +186,108 @@ h2[mat-dialog-title] {
     box-shadow: 0 6px 12px rgba(0,0,0,.15) !important;
 
     }
+    h2[mat-dialog-title] {
+    color: $primary-color !important;
+  }
+
+  // Progress bar in Ticksi color
+  .mat-mdc-progress-bar .mdc-linear-progress__bar-inner {
+    border-color: $primary-color !important;
+  }
+
+  // Primary buttons use Ticksi color
+  .mat-mdc-raised-button.mat-primary {
+    background-color: $primary-color !important;
+  }
+ 
 }
+.upload-section {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upload-label {
+  font-weight: 600;
+}
+
+.upload-meta {
+  font-size: 12px;
+  opacity: 0.7;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.preview-card {
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 180px;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.status {
+  font-size: 13px;
+}
+
+.status.success {
+  color: #2e7d32;
+}
+
+.status.error {
+  color: #c62828;
+}
+
+.upload-actions button {
+  height: 40px;
+  border-radius: 10px;
+}
+
+.upload-section {
+  padding: 14px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  background: rgba(158, 108, 175, 0.06);
+}
+
+.upload-section {
+  color: white;
+}
+
+.upload-section .upload-label,
+.upload-section .upload-meta {
+  color: white;
+}
+
+::ng-deep .mat-mdc-dialog-surface {
+  max-height: 90vh !important;
+  overflow: auto !important;
+}
+
