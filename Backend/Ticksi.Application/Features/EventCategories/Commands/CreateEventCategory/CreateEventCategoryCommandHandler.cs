@@ -22,7 +22,8 @@ namespace Ticksi.Application.Features.EventCategories.Commands.CreateEventCatego
             var category = new EventCategory
             {
                 Name = request.Name,
-                Description = request.Description
+                Description = request.Description,
+                PosterUrl = request.PosterUrl
             };
 
             await _repository.AddAsync(category);

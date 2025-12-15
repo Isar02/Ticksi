@@ -9,6 +9,8 @@ public class EventCategory : BaseEntity
 
     public bool IsActive { get; set; } = true;
 
+    public string PosterUrl { get; set; } = string.Empty;
+
 
     // Future: Navigation to Events in this category
     public ICollection<Event> Events { get; set; } = new List<Event>();

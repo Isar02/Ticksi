@@ -20,6 +20,7 @@ namespace Ticksi.Application.Features.EventCategories.Commands.UpdateEventCatego
 
             existingCategory.Name = request.Name;
             existingCategory.Description = request.Description;
+            existingCategory.PosterUrl = request.PosterUrl;
 
             await _repository.UpdateAsync(existingCategory);
             return true;
