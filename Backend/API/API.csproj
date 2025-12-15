@@ -28,4 +28,8 @@
     <ProjectReference Include="..\Ticksi.Infrastructure\Ticksi.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\categories\" />
+  </ItemGroup>
+
 </Project>

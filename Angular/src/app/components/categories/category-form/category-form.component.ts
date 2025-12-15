@@ -33,7 +33,6 @@ import { PosterUploadResponse } from '../../../models/poster.model';
     MatDialogModule,
     MatCardModule,
     MatProgressBarModule,
-    DragDropUploadComponent
   ],
   templateUrl: './category-form.component.html',
   styleUrl: './category-form.component.scss'

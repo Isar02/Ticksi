@@ -39,6 +39,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'events',
+    loadComponent: () =>
+      import('./components/events/events.component')
+        .then(m => m.EventsComponent)
+  },
+
+  {
     path: '**',
     redirectTo: ''
   }

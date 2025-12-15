@@ -1,0 +1,68 @@
+<div class="events-page">
+    <header class="events-header">
+        <h1>Discover all <span>Events</span></h1>
+        <p>Explore the latest and most popular events across all categories. Your next adventure is just one click away!</p>
+    </header>
+
+    <div class="events-controls">
+        <div class="search-bar">
+            <input type="text" placeholder="Search events by name or location..." class="search-input">
+        </div>
+        
+        <div class="filters">
+            <select class="filter-select">
+                <option value="all">All Categories</option>
+                <option value="music">Music</option>
+                <option value="sport">Sport</option>
+                <option value="conference">Conferences</option>
+                </select>
+            
+            <select class="filter-select">
+                <option value="date">Date (Newest)</option>
+                <option value="popularity">Popularity</option>
+                <option value="price">Price (Ascending)</option>
+            </select>
+
+            <button class="btn-primary filter-btn">Apply Filter</button>
+        </div>
+    </div>
+
+    <main class="events-grid">
+        <div class="event-card">
+            <div class="event-image-container">
+                <img src="path/to/event/image-1.jpg" alt="Event Name" class="event-image">
+                <span class="event-category">Music</span>
+            </div>
+            <div class="event-info">
+                <h3 class="event-title">Big Rock Concert: The Dragons</h3>
+                <p class="event-date-location">
+                    <span class="date">🗓️ May 15, 2026</span>
+                    <span class="location">📍 Sarajevo, Zetra</span>
+                </p>
+                <div class="event-price">
+                    Price: from **25 KM**
+                </div>
+                <a href="/event/details-1" class="btn-secondary view-details-btn">View Details</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="event-image-container">
+                <img src="path/to/event/image-2.jpg" alt="Event Name" class="event-image">
+                <span class="event-category sport">Sport</span>
+            </div>
+            <div class="event-info">
+                <h3 class="event-title">Summer 10K Run for Peace</h3>
+                <p class="event-date-location">
+                    <span class="date">🗓️ August 1, 2026</span>
+                    <span class="location">📍 Mostar, Old Town</span>
+                </p>
+                <div class="event-price">
+                    Price: **Free**
+                </div>
+                <a href="/event/details-2" class="btn-secondary view-details-btn">View Details</a>
+            </div>
+        </div>
+        
+    </main>
+</div>
