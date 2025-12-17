@@ -79,6 +79,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IAppD
 
 // Register repositories
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 // Register services
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
