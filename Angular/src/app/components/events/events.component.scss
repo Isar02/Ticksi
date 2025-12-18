@@ -185,6 +185,14 @@ $bg-light: #faf7fb;
     }
 }
 
+// Empty state styles
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: $text-light;
+    font-size: 18px;
+}
+
 // Media Query for responsiveness
 @media (max-width: 768px) {
     .events-controls {
