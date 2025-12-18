@@ -28,15 +28,47 @@
   </div>
 
   <!-- GRID -->
-  <div class="category-grid">
+  <!-- GRID -->
+<div class="category-grid">
 
-    <div class="category-card" *ngFor="let category of categories">
+  <div class="category-card" *ngFor="let category of categories">
+
+    <!-- Poster -->
+    <div class="category-poster">
+      <ng-container *ngIf="category.posterUrl; else noPoster">
+        <img
+          [src]="getPosterUrl(category)"
+          [alt]="category.name + ' poster'"
+        />
+      </ng-container>
+
+      <ng-template #noPoster>
+        <div class="no-poster">
+          <span class="no-poster-icon">🖼️</span>
+          <span class="no-poster-text">No image</span>
+        </div>
+      </ng-template>
+
+      <!-- Status badge (ako imaš npr. isActive ili status) -->
+      
+    </div>
+
+    <!-- Body -->
+    <div class="category-body">
       <h3>{{ category.name }}</h3>
-      <p>{{ category.description }}</p>
-      <button>View events</button>
+      <p class="description">
+        {{ category.description || 'No description provided.' }}
+      </p>
+
+      <button class="view-btn">
+        View events
+      </button>
     </div>
 
   </div>
+
+</div>
+
 
   <!-- PAGING -->
   <div class="pagination" *ngIf="totalPages > 1">

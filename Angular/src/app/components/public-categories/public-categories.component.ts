@@ -4,6 +4,7 @@ import { CategoryService, PagedResult } from '../../services/category.service';
 import { Category } from '../../models/category.model';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, Subject } from 'rxjs';
+import { environment } from '../../../environments/environment.development';
 
 @Component({
   selector: 'app-public-categories',
@@ -85,5 +86,16 @@ export class PublicCategoriesComponent implements OnInit {
       this.loadCategories();
     }
   }
+
+  getPosterUrl(category: Category): string {
+  if (!category.posterUrl) {
+    return ''; // fallback rješavamo u HTML-u
+  }
+
+  // makni /api i dodaj relative URL
+  const baseApi = environment.apiUrl.replace(/\/api\/?$/, '');
+  return `${baseApi}${category.posterUrl}`;
+}
+
 
 }

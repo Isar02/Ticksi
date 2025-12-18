@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { PagedResult } from '../../services/category.service';
+import { environment} from '../../../environments/environment.development';
+
 
 
 @Component({
@@ -18,7 +20,7 @@ export class CategoriesComponent implements OnInit {
   categories: Category[] = [];
   pagedResult!: PagedResult<Category>;
 
-  
+  readonly apiBaseUrl = environment.apiUrl;
   
   constructor(private categoryService: CategoryService , private dialog : MatDialog) {}
 
@@ -58,6 +60,36 @@ export class CategoriesComponent implements OnInit {
       }
     }
   });
+  
 }
+
+ buildPosterUrl(relativeOrAbsolute?: string | null): string {
+    if (!relativeOrAbsolute) {
+      return '';
+    }
+
+    // ako backend nekad vrati pun URL (http...), samo ga vrati
+    if (relativeOrAbsolute.startsWith('http')) {
+      return relativeOrAbsolute;
+    }
+
+    // spoji API bazu i relativni path bez duplih / /
+    const base = this.apiBaseUrl.replace(/\/+$/, '');
+    const path = relativeOrAbsolute.replace(/^\/+/, '');
+    return `${base}/${path}`;
+  }
+
+  getPosterUrl(category: Category): string {
+  if (!category.posterUrl) {
+    // ako nema sliku, stavi neki placeholder
+    return 'assets/images/category-placeholder.png';
+  }
+
+  // skini /api sa kraja apiUrl-a
+  const baseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
+
+  return `${baseUrl}${category.posterUrl}`;
+}
+
 
 }

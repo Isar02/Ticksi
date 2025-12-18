@@ -1,14 +1,12 @@
 // --- VARIJABLE ---
-$primary-color: #9E6CAF;
+$primary-color: #9e6caf;
 $primary-hover: #8a5c9a;
 $text-dark: #333333;
 $text-light: #666666;
 $white: #ffffff;
 $light-gray: #f5f5f5;
-$error-color: #dc3545;
 $border-color: #e0e0e0;
 $mobile: 768px;
-
 
 // --- PAGE WRAPPER ---
 .page-container {
@@ -18,22 +16,19 @@ $mobile: 768px;
   padding: 20px;
 }
 
-
 // --- MAIN CARD ---
 .content-card {
   background: $white;
   border-radius: 16px;
-  padding: 40px;
+  padding: 32px 40px;
   width: 100%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 
   @media (max-width: $mobile) {
     padding: 20px 16px;
     border-radius: 12px;
-    overflow-x: auto;
   }
 }
-
 
 // --- TOOLBAR ---
 .toolbar {
@@ -74,27 +69,16 @@ $mobile: 768px;
   border-radius: 2px;
 }
 
-// mali badge za broj kategorija (opcionalno)
-.toolbar .count {
-  background: rgba($primary-color, .08);
-  color: $primary-color;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-
-// --- ADD CATEGORY (PRIMARY) BUTTON ---
+// --- ADD CATEGORY BUTTON ---
 button[mat-raised-button] {
-  background: linear-gradient(135deg, #9E6CAF, #b889cc);
+  background: linear-gradient(135deg, #9e6caf, #b889cc);
   color: white;
   border-radius: 999px;
   padding: 8px 22px;
   font-weight: 600;
   font-size: 13px;
-  letter-spacing: .03em;
-  box-shadow: 0 8px 20px rgba(158,108,175,.35);
+  letter-spacing: 0.03em;
+  box-shadow: 0 8px 20px rgba(158, 108, 175, 0.35);
   transition: all 0.25s ease;
   border: none;
 }
@@ -102,14 +86,13 @@ button[mat-raised-button] {
 button[mat-raised-button]:hover {
   background: linear-gradient(135deg, #8a5c9a, #a97ebd);
   transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(158,108,175,.45);
+  box-shadow: 0 12px 26px rgba(158, 108, 175, 0.45);
 }
 
 button[mat-raised-button]:active {
   transform: translateY(0);
-  box-shadow: 0 6px 14px rgba(158,108,175,.35);
+  box-shadow: 0 6px 14px rgba(158, 108, 175, 0.35);
 }
-
 
 // --- SEARCH INPUT U TOOLBARU ---
 .search-wrapper {
@@ -120,197 +103,36 @@ button[mat-raised-button]:active {
   border-radius: 999px;
   border: 1px solid transparent;
   transition: all 0.2s ease;
-}
 
-.search-wrapper:hover {
-  background: #ececec;
-}
+  input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    color: $text-dark;
+    padding-left: 4px;
+    width: 170px;
 
-.search-wrapper:focus-within {
-  border-color: rgba($primary-color, .5);
-  box-shadow: 0 0 0 3px rgba($primary-color, .10);
-  background: #f9f5fb;
-}
-
-.search-wrapper input {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 13px;
-  color: $text-dark;
-  padding-left: 4px;
-  width: 170px;
-}
-
-.search-wrapper input::placeholder {
-  color: $text-light;
-  opacity: 0.8;
-}
-
-// ako koristiš mat-icon unutra
-.search-wrapper mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: $text-light;
-}
-
-
-
-// --- TABLE WRAPPER ---
-.table-responsive {
-  margin-top: 20px;
-}
-
-
-// --- TABLE BASE ---
-.categories-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-
-// --- TABLE HEADER ---
-.categories-table thead th {
-  text-transform: uppercase;
-  font-size: 0.72rem;
-  letter-spacing: .08em;
-  font-weight: 600;
-  color: $text-light;
-  padding: 14px 12px;
-  border-bottom: 1px solid $border-color;
-  text-align: left;
-}
-
-
-// --- TABLE ROWS ---
-.categories-table tbody tr {
-  transition: all 0.18s ease;
-}
-
-.categories-table tbody tr:nth-child(even) {
-  background: $light-gray;
-}
-
-.categories-table tbody tr:hover {
-  background: rgba(158,108,175,.08);
-}
-
-
-// --- TABLE CELLS ---
-.categories-table td {
-  padding: 14px 12px;
-  color: $text-dark;
-  font-size: 14px;
-  vertical-align: middle;
-}
-
-// --- ACTION BUTTONS (EDIT / DELETE) ---
-.categories-table button[mat-button] {
-  display: inline-flex;          
-  align-items: center;           
-  justify-content: center;       
-  font-weight: 500;
-  border-radius: 20px;
-  padding: 6px 16px;
-  min-width: 72px;
-  font-size: 13px;
-  margin-right: 10px;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-}
-
-
-// EDIT
-.categories-table button[color="accent"] {
-  color: $primary-color;
-  background: rgba($primary-color, 0.08);
-  border-color: rgba($primary-color, 0.25);
+    &::placeholder {
+      color: $text-light;
+      opacity: 0.8;
+    }
+  }
 
   &:hover {
-    background: rgba($primary-color, 0.16);
+    background: #ececec;
+  }
+
+  &:focus-within {
     border-color: rgba($primary-color, 0.5);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+    background: #f9f5fb;
   }
 }
 
-// DELETE
-.categories-table button[color="warn"] {
-  color: #b02a37;
-  background: rgba(220, 53, 69, 0.08);
-  border-color: rgba(220, 53, 69, 0.25);
-
-  &:hover {
-    background: rgba(220, 53, 69, 0.16);
-    border-color: rgba(220, 53, 69, 0.45);
-    transform: translateY(-1px);
-  }
-}
-
-
-// --- TABLE FOOTER / PAGINATION ---
-.table-footer {
-  margin-top: 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: $text-light;
-
-  @media (max-width: $mobile) {
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-  }
-}
-
-.rows-info {
-  opacity: 0.9;
-}
-
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.page-btn,
-.page-number {
-  border-radius: 999px;
-  border: 1px solid $border-color;
-  padding: 4px 10px;
-  min-width: 30px;
-  font-size: 12px;
-  background: $white;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  color: $text-dark;
-}
-
-.page-btn[disabled] {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.page-btn:not([disabled]):hover,
-.page-number:hover {
-  background: rgba($primary-color, 0.06);
-  border-color: rgba($primary-color, 0.4);
-}
-
-.page-number.active {
-  background: $primary-color;
-  color: $white;
-  border-color: $primary-color;
-  box-shadow: 0 4px 10px rgba(158,108,175,.35);
-}
-
-
-
-// --- EMPTY STATE (kad nema kategorija) ---
+// --- EMPTY STATE ---
 .empty-state {
-  padding: 60px 20px;
+  padding: 60px 20px 20px;
   text-align: center;
   color: $text-light;
   display: flex;
@@ -338,52 +160,126 @@ button[mat-raised-button]:active {
   line-height: 1.5;
 }
 
-
-
-// --- MICRO-ANIMATIONS ZA ROW INSERT/DELETE ---
-// kad dodaš novu kategoriju, samo row-u dodaj klasu "row-added"
-@keyframes rowFadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+// --- GRID (umjesto tabele) ---
+.category-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
 }
 
-.categories-table tbody tr.row-added {
-  animation: rowFadeInUp 0.25s ease-out;
-}
-
-// za brisanje: prvo dodaš klasu "row-removing", pa onda ukloniš iz liste
-@keyframes rowFadeOut {
-  to {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-}
-
-.categories-table tbody tr.row-removing {
-  animation: rowFadeOut 0.2s ease-in forwards;
-}
-
-/* ---- FIX ACTION COLUMN WRAP ---- */
-
-.categories-table th:last-child,
-.categories-table td:last-child {
-  width: 160px;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.categories-table td:last-child {
+// pojedina admin kartica
+.category-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  flex-direction: column;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  }
 }
 
-.categories-table td:last-child button {
-  display: inline-flex;
+// poster dio
+.category-poster {
+  position: relative;
+  height: 160px;
+  background: #f4f4f4;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// fallback kad nema slike
+.no-poster {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: $text-light;
+  font-size: 13px;
+}
+
+.no-poster-icon {
+  font-size: 24px;
+}
+
+.no-poster-text {
+  font-style: italic;
+}
+
+// tekstualni dio + akcije
+.category-body {
+  padding: 16px 18px 18px;
+}
+
+.category-body h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.category-body .description {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: $text-light;
+  min-height: 36px;
+}
+
+// akcije
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.actions button[mat-stroked-button] {
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// edit / delete nijanse
+.edit-btn {
+  border-color: rgba($primary-color, 0.5);
+  color: $primary-color;
+
+  &:hover {
+    border-color: $primary-color;
+    background: rgba($primary-color, 0.06);
+  }
+}
+
+.delete-btn {
+  border-color: rgba(220, 53, 69, 0.5);
+  color: #b02a37;
+
+  &:hover {
+    border-color: rgba(220, 53, 69, 0.8);
+    background: rgba(220, 53, 69, 0.06);
+  }
+}
+
+// --- RESPONSIVE ---
+@media (max-width: $mobile) {
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-card {
+    border-radius: 16px;
+  }
 }
