@@ -1,14 +1,16 @@
-// --- Varijable (Koristi definiciju za Ticksi boje) ---
-$primary-color: #9E6CAF; // Tvoja dominantna ružičasto/ljubičasta boja
-$text-dark: #333333; // Tamni tekst
+// --- Varijable ---
+$primary-color: #9E6CAF;
+$primary-hover: #8a5c9a;
+$text-dark: #333333;
 $text-light: #666666;
 $white: #ffffff;
 $border-color: #e0e0e0;
-$error-color: #dc3545; 
+$error-color: #dc3545;
 
-// --- GLAVNI STILOVI (Komponentni SCSS) ---
+// =========================
+//  NASLOV + LAYOUT
+// =========================
 
-// Naslov
 h2[mat-dialog-title] {
   font-size: 24px;
   font-weight: 600;
@@ -17,240 +19,392 @@ h2[mat-dialog-title] {
   margin: 0 0 24px 0;
 }
 
-// Kontejner forme
 .form-container {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-// Dugmad
 .button-row {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 30px; 
+  margin-top: 30px;
 }
 
+/* =========================
+   BASIC SECTION (bijela kartica)
+   ========================== */
 
-// --- KRITIČNI OVERRIDE BLOK (::ng-deep) ---
+.basic-section {
+  position: relative;
+  border-radius: 20px;
+  padding: 24px 22px 20px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+}
+
+.basic-section-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* =========================
+   ANGULAR MATERIAL OVERRIDES
+   ========================== */
 
 ::ng-deep {
-  
-  
-  // 1. FIKSIRANJE POZADINE I OBLIKA DIJALOGA
+  /* backdrop malo zatamni */
   .mat-mdc-dialog-container {
-    background: transparent !important; 
-    
-    .mat-mdc-dialog-surface {
-        background: $white !important;
-        color: $text-dark !important;
-        border-radius: 16px !important; // Zaobljene ivice kao na Login kartici
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-        padding: 40px 30px !important; 
-    }
+    background: rgba(0, 0, 0, 0.4) !important;
   }
 
-  // 2. FIKSIRANJE INPUT POLJA I TEKSTA
-  
-  // Labela u defaultnom stanju (tamna, čitljiva)
+  /* GLAVNA POVRŠINA DIJALOGA – gradient + Ticksi watermark */
+  .mat-mdc-dialog-surface {
+    position: relative;
+    overflow: hidden !important;
+    overflow-y: scroll !important;
+    border-radius: 24px !important;
+    padding: 40px 36px !important;
+    color: $text-dark !important;
+
+    /* blagi Ticksi gradient */
+    background:
+      radial-gradient(circle at top left,  #9e6caf 1%, #ffffff 95%);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  /* Ticksi logo kao watermark na desnoj strani */
+  .mat-mdc-dialog-surface::before {
+     content: '';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('/assets/images/Ticksi_no_slogan-removebg_5.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 55%;
+  transform: rotate(-45deg);
+  opacity: 0.62;
+  pointer-events: none;
+  filter: grayscale(0);
+  }
+
+  /* STANDARDNI INPUT STILOVI */
+
   .mat-mdc-form-field-label {
-    color: $text-dark !important; 
+    color: $text-dark !important;
     font-weight: 500;
   }
 
-  // Tekst unutar inputa
   .mat-mdc-input-element {
     color: $text-dark !important;
   }
-  
-  // Pill Shape za inpute
+
   .mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline {
-     border-radius: 25px !important; 
-     color: $border-color;
+    border-radius: 25px !important;
+    color: $border-color;
+    
   }
 
-  // 3. AGRESIVNA KOREKCIJA: FORCE ERROR STATE TO PRIMARY COLOR
-
-  // FORSIRANJE BOJE BORDERA NA PRIMARY BOJU (rješava narandžasti/ružičasti obrub)
   .mat-mdc-form-field.mat-form-field-invalid .mat-mdc-form-field-outline-thick {
-      color: $primary-color !important;
+    color: $primary-color !important;
   }
 
-  // FORSIRANJE TEKSTA GREŠKE NA PRIMARY BOJU
   .mat-error {
-      color: $primary-color !important;
-      font-size: 12px !important; 
-      margin-top: 6px !important; 
-      display: block !important;
+    color: $primary-color !important;
+    font-size: 12px !important;
+    margin-top: 6px !important;
+    display: block !important;
   }
-  
-  // 4. FIKSIRANJE DUGMADI (Save: Bijela, Cancel: Primary)
-  
-  // Save button (mat-raised-button) - Prilagođen zadnjem željenom izgledu
+
+  /* Dugmad */
   .button-row button[type="submit"] {
-      background-color: $white !important; 
-      color: $text-dark !important;
-      border: 1.5px solid $border-color !important; 
-      border-radius: 25px !important; 
-      box-shadow: none !important; 
+    background-color: $white !important;
+    color: $text-dark !important;
+    border: 1.5px solid $border-color !important;
+    border-radius: 25px !important;
+    box-shadow: none !important;
 
-      &:hover:not(:disabled) {
-          border-color: $primary-color !important;
-          color: $primary-color !important;
-      }
-  }
-
-  // Cancel button (mat-button) - Tekst u primary boji
-  .button-row button[type="button"] {
+    &:hover:not(:disabled) {
+      border-color: $primary-color !important;
       color: $primary-color !important;
-      background: transparent !important;
-      border-radius: 25px !important;
+    }
   }
 
- 
-  
-  .mat-form-field-invalid
-  {
-    color: $error-color !important;
-
-  }
-  .mdc-text-field-invalid
-  {
-    color: $error-color !important;
-  }
-
-  
- .mat-mdc-form-field-flex
- {
-  padding: 0 12px !important;
-
- }
-
- .mat-mdc-form-field-flex:hover {
-        
-
+  .button-row button[type="button"] {
     color: $primary-color !important;
-    border-width: 1px !important; 
-        
-   }
-
-   .mat-mdc-form-field-flex:focus-within {
-        
-
-    color: $primary-color !important;
-    border-width: 1px !important; 
-        
-   }
-
-  .mat-form-field-invalid:hover
-{
-  color: $primary-color !important;
-  border-width: 1px !important;
-
-}
-  .mat-form-field-invalid:focus-within
-{
-  color: $primary-color !important;
-  border-width: 1px !important;
-
-}
-
- .mdc-text-field-invalid:hover
-  {
-    color: $error-color !important;
+    background: transparent !important;
+    border-radius: 25px !important;
   }
 
-  .mdc-text-field-invalid:focus-within
-  {
-    color: $primary-color !important;
+  .cancel-btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
+  .cancel-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid $primary-color !important;
+  }
 
-.cancel-btn {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cancel-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0,0,0,.15);
-  border: 1px solid $primary-color !important;
-}
-
-  .save-btn
-  {
+  .save-btn {
     transition: transform 0.2s ease, box-shadow 0.2s ease !important;
   }
+
   .save-btn:hover {
     transform: translateY(-3px) !important;
-    box-shadow: 0 6px 12px rgba(0,0,0,.15) !important;
-
-    }
-    h2[mat-dialog-title] {
-    color: $primary-color !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
   }
 
-  // Progress bar in Ticksi color
+  h2[mat-dialog-title] {
+    color: $white !important;
+    letter-spacing: 0.04em;
+  }
+
   .mat-mdc-progress-bar .mdc-linear-progress__bar-inner {
     border-color: $primary-color !important;
   }
 
-  // Primary buttons use Ticksi color
   .mat-mdc-raised-button.mat-primary {
     background-color: $primary-color !important;
   }
- 
+
+  /* BASIC SECTION – “line” polja kao na template formi */
+  .basic-section .basic-field.mat-mdc-form-field-appearance-outline {
+    .mat-mdc-form-field-outline,
+    .mat-mdc-form-field-outline-start,
+    .mat-mdc-form-field-outline-gap,
+    .mat-mdc-form-field-outline-end {
+      border-width: 0 !important;
+    }
+
+    .mat-mdc-form-field-flex {
+      padding: 4px 0 2px !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+      border-radius: 0 !important;
+      background: transparent !important;
+    }
+
+    .mat-mdc-input-element,
+    textarea.mat-mdc-input-element {
+      color: $text-dark !important;
+    }
+
+    .mat-mdc-form-field-label {
+      color: rgba(0, 0, 0, 0.7) !important;
+    }
+
+    &:hover .mat-mdc-form-field-flex {
+      border-bottom-color: $primary-color !important;
+    }
+
+    .mat-mdc-form-field-focus-overlay {
+      background: transparent !important;
+    }
+
+    &.mat-form-field-invalid .mat-mdc-form-field-flex {
+      border-bottom-color: $error-color !important;
+    }
+  }
+  .mat-mdc-dialog-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  }
+
+  .cdk-overlay-pane {
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+  }
+
 }
-.upload-section {
-  margin-top: 14px;
+
+/* =========================
+   POSTER UPLOAD CARD
+   ========================== */
+
+.poster-upload-section {
+  margin-top: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(158, 108, 175, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.upload-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
   gap: 12px;
+  backdrop-filter: blur(2px);
 }
 
-.upload-label {
+.poster-upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.title-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.section-title {
   font-weight: 600;
+  color: $text-dark;
 }
 
-.upload-meta {
+.section-meta {
   font-size: 12px;
-  opacity: 0.7;
-  max-width: 180px;
+  color: $text-light;
+}
+
+.file-name {
+  font-size: 12px;
+  max-width: 220px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  color: $text-light;
 }
 
 .file-input {
   display: none;
 }
 
-.upload-actions {
+.poster-dropzone {
+  border-radius: 14px;
+  border: 2px dashed rgba(158, 108, 175, 0.45);
+  background: #faf5ff;
+  padding: 24px 16px;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  height: 250px;
 }
 
-.preview-card {
-  border: 1px solid rgba(0,0,0,0.12);
-  border-radius: 12px;
-  padding: 10px;
+.poster-dropzone:hover {
+  border-color: $primary-color;
+  background: #f7ecff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.dropzone-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-icon {
+  width: 40px;
+  height: 40px;
+  color: $primary-color;
+}
+
+.dropzone-text {
+  text-align: center;
+}
+
+.primary-text {
+  margin: 0;
+  font-size: 14px;
+  color: $text-dark;
+}
+
+.primary-text .highlight {
+  font-weight: 600;
+  color: $primary-color;
+}
+
+.secondary-text {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: $text-light;
+}
+
+.poster-preview {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   justify-content: center;
-  background: #fafafa;
+  align-items: center;
+  padding: 16px;
 }
 
-.preview-image {
+.poster-preview img {
   max-width: 100%;
-  max-height: 180px;
-  border-radius: 10px;
+  max-height: 220px;
+  border-radius: 12px;
   object-fit: contain;
+}
+
+/* Overlay za upload */
+.upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+}
+
+.overlay-content {
+  text-align: center;
+}
+
+.overlay-progress {
+  width: 80%;
+  margin-top: 12px;
+  border-radius: 6px;
+
+  .mdc-linear-progress__bar-inner {
+    border-color: $primary-color !important;
+  }
+}
+
+.overlay-text {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+/* Upload dugme */
+
+.upload-actions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-btn {
+  align-self: flex-start;
+  border-radius: 999px !important;
+  padding-inline: 24px !important;
+  background-color: $primary-color !important;
+  color: white !important;
+  border-radius: 10px;
+  transition: background-color .2s ease, transform .2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background-color: $primary-hover !important;
+  }
 }
 
 .status {
@@ -263,31 +417,5 @@ h2[mat-dialog-title] {
 
 .status.error {
   color: #c62828;
-}
-
-.upload-actions button {
-  height: 40px;
-  border-radius: 10px;
-}
-
-.upload-section {
-  padding: 14px;
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 14px;
-  background: rgba(158, 108, 175, 0.06);
-}
-
-.upload-section {
-  color: white;
-}
-
-.upload-section .upload-label,
-.upload-section .upload-meta {
-  color: white;
-}
-
-::ng-deep .mat-mdc-dialog-surface {
-  max-height: 90vh !important;
-  overflow: auto !important;
 }
 

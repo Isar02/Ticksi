@@ -1,61 +1,206 @@
+$primary-color: #9E6CAF;
+$primary-hover: #8a5c9a;
+$text-dark: #333333;
+$text-light: #777777;
+$card-shadow: 0 10px 25px rgba(0, 0, 0, .06);
+
 .page-container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 40px 20px;
+
+  h2 {
+    font-size: 26px;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 12px;
+  }
 }
 
 .filters {
   display: flex;
   gap: 16px;
-  margin: 20px 0 24px;
+  margin: 12px 0 24px;
+  flex-wrap: wrap;
 
-  input, select {
+  input,
+  select {
     padding: 10px 14px;
-    border-radius: 20px;
+    border-radius: 999px;
     border: 1px solid #ddd;
     outline: none;
+    font-size: 14px;
+    min-width: 180px;
+    background: #fafafa;
+    transition: all .2s ease;
 
     &:focus {
-      border-color: #9E6CAF;
+      border-color: rgba($primary-color, .6);
+      box-shadow: 0 0 0 3px rgba($primary-color, .12);
+      background: #fff;
     }
   }
 }
 
+.loading,
+.empty-state {
+  margin-top: 30px;
+  text-align: center;
+  color: $text-light;
+  font-size: 14px;
+}
+
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
 }
+
+/* --- CATEGORY CARD --- */
 
 .category-card {
-  background: white;
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 6px 16px rgba(0,0,0,.05);
-  transition: all .2s ease;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: $card-shadow;
+  display: flex;
+  flex-direction: column;
+  transition: transform .18s ease, box-shadow .18s ease, translate .18s ease;
 
   &:hover {
-    transform: translateY(-3px);
-  }
-
-  h3 {
-    margin-bottom: 6px;
-  }
-
-  button {
-    margin-top: 10px;
-    border-radius: 20px;
-    padding: 6px 16px;
-    border: none;
-    background: #9E6CAF;
-    color: white;
-    cursor: pointer;
+    transform: translateY(-4px);
+    box-shadow: 0 14px 35px rgba(0, 0, 0, .10);
   }
 }
+
+/* Poster na vrhu kartice */
+
+.category-poster {
+  position: relative;
+  background: #f3edf7;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.no-poster {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: $text-light;
+  font-size: 13px;
+  gap: 4px;
+
+  .no-poster-icon {
+    font-size: 26px;
+  }
+}
+
+/* badge za status (opcionalno) */
+
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, .7);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+/* Body */
+
+.category-body {
+  padding: 16px 18px 18px;
+
+  h3 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 600;
+    color: $text-dark;
+  }
+
+  .description {
+    margin: 0;
+    font-size: 14px;
+    color: $text-light;
+    line-height: 1.5;
+    min-height: 44px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .view-btn {
+    margin-top: 12px;
+    border-radius: 999px;
+    padding: 7px 18px;
+    border: none;
+    background: $primary-color;
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .02em;
+    transition: background-color .18s ease, transform .18s ease, box-shadow .18s ease;
+
+    &:hover {
+      background: $primary-hover;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(158, 108, 175, .4);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px rgba(158, 108, 175, .3);
+    }
+  }
+}
+
+/* Pagination */
 
 .pagination {
   display: flex;
   justify-content: center;
   gap: 12px;
   margin-top: 30px;
+  align-items: center;
+  font-size: 14px;
+  color: $text-light;
+
+  button {
+    border-radius: 999px;
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all .18s ease;
+    font-size: 13px;
+
+    &:hover:not(:disabled) {
+      border-color: $primary-color;
+      color: $primary-color;
+      box-shadow: 0 4px 10px rgba(158, 108, 175, .25);
+    }
+
+    &:disabled {
+      opacity: .4;
+      cursor: default;
+      box-shadow: none;
+    }
+  }
 }
+

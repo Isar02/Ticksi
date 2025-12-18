@@ -1,49 +1,82 @@
 <div class="page-container">
-  
   <div class="content-card">
-    
-      <div class="toolbar">
-          <div class="toolbar-left">
-            <h2>Categories</h2>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <h2>Categories</h2>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Fake search (isti look kao public) -->
+        <div class="search-wrapper">
+          <input type="text" placeholder="Search categories..." disabled />
+        </div>
+
+        <button mat-raised-button color="primary" (click)="openForm()">
+          Add category
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="categories.length === 0">
+      <div class="empty-icon">📂</div>
+      <h3>No categories yet</h3>
+      <p>Create your first category to start organizing your content.</p>
+      <button mat-raised-button color="primary" (click)="openForm()">
+        Add category
+      </button>
+    </div>
+
+    <!-- GRID ADMIN VIEW (umjesto tabele) -->
+    <div class="category-grid" *ngIf="categories.length > 0">
+      <div class="category-card" *ngFor="let category of categories">
+        <!-- Poster -->
+        <div class="category-poster">
+          <ng-container *ngIf="category.posterUrl; else noPoster">
+            <img
+              [src]="getPosterUrl(category)"
+              [alt]="category.name + ' poster'"
+            />
+          </ng-container>
+
+          <ng-template #noPoster>
+            <div class="no-poster">
+              <span class="no-poster-icon">🖼️</span>
+              <span class="no-poster-text">No image</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Body + akcije -->
+        <div class="category-body">
+          <h3>{{ category.name }}</h3>
+          <p class="description">
+            {{ category.description || 'No description provided.' }}
+          </p>
+
+          <div class="actions">
+            <button
+              mat-stroked-button
+              color="primary"
+              class="edit-btn"
+              (click)="openForm(category)"
+            >
+              Edit
+            </button>
+
+            <button
+              mat-stroked-button
+              color="warn"
+              class="delete-btn"
+              (click)="deleteCategory(category.publicId)"
+            >
+              Delete
+            </button>
           </div>
-
-        <div class="toolbar-right">
-
-          <!-- FAKE SEARCH INPUT -->
-          <div class="search-wrapper">
-            <input type="text" placeholder="Search categories..." disabled>
-          </div>
-
-          <button mat-raised-button color="primary" (click)="openForm()">Add category</button>
         </div>
       </div>
-
-      <div class="empty-state" *ngIf="categories.length === 0">
-        <div class="empty-icon">📂</div>
-        <h3>No categories yet</h3>
-        <p>Create your first category to start organizing your content.</p>
-        <button mat-raised-button color="primary" (click)="openForm()">Add category</button>
-      </div>
-
-    <div class="table-responsive"> <table class="categories-table">
-        <thead>
-           <tr>
-             <th>Name</th>
-             <th>Description</th>
-             <th>Action</th>
-           </tr>
-         </thead>
-         <tbody>
-           <tr *ngFor="let category of categories">
-             <td>{{ category.name }}</td>
-             <td>{{ category.description }}</td>
-             <td>
-               <button mat-button color="accent" (click)="openForm(category)">Edit</button>
-               <button mat-button color="warn" (click)="deleteCategory(category.publicId)">Delete</button>
-             </td>
-           </tr>
-         </tbody>
-      </table>
     </div>
 
   </div>

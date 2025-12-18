@@ -2,32 +2,151 @@
   {{ data.category ? 'Edit category' : 'Add category' }}
 </h2>
 
-<form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="form-container">
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Name of category</mat-label>
-    <input matInput formControlName="name" autofocus/>
-    <mat-error *ngIf="categoryForm.get('name')?.hasError('required')">
-      Name is required.
-    </mat-error>
-    <mat-error *ngIf="categoryForm.get('name')?.hasError('minlength')">
-      Name has to be at least 2 characters long.
-    </mat-error>
-    <mat-error *ngIf="categoryForm.get('name')?.hasError('maxlength')">
-      Name can have a maximum of 100 characters.
-    </mat-error>
-  </mat-form-field>
+<form
+  [formGroup]="categoryForm"
+  (ngSubmit)="saveCategory()"
+  class="form-container"
+>
+  <!-- BASIC INFO SECTION (sa Ticksi pozadinom) -->
+  <div class="basic-section">
+    <div class="basic-section-inner">
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Description (optional)</mat-label>
-    <textarea matInput formControlName="description"></textarea>
-    <mat-error *ngIf="categoryForm.get('description')?.hasError('maxlength')">
-      The description can have a maximum of 500 characters.
-    </mat-error>
-  </mat-form-field>
+      <!-- Name -->
+      <mat-form-field appearance="outline" class="full-width basic-field">
+        <mat-label>Name of category</mat-label>
+        <input matInput formControlName="name" autofocus />
+        <mat-error *ngIf="categoryForm.get('name')?.hasError('required')">
+          Name is required.
+        </mat-error>
+        <mat-error *ngIf="categoryForm.get('name')?.hasError('minlength')">
+          Name has to be at least 2 characters long.
+        </mat-error>
+        <mat-error *ngIf="categoryForm.get('name')?.hasError('maxlength')">
+          Name can have a maximum of 100 characters.
+        </mat-error>
+      </mat-form-field>
 
+      <!-- Description -->
+      <mat-form-field appearance="outline" class="full-width basic-field">
+        <mat-label>Description (optional)</mat-label>
+        <textarea matInput formControlName="description"></textarea>
+        <mat-error *ngIf="categoryForm.get('description')?.hasError('maxlength')">
+          The description can have a maximum of 500 characters.
+        </mat-error>
+      </mat-form-field>
 
+    </div>
+  </div>
+
+  <!-- POSTER UPLOAD CARD -->
+  <div class="poster-upload-section">
+    <div class="poster-upload-header">
+      <div class="title-row">
+        <span class="section-title">Poster image</span>
+        <span class="section-meta">
+          Allowed formats: JPG, PNG, GIF, WebP · Max size: 5 MB
+        </span>
+      </div>
+      <span class="file-name" *ngIf="selectedFileName">
+        {{ selectedFileName }}
+      </span>
+    </div>
+
+    <!-- Hidden file input -->
+    <input
+      #fileInput
+      type="file"
+      accept="image/*"
+      (change)="onFileSelected($event)"
+      class="file-input"
+    />
+
+    <!-- Clickable card (kao imgbb style) -->
+    <div class="poster-dropzone" (click)="openFileDialog()">
+      <!-- ako nema preview -->
+      <ng-container *ngIf="!previewUrl">
+        <div class="dropzone-icon">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               viewBox="0 0 24 24"
+               class="upload-icon">
+            <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 12l-3 3m3-3l3 3m-3-3v8" />
+          </svg>
+        </div>
+        <div class="dropzone-text">
+          <p class="primary-text">
+            <span class="highlight">Click to upload</span> or browse files
+          </p>
+          <p class="secondary-text">
+            Recommended size: 600x800px
+        </div>
+      </ng-container>
+
+      
+      
+      <div class="poster-preview" *ngIf="previewUrl">
+        <img [src]="previewUrl" alt="Poster preview" />
+
+        
+        <div class="upload-overlay" *ngIf="uploading">
+  <div class="overlay-content">
+    <div class="overlay-text">Uploading… {{ displayProgress }}%</div>
+
+    <mat-progress-bar
+      mode="determinate"
+      [value]="displayProgress"
+      class="overlay-progress">
+    </mat-progress-bar>
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+    <!-- Upload button + progress -->
+    <div class="upload-actions-row">
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="uploadPoster()"
+        [disabled]="!selectedFile || uploading"
+        class="upload-btn"
+      >
+        {{ uploading ? 'Uploading... ' : 'Upload image' }}
+      </button>
+
+    </div>
+
+    <!-- Status poruke -->
+    <div class="status success" *ngIf="uploadedPosterUrl && !uploading">
+      Image uploaded successfully ✅
+    </div>
+
+    <div class="status error" *ngIf="uploadError">
+      {{ uploadError }}
+    </div>
+  </div>
+
+  <!-- Bottom buttons -->
   <div class="button-row">
-    <button mat-button type="button" class ="cancel-btn" (click)="cancel()">Cancel</button>
-    <button mat-raised-button color="primary" type="submit" class="save-btn">Save</button>
+    <button
+      mat-button
+      type="button"
+      class="cancel-btn"
+      (click)="cancel()"
+    >
+      Cancel
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      class="save-btn"
+      [disabled]="uploading"
+    >
+      Save
+    </button>
   </div>
 </form>
