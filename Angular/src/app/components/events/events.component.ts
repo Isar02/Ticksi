@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { EventService } from '../../services/event.service';
 import { Event } from '../../models/event.model';
@@ -10,7 +11,7 @@ import { LoadingSpinnerComponent } from '../shared/loading-spinner/loading-spinn
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [CommonModule, RouterModule, LoadingSpinnerComponent],
+  imports: [CommonModule, RouterModule, FormsModule, LoadingSpinnerComponent],
   styleUrl: './events.component.scss',
   templateUrl: './events.component.html',
 })
@@ -20,6 +21,7 @@ export class EventsComponent implements OnInit {
   totalPages = 1;
   isLoading = false;
   hasMore = true;
+  selectedSort = 'date-desc';
 
   constructor(private eventService: EventService) {}
 
@@ -32,9 +34,13 @@ export class EventsComponent implements OnInit {
 
     this.isLoading = true;
 
+    const { sortBy, sortDescending } = this.parseSortParams();
+
     this.eventService.getEvents({
       page: this.currentPage,
-      pageSize: 10
+      pageSize: 10,
+      sortBy,
+      sortDescending
     }).subscribe({
       next: (response) => {
         this.events = [...this.events, ...response.items];
@@ -48,6 +54,25 @@ export class EventsComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  parseSortParams(): { sortBy: string; sortDescending: boolean } {
+    const [field, direction] = this.selectedSort.split('-');
+    return {
+      sortBy: field,
+      sortDescending: direction === 'desc'
+    };
+  }
+
+  onSortChange(): void {
+    // Reset state
+    this.events = [];
+    this.currentPage = 1;
+    this.hasMore = true;
+    this.totalPages = 1;
+
+    // Load events with new sorting
+    this.loadEvents();
   }
 
   @HostListener('window:scroll', [])

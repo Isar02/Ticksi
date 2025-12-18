@@ -10,20 +10,14 @@
         </div>
         
         <div class="filters">
-            <select class="filter-select">
-                <option value="all">All Categories</option>
-                <option value="music">Music</option>
-                <option value="sport">Sport</option>
-                <option value="conference">Conferences</option>
-                </select>
-            
-            <select class="filter-select">
-                <option value="date">Date (Newest)</option>
-                <option value="popularity">Popularity</option>
-                <option value="price">Price (Ascending)</option>
+            <select class="filter-select" [(ngModel)]="selectedSort" (change)="onSortChange()">
+                <option value="date-desc">Date (Newest First)</option>
+                <option value="date-asc">Date (Oldest First)</option>
+                <option value="price-asc">Price (Low to High)</option>
+                <option value="price-desc">Price (High to Low)</option>
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
             </select>
-
-            <button class="btn-primary filter-btn">Apply Filter</button>
         </div>
     </div>
 
