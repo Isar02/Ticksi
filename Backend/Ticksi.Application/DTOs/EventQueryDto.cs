@@ -15,3 +15,4 @@ namespace Ticksi.Application.DTOs
     }
 }
 
+
