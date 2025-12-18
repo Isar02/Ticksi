@@ -48,3 +48,4 @@ namespace Ticksi.Application.Features.Events.Queries.GetEvents
     }
 }
 
+

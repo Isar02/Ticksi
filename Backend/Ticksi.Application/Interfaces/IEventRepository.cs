@@ -13,3 +13,4 @@ namespace Ticksi.Application.Interfaces
     }
 }
 
+
