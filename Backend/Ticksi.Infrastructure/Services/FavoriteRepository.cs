@@ -22,6 +22,14 @@ namespace Ticksi.Infrastructure.Services
                     f.Event!.PublicId == eventPublicId);
         }
 
+        public async Task<List<Guid>> GetUserFavoritesAsync(Guid userPublicId)
+        {
+            return await _context.Favorites
+                .Where(f => f.AppUser!.PublicId == userPublicId)
+                .Select(f => f.Event!.PublicId)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(Favorite favorite)
         {
             await _context.Favorites.AddAsync(favorite);
