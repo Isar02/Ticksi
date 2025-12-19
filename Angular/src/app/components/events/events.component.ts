@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { EventService } from '../../services/event.service';
+import { FavoriteService } from '../../services/favorite.service';
 import { Event } from '../../models/event.model';
 import { LoadingSpinnerComponent } from '../shared/loading-spinner/loading-spinner.component';
 
@@ -22,11 +23,32 @@ export class EventsComponent implements OnInit {
   isLoading = false;
   hasMore = true;
   selectedSort = 'date-desc';
+  favoriteIds: Set<string> = new Set();
 
-  constructor(private eventService: EventService) {}
+  constructor(
+    private eventService: EventService,
+    private favoriteService: FavoriteService,
+    public authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.loadEvents();
+    this.loadFavorites();
+  }
+
+  loadFavorites(): void {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
+    this.favoriteService.getUserFavorites().subscribe({
+      next: (favoriteIds) => {
+        this.favoriteIds = new Set(favoriteIds);
+      },
+      error: (error) => {
+        console.error('Error loading favorites:', error);
+      }
+    });
   }
 
   loadEvents(): void {
@@ -82,6 +104,43 @@ export class EventsComponent implements OnInit {
 
     if (scrollPosition >= scrollThreshold) {
       this.loadEvents();
+    }
+  }
+
+  isFavorite(eventId: string): boolean {
+    return this.favoriteIds.has(eventId);
+  }
+
+  toggleFavorite(eventId: string, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
+    const isFavorited = this.isFavorite(eventId);
+
+    if (isFavorited) {
+      // Remove from favorites
+      this.favoriteService.removeFavorite(eventId).subscribe({
+        next: () => {
+          this.favoriteIds.delete(eventId);
+        },
+        error: (error) => {
+          console.error('Error removing favorite:', error);
+        }
+      });
+    } else {
+      // Add to favorites
+      this.favoriteService.addFavorite(eventId).subscribe({
+        next: () => {
+          this.favoriteIds.add(eventId);
+        },
+        error: (error) => {
+          console.error('Error adding favorite:', error);
+        }
+      });
     }
   }
 }

@@ -128,6 +128,60 @@ $bg-light: #faf7fb;
     }
 }
 
+.favorite-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+
+    &:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    .heart-icon {
+        font-size: 20px;
+        line-height: 1;
+        transition: transform 0.2s ease;
+    }
+
+    &.favorited {
+        background: rgba(255, 255, 255, 0.95);
+        
+        .heart-icon {
+            animation: heartBeat 0.3s ease;
+        }
+    }
+}
+
+@keyframes heartBeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.3);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
 .event-category {
     position: absolute;
     top: 15px;

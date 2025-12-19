@@ -26,6 +26,14 @@
             <div class="event-image-container">
                 <img src="https://via.placeholder.com/400x200?text=Event+Image" [alt]="event.name" class="event-image">
                 <span class="event-category">{{ event.eventCategoryName }}</span>
+                <button 
+                    *ngIf="authService.isAuthenticated()"
+                    class="favorite-btn"
+                    [class.favorited]="isFavorite(event.publicId)"
+                    (click)="toggleFavorite(event.publicId, $event)"
+                    [attr.aria-label]="isFavorite(event.publicId) ? 'Remove from favorites' : 'Add to favorites'">
+                    <span class="heart-icon">{{ isFavorite(event.publicId) ? '❤️' : '🤍' }}</span>
+                </button>
             </div>
             <div class="event-info">
                 <h3 class="event-title">{{ event.name }}</h3>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ticksi.Application.Features.Favorites.Commands.AddFavorite;
 using Ticksi.Application.Features.Favorites.Commands.RemoveFavorite;
+using Ticksi.Application.Features.Favorites.Queries.GetUserFavorites;
 
 namespace API.Controllers
 {
@@ -17,6 +18,24 @@ namespace API.Controllers
         public FavoritesController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        // GET: api/favorites
+        [HttpGet]
+        public async Task<ActionResult<List<Guid>>> GetUserFavorites(CancellationToken cancellationToken)
+        {
+            // Extract user's PublicId from JWT token
+            var userPublicIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (string.IsNullOrEmpty(userPublicIdClaim) || !Guid.TryParse(userPublicIdClaim, out var userPublicId))
+            {
+                return Unauthorized("Invalid user token.");
+            }
+
+            var query = new GetUserFavoritesQuery { UserPublicId = userPublicId };
+            var favoriteIds = await _mediator.Send(query, cancellationToken);
+
+            return Ok(favoriteIds);
         }
 
         // POST: api/favorites/{eventPublicId}
