@@ -29,6 +29,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public DbSet<Refund> Refunds { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<PromoCode> PromoCodes { get; set; }
+    public DbSet<Favorite> Favorites { get; set; }
 
 protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
@@ -122,6 +123,23 @@ modelBuilder.Entity<OrderItem>()
     .HasOne(oi => oi.Ticket)
     .WithMany(t => t.OrderItems)
     .HasForeignKey(oi => oi.TicketId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+// Favorite Configuration - Unique constraint on (AppUserId, EventId)
+modelBuilder.Entity<Favorite>()
+    .HasIndex(f => new { f.AppUserId, f.EventId })
+    .IsUnique();
+
+modelBuilder.Entity<Favorite>()
+    .HasOne(f => f.AppUser)
+    .WithMany()
+    .HasForeignKey(f => f.AppUserId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+modelBuilder.Entity<Favorite>()
+    .HasOne(f => f.Event)
+    .WithMany()
+    .HasForeignKey(f => f.EventId)
     .OnDelete(DeleteBehavior.Restrict);
 
 
