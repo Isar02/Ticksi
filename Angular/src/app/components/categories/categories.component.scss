@@ -243,6 +243,7 @@ button[mat-raised-button]:active {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .actions button[mat-stroked-button] {
@@ -250,6 +251,26 @@ button[mat-raised-button]:active {
   padding: 4px 14px;
   font-size: 12px;
   font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+// download button styling
+.download-btn {
+  border-color: rgba($primary-color, 0.5);
+  color: $primary-color;
+
+  &:hover:not(:disabled) {
+    border-color: $primary-color;
+    background: rgba($primary-color, 0.06);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    border-color: rgba($primary-color, 0.3);
+    color: rgba($primary-color, 0.6);
+  }
 }
 
 // edit / delete nijanse

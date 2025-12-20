@@ -59,6 +59,17 @@
           <div class="actions">
             <button
               mat-stroked-button
+              class="download-btn"
+              (click)="downloadReport(category)"
+              [disabled]="isDownloading(category.publicId)"
+              title="Download PDF report of events in this category"
+            >
+              <span *ngIf="!isDownloading(category.publicId)">📄 Download PDF</span>
+              <span *ngIf="isDownloading(category.publicId)">⏳ Downloading...</span>
+            </button>
+
+            <button
+              mat-stroked-button
               color="primary"
               class="edit-btn"
               (click)="openForm(category)"
