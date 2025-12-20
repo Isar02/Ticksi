@@ -1,5 +1,6 @@
 import { Component,OnInit } from '@angular/core';
 import { CategoryService } from '../../services/category.service';
+import { ReportService } from '../../services/report.service';
 import { Category } from '../../models/category.model';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,10 +20,15 @@ import { environment} from '../../../environments/environment.development';
 export class CategoriesComponent implements OnInit {
   categories: Category[] = [];
   pagedResult!: PagedResult<Category>;
+  downloadingCategories: Set<string> = new Set();
 
   readonly apiBaseUrl = environment.apiUrl;
   
-  constructor(private categoryService: CategoryService , private dialog : MatDialog) {}
+  constructor(
+    private categoryService: CategoryService,
+    private reportService: ReportService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -90,6 +96,34 @@ export class CategoriesComponent implements OnInit {
 
   return `${baseUrl}${category.posterUrl}`;
 }
+
+  downloadReport(category: Category): void {
+    // Prevent duplicate downloads for the same category
+    if (this.downloadingCategories.has(category.publicId)) {
+      return;
+    }
+
+    this.downloadingCategories.add(category.publicId);
+
+    this.reportService.downloadEventsByCategoryReport(category.publicId, category.name)
+      .subscribe({
+        next: (blob) => {
+          const filename = this.reportService.generateFilename(category.name);
+          this.reportService.triggerDownload(blob, filename);
+          this.downloadingCategories.delete(category.publicId);
+          console.log('PDF report downloaded successfully');
+        },
+        error: (error) => {
+          console.error('Error downloading report:', error);
+          alert(error.message || 'Failed to download PDF report. Please try again.');
+          this.downloadingCategories.delete(category.publicId);
+        }
+      });
+  }
+
+  isDownloading(categoryId: string): boolean {
+    return this.downloadingCategories.has(categoryId);
+  }
 
 
 }
