@@ -49,9 +49,26 @@ namespace Ticksi.Application.Features.Favorites.Commands.AddFavorite
                 EventId = eventEntity.Id
             };
 
-            await _favoriteRepository.AddAsync(favorite);
-            return true;
+            try
+            {
+                await _favoriteRepository.AddAsync(favorite);
+                return true;
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                // Race condition: another request already added this favorite
+                // Return false to indicate it's already favorited
+                return false;
+            }
+        }
+
+        private bool IsUniqueConstraintViolation(DbUpdateException ex)
+        {
+            // Check if the inner exception message contains unique constraint keywords
+            var message = ex.InnerException?.Message ?? ex.Message;
+            return message.Contains("unique", StringComparison.OrdinalIgnoreCase) ||
+                   message.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
+                   message.Contains("IX_Favorites_AppUserId_EventId", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
-
