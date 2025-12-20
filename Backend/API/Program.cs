@@ -11,11 +11,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 
 
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure QuestPDF License
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 

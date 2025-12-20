@@ -113,6 +113,18 @@ namespace Ticksi.Infrastructure.Services
                 .FirstOrDefaultAsync(e => e.PublicId == publicId);
         }
 
+        public async Task<List<Event>> GetEventsByCategoryAsync(int categoryId)
+        {
+            return await _context.Events
+                .Include(e => e.EventCategory)
+                .Include(e => e.Location)
+                .Include(e => e.EventType)
+                .Include(e => e.OrganizerCompany)
+                .Where(e => e.EventCategoryId == categoryId)
+                .OrderBy(e => e.Date)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(Event eventEntity)
         {
             _context.Events.Add(eventEntity);
