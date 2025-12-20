@@ -17,10 +17,11 @@ namespace API.Controllers
         }
 
         [HttpPost("upload")]
-        [Authorize]
+        [Authorize(Roles = "Admin,Organizer")] // Only Admin and Organizer can upload category posters
         [ProducesResponseType(typeof(UploadCategoryPosterResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<UploadCategoryPosterResponse>> Upload(
             IFormFile file,
             CancellationToken cancellationToken)

@@ -7,7 +7,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Organizer")] // Only Admin and Organizer can download reports
     public class ReportsController : ControllerBase
     {
         private readonly IMediator _mediator;

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.EventCategories.Commands.CreateEventCategory;
@@ -48,6 +49,7 @@ namespace API.Controllers
 
         // POST
         [HttpPost]
+        [Authorize(Roles = "Admin,Organizer")] // Only Admin and Organizer can create categories
         public async Task<ActionResult<EventCategoryReadDto>> Create(
             CreateEventCategoryCommand command,
             CancellationToken cancellationToken)
@@ -58,6 +60,7 @@ namespace API.Controllers
 
         // PUT
         [HttpPut("{publicId:guid}")]
+        [Authorize(Roles = "Admin,Organizer")] // Only Admin and Organizer can update categories
         public async Task<ActionResult> Update(
             Guid publicId,
             [FromBody] UpdateEventCategoryCommand command,
@@ -74,6 +77,7 @@ namespace API.Controllers
 
         // DELETE
         [HttpDelete("{publicId:guid}")]
+        [Authorize(Roles = "Admin,Organizer")] // Only Admin and Organizer can delete categories
         public async Task<ActionResult> Delete(
             Guid publicId,
             CancellationToken cancellationToken)

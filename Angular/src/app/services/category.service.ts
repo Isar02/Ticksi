@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.development';
 import { Category } from '../models/category.model';
+import { AuthService } from './auth.service';
 
 export interface PagedResult<T> {
   items: T[];
@@ -17,7 +18,17 @@ export class CategoryService {
 
   private apiUrl = `${environment.apiUrl}/eventcategories`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
 
   getPublicCategories(params: {
     search?: string;
@@ -40,22 +51,22 @@ export class CategoryService {
   }
 
   // FOR ADMIN PANEL
-getAll(): Observable<PagedResult<Category>> {
-  return this.http.get<PagedResult<Category>>(this.apiUrl);
-}
+  getAll(): Observable<PagedResult<Category>> {
+    return this.http.get<PagedResult<Category>>(this.apiUrl);
+  }
 
 
-create(category: Category): Observable<Category> {
-  return this.http.post<Category>(this.apiUrl, category);
-}
+  create(category: Category): Observable<Category> {
+    return this.http.post<Category>(this.apiUrl, category, { headers: this.getAuthHeaders() });
+  }
 
-update(publicId: string, category: Category): Observable<Category> {
-  return this.http.put<Category>(`${this.apiUrl}/${publicId}`, category);
-}
+  update(publicId: string, category: Category): Observable<Category> {
+    return this.http.put<Category>(`${this.apiUrl}/${publicId}`, category, { headers: this.getAuthHeaders() });
+  }
 
-delete(publicId: string): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/${publicId}`);
-}
+  delete(publicId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${publicId}`, { headers: this.getAuthHeaders() });
+  }
 
 
 }

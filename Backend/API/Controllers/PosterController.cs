@@ -26,10 +26,11 @@ namespace API.Controllers
         /// <response code="400">If the file is invalid (wrong type, too large, or empty)</response>
         /// <response code="401">If the user is not authenticated</response>
         [HttpPost("upload")]
-        [Authorize]
+        [Authorize(Roles = "Admin,Organizer")] // Only Admin and Organizer can upload event posters
         [ProducesResponseType(typeof(UploadPosterResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<UploadPosterResponse>> Upload(
             IFormFile file,
             CancellationToken cancellationToken)

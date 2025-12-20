@@ -70,7 +70,8 @@ namespace Ticksi.Application.Features.Auth.Commands.Login
                 new Claim(ClaimTypes.NameIdentifier, user.PublicId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new Claim("RoleId", user.Role!.Name)
+                new Claim(ClaimTypes.Role, user.Role!.Name), // Standard role claim for authorization
+                new Claim("RoleId", user.Role!.Name) // Keep for backwards compatibility
             };
 
             var token = new JwtSecurityToken(
