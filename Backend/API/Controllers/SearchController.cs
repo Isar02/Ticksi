@@ -31,35 +31,30 @@ public class SearchController : ControllerBase
         // širi fuzzy kandidati: uzmi prva 3 slova
         var key = q.Length <= 3 ? q : q.Substring(0, 3);
 
-        var eventCandidatesTask = _db.Events.AsNoTracking()
-            .Where(e => EF.Functions.Like(e.Name, $"%{key}%"))
-            .Select(e => new { Label = e.Name, PublicId = e.PublicId })
-            .Distinct()
-            .Take(50)
-            .ToListAsync();
+        var eventCandidates = await _db.Events.AsNoTracking()
+    .Where(e => EF.Functions.Like(e.Name, $"%{key}%"))
+    .Select(e => new { Label = e.Name, PublicId = e.PublicId })
+    .Distinct()
+    .Take(50)
+    .ToListAsync();
 
-        var categoryCandidatesTask = _db.EventCategories.AsNoTracking()
+        var categoryCandidates = await _db.EventCategories.AsNoTracking()
             .Where(c => EF.Functions.Like(c.Name, $"%{key}%"))
             .Select(c => new { Label = c.Name, PublicId = c.PublicId })
             .Distinct()
             .Take(50)
             .ToListAsync();
 
-        var locationCandidatesTask = _db.Locations.AsNoTracking()
-            .Where(l =>
-                EF.Functions.Like(l.Name, $"%{key}%") ||
-                EF.Functions.Like(l.City, $"%{key}%"))
-            // ⬇️ BITNO: PublicId mora biti GUID (ne ToString!)
+        var locationCandidates = await _db.Locations.AsNoTracking()
+            .Where(l => EF.Functions.Like(l.Name, $"%{key}%") || EF.Functions.Like(l.City, $"%{key}%"))
             .Select(l => new { Label = l.Name, PublicId = l.PublicId })
             .Distinct()
             .Take(50)
             .ToListAsync();
 
-        await Task.WhenAll(eventCandidatesTask, categoryCandidatesTask, locationCandidatesTask);
-
         var suggestions = new List<SearchSuggestionDto>();
 
-        foreach (var e in eventCandidatesTask.Result)
+        foreach (var e in eventCandidates)
         {
             var score = FuzzyMatcher.Score(q, e.Label);
             if (score > 0.15)
@@ -72,7 +67,7 @@ public class SearchController : ControllerBase
                 });
         }
 
-        foreach (var c in categoryCandidatesTask.Result)
+        foreach (var c in categoryCandidates)
         {
             var score = FuzzyMatcher.Score(q, c.Label);
             if (score > 0.15)
@@ -85,7 +80,7 @@ public class SearchController : ControllerBase
                 });
         }
 
-        foreach (var l in locationCandidatesTask.Result)
+        foreach (var l in locationCandidates)
         {
             var score = FuzzyMatcher.Score(q, l.Label);
             if (score > 0.15)
@@ -97,6 +92,7 @@ public class SearchController : ControllerBase
                     Score = score
                 });
         }
+
 
         // dedupe po (Type + Label)
         var final = suggestions
