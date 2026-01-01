@@ -1,57 +1,107 @@
 <div class="events-page">
-    <header class="events-header">
-        <h1>Discover all <span>Events</span></h1>
-        <p>Explore the latest and most popular events across all categories. Your next adventure is just one click away!</p>
-    </header>
+  <header class="events-header">
+    <h1>Discover all <span>Events</span></h1>
+    <p>
+      Explore the latest and most popular events across... all categories. Your next adventure is just one click away!
+    </p>
+  </header>
 
-    <div class="events-controls">
-        <div class="search-bar">
-            <input type="text" placeholder="Search events by name or location..." class="search-input">
+  <div class="events-controls">
+    <div class="search-area">
+      <div class="search-wrapper">
+        <input
+          type="text"
+          placeholder="Search events..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput(searchTerm)"
+          (focus)="onSearchFocus()"
+          (blur)="onSearchBlur()"
+        />
+
+        <button class="clear-btn" *ngIf="searchTerm" (click)="clearSearch()" type="button">
+          ✕
+        </button>
+
+        <!-- dropdown -->
+        <div class="suggestions" *ngIf="showSuggestions">
+          <div class="suggestion-item loading" *ngIf="isSuggestLoading">
+            Loading...
+          </div>
+
+          <button
+            type="button"
+            class="suggestion-item"
+            *ngFor="let s of suggestions"
+            (mousedown)="$event.preventDefault(); pickSuggestion(s)"
+            (click)="pickSuggestion(s)"
+          >
+            <span
+              class="pill"
+              [class.pill-event]="s.type==='event'"
+              [class.pill-category]="s.type==='category'"
+              [class.pill-location]="s.type==='location'"
+            >
+              {{ s.type }}
+            </span>
+            <span class="label">{{ s.label }}</span>
+          </button>
         </div>
-        
-        <div class="filters">
-            <select class="filter-select" [(ngModel)]="selectedSort" (change)="onSortChange()">
-                <option value="date-desc">Date (Newest First)</option>
-                <option value="date-asc">Date (Oldest First)</option>
-                <option value="price-asc">Price (Low to High)</option>
-                <option value="price-desc">Price (High to Low)</option>
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-            </select>
-        </div>
+      </div>
     </div>
 
-    <main class="events-grid">
-        <div class="event-card" *ngFor="let event of events">
-            <div class="event-image-container">
-                <img src="https://via.placeholder.com/400x200?text=Event+Image" [alt]="event.name" class="event-image">
-                <span class="event-category">{{ event.eventCategoryName }}</span>
-                <button 
-                    *ngIf="authService.isAuthenticated()"
-                    class="favorite-btn"
-                    [class.favorited]="isFavorite(event.publicId)"
-                    (click)="toggleFavorite(event.publicId, $event)"
-                    [attr.aria-label]="isFavorite(event.publicId) ? 'Remove from favorites' : 'Add to favorites'">
-                    <span class="heart-icon">{{ isFavorite(event.publicId) ? '❤️' : '🤍' }}</span>
-                </button>
-            </div>
-            <div class="event-info">
-                <h3 class="event-title">{{ event.name }}</h3>
-                <p class="event-date-location">
-                    <span class="date">🗓️ {{ event.date | date:'MMM d, yyyy' }}</span>
-                    <span class="location">📍 {{ event.locationName }}</span>
-                </p>
-                <div class="event-price">
-                    Price: <strong>{{ event.price === 0 ? 'Free' : event.price + ' KM' }}</strong>
-                </div>
-                <a [routerLink]="['/event', event.publicId]" class="btn-secondary view-details-btn">View Details</a>
-            </div>
-        </div>
-    </main>
-
-    <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
-
-    <div class="empty-state" *ngIf="events.length === 0 && !isLoading">
-        <p>No events available at the moment.</p>
+    <div class="filters">
+      <select class="filter-select" [(ngModel)]="selectedSort" (change)="onSortChange()">
+        <option value="date-desc">Date (Newest First)</option>
+        <option value="date-asc">Date (Oldest First)</option>
+        <option value="price-asc">Price (Low to High)</option>
+        <option value="price-desc">Price (High to Low)</option>
+        <option value="name-asc">Name (A-Z)</option>
+        <option value="name-desc">Name (Z-A)</option>
+      </select>
     </div>
+  </div>
+
+  <main class="events-grid">
+    <div class="event-card" *ngFor="let event of events">
+      <div class="event-image">
+       <!-- <img [src]="event.coverImageUrl" alt="Event Image" />-->
+      </div>
+
+      <div class="event-content">
+        <div class="event-top-row">
+          <h2>{{ event.name }}</h2>
+
+          <button class="favorite-btn" (click)="toggleFavorite(event.publicId)" type="button">
+            <span [class.active]="isFavorite(event.publicId)">♥</span>
+          </button>
+        </div>
+
+        <p class="event-date">
+          <strong>Date:</strong> {{ event.date | date:'mediumDate' }}
+        </p>
+
+        <!-- <p class="event-location">
+          <strong>Location:</strong> {{ event.location }}
+        </p> -->
+
+        <p class="event-description">
+          {{ event.description }}
+        </p>
+
+        <div class="event-price">
+          Price: <strong>{{ event.price === 0 ? 'Free' : event.price + ' KM' }}</strong>
+        </div>
+
+        <a [routerLink]="['/event', event.publicId]" class="btn-secondary view-details-btn">
+          View Details
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="empty-state" *ngIf="events.length === 0 && !isLoading">
+    <p>No events available at the moment.</p>
+  </div>
 </div>
