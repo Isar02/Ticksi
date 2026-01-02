@@ -1,0 +1,219 @@
+<section class="page">
+  <div class="shell">
+    <!-- Header -->
+    <header class="hero">
+      <div class="hero-content">
+        <h1>Create a <span>new event</span></h1>
+        <p>
+          Fill in the basic details, add a cover image, and instantly see a preview card.
+          (Currently frontend-only.)
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn-primary" type="button" (click)="submit()">
+            Save event
+          </button>
+          <button class="btn-secondary" type="button" (click)="reset()">
+            Reset
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Form -->
+      <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="card-header">
+          <div>
+            <h2>Event details</h2>
+            <p>Fields marked with * are required.</p>
+          </div>
+          <span
+            class="badge"
+            [class.badge-public]="form.value.isPublic"
+            [class.badge-draft]="!form.value.isPublic"
+          >
+            {{ form.value.isPublic ? 'Public' : 'Draft' }}
+          </span>
+        </div>
+
+        <div class="fields">
+          <div class="field span-2">
+            <label>Event title *</label>
+            <input type="text" placeholder="e.g. Ticksi Winter Night" formControlName="title" />
+            <div class="error" *ngIf="f.title.touched && f.title.invalid">
+              <span *ngIf="f.title.errors?.['required']">Title is required.</span>
+              <span *ngIf="f.title.errors?.['minlength']">Minimum 3 characters.</span>
+              <span *ngIf="f.title.errors?.['maxlength']">Maximum 80 characters.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Type *</label>
+            <select formControlName="type">
+              <option *ngFor="let t of eventTypes" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Capacity *</label>
+            <input type="number" formControlName="capacity" min="1" />
+            <div class="error" *ngIf="f.capacity.touched && f.capacity.invalid">
+              <span>Capacity must be a valid number.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Date *</label>
+            <input type="date" formControlName="date" />
+            <div class="error" *ngIf="f.date.touched && f.date.invalid">
+              <span>Date is required.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Time *</label>
+            <input type="time" formControlName="time" />
+            <div class="error" *ngIf="f.time.touched && f.time.invalid">
+              <span>Time is required.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>City *</label>
+            <input type="text" placeholder="Sarajevo" formControlName="city" />
+            <div class="error" *ngIf="f.city.touched && f.city.invalid">
+              <span>City is required.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Venue *</label>
+            <input type="text" placeholder="Arena / Hall / Stadium..." formControlName="venue" />
+            <div class="error" *ngIf="f.venue.touched && f.venue.invalid">
+              <span>Venue is required.</span>
+            </div>
+          </div>
+
+          <div class="field span-2">
+            <label>Address (optional)</label>
+            <input type="text" placeholder="Street and number" formControlName="address" />
+          </div>
+
+          <div class="field span-2">
+            <label>Description (optional)</label>
+            <textarea rows="5" placeholder="Short event description..." formControlName="description"></textarea>
+            <div class="hint">{{ (form.value.description?.length || 0) }}/800</div>
+          </div>
+
+          <div class="field">
+            <label>Starting price</label>
+            <input type="number" min="0" formControlName="priceFrom" />
+          </div>
+
+          <div class="field">
+            <label>Currency</label>
+            <select formControlName="currency">
+              <option value="BAM">BAM</option>
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Sales start (optional)</label>
+            <input type="date" formControlName="salesStart" />
+          </div>
+
+          <div class="field">
+            <label>Sales end (optional)</label>
+            <input type="date" formControlName="salesEnd" />
+          </div>
+
+          <div class="field span-2">
+            <label>Cover image (optional)</label>
+            <div class="file">
+              <input type="file" accept="image/*" (change)="onCoverPicked($event)" />
+              <div class="file-meta">
+                <div class="file-title">
+                  {{ form.value.coverImage?.name || 'No image selected' }}
+                </div>
+                <div class="file-sub">
+                  PNG/JPG • recommended 1200×630
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field span-2 toggles">
+            <label class="switch">
+              <input type="checkbox" formControlName="isPublic" />
+              <span class="slider"></span>
+            </label>
+            <div>
+              <div class="toggle-title">Public event</div>
+              <div class="toggle-sub">Turn off to keep the event as a draft.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-primary" type="submit">Save event</button>
+          <button class="btn-secondary" type="button" (click)="reset()">Reset</button>
+        </div>
+      </form>
+
+      <!-- Preview -->
+      <aside class="card preview">
+        <div class="preview-cover" [class.has-image]="!!imagePreview">
+          <img *ngIf="imagePreview" [src]="imagePreview" alt="cover preview" />
+          <div class="cover-fallback" *ngIf="!imagePreview">
+            <div class="cover-icon">🎫</div>
+            <div class="cover-text">Cover preview</div>
+          </div>
+        </div>
+
+        <div class="preview-body">
+          <div class="preview-top">
+            <span class="pill">{{ form.value.type }}</span>
+            <span class="pill soft">{{ dateTimeLabel }}</span>
+          </div>
+
+          <h3 class="preview-title">
+            {{ form.value.title || 'Event title…' }}
+          </h3>
+
+          <p class="preview-desc">
+            {{ form.value.description || 'Your description will appear here…' }}
+          </p>
+
+          <div class="preview-meta">
+            <div class="meta-row">
+              <span class="meta-label">Location</span>
+              <span class="meta-value">
+                {{ form.value.venue || '—' }}, {{ form.value.city || '—' }}
+              </span>
+            </div>
+
+            <div class="meta-row">
+              <span class="meta-label">Capacity</span>
+              <span class="meta-value">{{ form.value.capacity || '—' }}</span>
+            </div>
+
+            <div class="meta-row">
+              <span class="meta-label">Price</span>
+              <span class="meta-value">
+                {{ (form.value.priceFrom ?? 0) }} {{ form.value.currency || 'BAM' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="preview-actions">
+            <button class="btn-primary" type="button" (click)="submit()">Save</button>
+            <button class="btn-secondary" type="button" (click)="reset()">Reset</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

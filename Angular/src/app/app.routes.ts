@@ -46,6 +46,15 @@ export const routes: Routes = [
   },
 
   {
+  path: 'organizer/events',
+  loadComponent: () =>
+    import('./components/organizer-create-event/organizer-create-event.component')
+      .then(m => m.OrganizerCreateEventComponent),
+  // canActivate: [adminGuard]  // ili organizerGuard ako imate
+},
+
+
+  {
     path: '**',
     redirectTo: ''
   }
