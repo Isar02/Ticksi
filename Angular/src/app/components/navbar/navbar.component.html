@@ -11,7 +11,10 @@
   @if (authService.getUserRole() === 'Admin' || authService.getUserRole() === 'Organizer') {
   <a routerLink="/admin/categories" class="nav-link">Your categories</a>
 }
-
+  @if (authService.getUserRole() === 'Admin' || authService.getUserRole() === 'Organizer') {
+  <a routerLink="/organizer/events" class="nav-link">Your events</a>
+}
+  <a routerLink="/events" class="nav-link">Events</a>
   <a routerLink="/categories" class="nav-link">Categories</a>
 
 
