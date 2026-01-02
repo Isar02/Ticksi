@@ -16,6 +16,7 @@
           (input)="onSearchInput(searchTerm)"
           (focus)="onSearchFocus()"
           (blur)="onSearchBlur()"
+          autocomplete="off"
         />
 
         <button class="clear-btn" *ngIf="searchTerm" (click)="clearSearch()" type="button">
@@ -28,23 +29,54 @@
             Loading...
           </div>
 
-          <button
-            type="button"
-            class="suggestion-item"
-            *ngFor="let s of suggestions"
-            (mousedown)="$event.preventDefault(); pickSuggestion(s)"
-            (click)="pickSuggestion(s)"
-          >
-            <span
-              class="pill"
-              [class.pill-event]="s.type==='event'"
-              [class.pill-category]="s.type==='category'"
-              [class.pill-location]="s.type==='location'"
-            >
-              {{ s.type }}
-            </span>
-            <span class="label">{{ s.label }}</span>
-          </button>
+          <ng-container *ngIf="!isSuggestLoading">
+
+            <!-- Events -->
+            <div class="suggestion-group" *ngIf="eventSuggestions.length">
+              <div class="group-title">Events</div>
+              <button
+                type="button"
+                class="suggestion-item"
+                *ngFor="let s of eventSuggestions"
+                (mousedown)="$event.preventDefault(); pickSuggestion(s)"
+                (click)="pickSuggestion(s)"
+              >
+                <span class="label">{{ s.label }}</span>
+                <span class="badge">event</span>
+              </button>
+            </div>
+
+            <!-- Categories -->
+            <div class="suggestion-group" *ngIf="categorySuggestions.length">
+              <div class="group-title">Categories</div>
+              <button
+                type="button"
+                class="suggestion-item"
+                *ngFor="let s of categorySuggestions"
+                (mousedown)="$event.preventDefault(); pickSuggestion(s)"
+                (click)="pickSuggestion(s)"
+              >
+                <span class="label">{{ s.label }}</span>
+                <span class="badge">category</span>
+              </button>
+            </div>
+
+            <!-- Locations -->
+            <div class="suggestion-group" *ngIf="locationSuggestions.length">
+              <div class="group-title">Locations</div>
+              <button
+                type="button"
+                class="suggestion-item"
+                *ngFor="let s of locationSuggestions"
+                (mousedown)="$event.preventDefault(); pickSuggestion(s)"
+                (click)="pickSuggestion(s)"
+              >
+                <span class="label">{{ s.label }}</span>
+                <span class="badge">location</span>
+              </button>
+            </div>
+
+          </ng-container>
         </div>
       </div>
     </div>
@@ -63,34 +95,26 @@
 
   <main class="events-grid">
     <div class="event-card" *ngFor="let event of events">
-      <div class="event-image">
-       <!-- <img [src]="event.coverImageUrl" alt="Event Image" />-->
+      <div class="event-card-image">
+        <img
+          
+        />
+
+        <button
+          class="favorite-btn"
+          *ngIf="authService.isAuthenticated()"
+          (click)="toggleFavorite(event.publicId)"
+          [class.favorited]="isFavorite(event.publicId)"
+          type="button"
+        >
+          <span class="heart-icon">{{ isFavorite(event.publicId) ? '♥' : '♡' }}</span>
+        </button>
       </div>
 
-      <div class="event-content">
-        <div class="event-top-row">
-          <h2>{{ event.name }}</h2>
-
-          <button class="favorite-btn" (click)="toggleFavorite(event.publicId)" type="button">
-            <span [class.active]="isFavorite(event.publicId)">♥</span>
-          </button>
-        </div>
-
-        <p class="event-date">
-          <strong>Date:</strong> {{ event.date | date:'mediumDate' }}
-        </p>
-
-        <!-- <p class="event-location">
-          <strong>Location:</strong> {{ event.location }}
-        </p> -->
-
-        <p class="event-description">
-          {{ event.description }}
-        </p>
-
-        <div class="event-price">
-          Price: <strong>{{ event.price === 0 ? 'Free' : event.price + ' KM' }}</strong>
-        </div>
+      <div class="event-card-content">
+        <h3 class="event-title">{{ event.name }}</h3>
+        <p class="event-date">{{ event.date | date: 'mediumDate' }}</p>
+        <p class="event-price">{{ event.price | currency }}</p>
 
         <a [routerLink]="['/event', event.publicId]" class="btn-secondary view-details-btn">
           View Details
