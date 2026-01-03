@@ -32,10 +32,14 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<UploadPosterResponse>> Upload(
+            Guid eventId,
             IFormFile file,
             CancellationToken cancellationToken)
         {
-            var command = new UploadPosterCommand { File = file };
+            var command = new UploadPosterCommand {
+                EventPublicId = eventId,
+                File = file 
+            };
             var result = await _mediator.Send(command, cancellationToken);
             return Ok(result);
         }

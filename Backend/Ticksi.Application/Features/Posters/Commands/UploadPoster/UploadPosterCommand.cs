@@ -8,7 +8,10 @@ namespace Ticksi.Application.Features.Posters.Commands.UploadPoster
         /// <summary>
         /// The poster image file to upload.
         /// </summary>
+        /// 
+        public Guid EventPublicId { get; set; }
         public IFormFile File { get; set; } = null!;
+
     }
 }
 
