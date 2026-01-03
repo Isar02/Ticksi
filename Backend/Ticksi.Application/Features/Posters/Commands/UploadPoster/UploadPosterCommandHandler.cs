@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Ticksi.Application.Interfaces;
+
 using System.IO;
 
 namespace Ticksi.Application.Features.Posters.Commands.UploadPoster
@@ -21,7 +22,12 @@ namespace Ticksi.Application.Features.Posters.Commands.UploadPoster
         public async Task<UploadPosterResponse> Handle(UploadPosterCommand request, CancellationToken cancellationToken)
         {
             // Get the configured path for event posters
-            var posterPath = _configuration["FileUpload:EventPosterPath"] ?? "images/events";
+            var posterBasePath = _configuration["FileUpload:EventPosterPath"] ?? "images/events";
+
+            var posterPath = Path.Combine(
+                posterBasePath,
+                request.EventPublicId.ToString()
+            );
 
             // Save the file and get the URL
             var url = await _fileStorageService.SaveFileAsync(request.File, posterPath, cancellationToken);
