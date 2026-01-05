@@ -61,8 +61,13 @@
       class="file-input"
     />
 
-    <!-- Clickable card (kao imgbb style) -->
-    <div class="poster-dropzone" (click)="openFileDialog()">
+    <!-- Clickable card with Drag & Drop support -->
+    <div class="poster-dropzone" 
+         (click)="openFileDialog()"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event)"
+         [class.drag-over]="isDragOver">
       <!-- ako nema preview -->
       <ng-container *ngIf="!previewUrl">
         <div class="dropzone-icon">
@@ -75,10 +80,13 @@
         </div>
         <div class="dropzone-text">
           <p class="primary-text">
-            <span class="highlight">Click to upload</span> or browse files
+            <span class="highlight" *ngIf="!isDragOver">Click to upload</span>
+            <span class="highlight" *ngIf="isDragOver">Drop your file here!</span>
+            <span *ngIf="!isDragOver"> or drag & drop</span>
           </p>
           <p class="secondary-text">
             Recommended size: 600x800px
+          </p>
         </div>
       </ng-container>
 

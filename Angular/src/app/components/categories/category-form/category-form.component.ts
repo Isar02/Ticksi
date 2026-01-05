@@ -47,6 +47,7 @@ export class CategoryFormComponent {
   selectedFile: File | null = null;
   selectedFileName: string | null = null;
   previewUrl: string | null = null;
+  isDragOver = false;
 
   uploading = false;
   uploadProgress = 0;
@@ -73,7 +74,7 @@ export class CategoryFormComponent {
     }
   }
 
-  // klik na "browse" / dropzonu -> otvara hidden input
+  // Click on dropzone opens file dialog
   openFileDialog(): void {
     this.uploadError = null;
     if (this.fileInputRef) {
@@ -82,21 +83,52 @@ export class CategoryFormComponent {
     }
   }
 
-  // kad se odabere fajl
+  // ========== DRAG & DROP HANDLERS ==========
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    const files = event.dataTransfer?.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    this.processFile(files[0]);
+  }
+
+  // ========== FILE SELECTION ==========
+
+  // When file is selected via file input
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
       return;
     }
+    this.processFile(input.files[0]);
+  }
 
-    const file = input.files[0];
-
+  // Process and validate the selected file (used by both drag&drop and file input)
+  private processFile(file: File): void {
     this.uploadError = null;
     this.uploadProgress = 0;
     this.uploading = false;
     this.uploadedPosterUrl = null;
 
-    // ✅ VALIDACIJA: ekstenzija
+    // Validate file extension
     const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
     if (!this.allowedExtensions.includes(ext)) {
       this.uploadError = `Invalid file type. Allowed: ${this.allowedExtensions.join(', ')}`;
@@ -104,7 +136,7 @@ export class CategoryFormComponent {
       return;
     }
 
-    // ✅ VALIDACIJA: veličina
+    // Validate file size
     if (file.size > this.maxFileSizeBytes) {
       const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
       this.uploadError = `File is too large (${sizeMb} MB). Maximum allowed size is 5 MB.`;
@@ -112,7 +144,7 @@ export class CategoryFormComponent {
       return;
     }
 
-    // dodatni safety: mora biti image/*
+    // Validate MIME type
     if (!file.type.startsWith('image/')) {
       this.uploadError = 'Selected file is not an image.';
       this.resetSelectedFile();
@@ -122,7 +154,7 @@ export class CategoryFormComponent {
     this.selectedFile = file;
     this.selectedFileName = file.name;
 
-    // PREVIEW
+    // Generate preview
     const reader = new FileReader();
     reader.onload = () => {
       this.previewUrl = reader.result as string;

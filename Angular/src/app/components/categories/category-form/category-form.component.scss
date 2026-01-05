@@ -298,6 +298,16 @@ h2[mat-dialog-title] {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
+// Drag & Drop active state
+.poster-dropzone.drag-over {
+  border-color: $primary-color;
+  border-style: solid;
+  background: rgba(158, 108, 175, 0.15);
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(158, 108, 175, 0.25);
+  transition: all 0.2s ease;
+}
+
 .dropzone-icon {
   display: flex;
   align-items: center;
