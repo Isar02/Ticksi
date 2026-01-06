@@ -6,7 +6,7 @@ namespace Ticksi.Application.Interfaces
     public interface IEventRepository
     {
         Task<PagedResult<Event>> GetPagedEventsAsync(EventQueryDto query);
-        Task<Event?> GetByPublicIdAsync(Guid publicId);
+        Task<Event?> GetByPublicIdAsync(Guid publicId, CancellationToken ct);
         Task<List<Event>> GetEventsByCategoryAsync(int categoryId);
         Task AddAsync(Event eventEntity);
         Task UpdateAsync(Event eventEntity);

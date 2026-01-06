@@ -103,14 +103,14 @@ namespace Ticksi.Infrastructure.Services
             };
         }
 
-        public async Task<Event?> GetByPublicIdAsync(Guid publicId)
+        public async Task<Event?> GetByPublicIdAsync(Guid publicId, CancellationToken ct)
         {
             return await _context.Events
                 .Include(e => e.EventCategory)
                 .Include(e => e.Location)
                 .Include(e => e.EventType)
                 .Include(e => e.OrganizerCompany)
-                .FirstOrDefaultAsync(e => e.PublicId == publicId);
+                .FirstOrDefaultAsync(e => e.PublicId == publicId, ct);
         }
 
         public async Task<List<Event>> GetEventsByCategoryAsync(int categoryId)

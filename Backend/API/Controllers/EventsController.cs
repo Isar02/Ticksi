@@ -4,6 +4,7 @@ using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Events.Queries.GetEventImages;
 using Ticksi.Application.Features.Events.Queries.GetEvents;
 using Ticksi.Domain.Entities;
+using Ticksi.Application.Features.Events.Queries.GetEventById;
 
 namespace API.Controllers
 {
@@ -44,6 +45,17 @@ namespace API.Controllers
                 return NotFound("Event not found.");
 
             return Ok(result);
+        }
+
+        // GET event by ID
+        [HttpGet("{eventId:guid}")]
+        [ProducesResponseType(typeof(EventReadDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<EventReadDto>> GetById(Guid eventId, CancellationToken cancellationToken)
+        {
+            var dto = await _mediator.Send(new GetEventByIdQuery(eventId), cancellationToken);
+            if (dto == null) return NotFound("Event not found.");
+            return Ok(dto);
         }
     }
 }

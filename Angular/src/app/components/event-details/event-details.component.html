@@ -1,0 +1,78 @@
+<div class="details-page">
+  <div class="details-topbar">
+    <button class="back-btn" type="button" (click)="goBack()">← Back</button>
+  </div>
+
+  <div class="details-card" *ngIf="event; else missingEvent">
+    <header class="details-header">
+      <div class="title-area">
+        <h1 class="title">{{ event.name }}</h1>
+        <div class="meta">
+          <span class="pill">{{ event.eventCategoryName }}</span>
+          <span class="dot">•</span>
+          <span>{{ event.locationName }}</span>
+          <span class="dot">•</span>
+          <span>{{ event.date | date: 'medium' }}</span>
+        </div>
+      </div>
+
+      <div class="price-area">
+        <div class="price">{{ event.price | currency }}</div>
+        <div class="small">Tickets: {{ event.ticketCount }}</div>
+      </div>
+    </header>
+
+    <section class="details-body">
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="label">Organizer</div>
+          <div class="value">{{ event.organizerCompanyName }}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Event type</div>
+          <div class="value">{{ event.eventTypeName }}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Contact</div>
+          <div class="value">{{ event.contact }}</div>
+        </div>
+      </div>
+
+      <div class="desc">
+        <h3>About this event</h3>
+        <p>{{ event.description }}</p>
+      </div>
+
+      <div class="gallery-wrap">
+        <h3>Gallery</h3>
+        <app-event-image-gallery
+          [images]="images"
+          [toUrl]="eventService.toAssetUrl.bind(eventService)">
+        </app-event-image-gallery>
+      </div>
+    </section>
+  </div>
+
+  <ng-template #missingEvent>
+    <div class="details-card">
+      <h2 class="title">Event Details</h2>
+      <p class="muted">
+        {{ error || 'Unable to load event.' }}
+      </p>
+
+      <div class="actions">
+        <button class="primary-btn" type="button" (click)="goBack()">Go to Events</button>
+      </div>
+
+      <div class="gallery-wrap">
+        <h3>Gallery</h3>
+        <app-event-image-gallery
+          [images]="images"
+          [toUrl]="eventService.toAssetUrl.bind(eventService)">
+        </app-event-image-gallery>
+      </div>
+    </div>
+  </ng-template>
+</div>
