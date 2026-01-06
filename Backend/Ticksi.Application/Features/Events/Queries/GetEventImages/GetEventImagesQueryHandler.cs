@@ -33,7 +33,7 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventImages
         {
             // 1️⃣ Provjera da li event postoji
             var eventEntity = await _eventRepository
-                .GetByPublicIdAsync(request.EventId);
+                .GetByPublicIdAsync(request.EventId, cancellationToken);
 
             if (eventEntity == null)
                 return null!; // controller će vratiti 404

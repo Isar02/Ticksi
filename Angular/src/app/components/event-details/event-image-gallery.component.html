@@ -1,0 +1,29 @@
+<div class="gallery" *ngIf="images?.length; else noImages">
+  <div class="thumbs">
+    <button
+      class="thumb"
+      *ngFor="let img of images; let i = index"
+      type="button"
+      (click)="openAt(i)"
+      [attr.aria-label]="'Open image ' + (i + 1)"
+    >
+      <img [src]="toUrl(img)" [alt]="'Event image ' + (i + 1)" loading="lazy" />
+    </button>
+  </div>
+</div>
+
+<ng-template #noImages>
+  <div class="gallery-empty">No images for this event.</div>
+</ng-template>
+
+<div class="gallery-modal" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <button class="close" type="button" (click)="close()" aria-label="Close">✕</button>
+
+    <button class="nav left" type="button" (click)="prev()" aria-label="Previous">‹</button>
+    <img class="full" [src]="toUrl(images[activeIndex])" [alt]="'Event image ' + (activeIndex + 1)" />
+    <button class="nav right" type="button" (click)="next()" aria-label="Next">›</button>
+
+    <div class="counter">{{ activeIndex + 1 }} / {{ images.length }}</div>
+  </div>
+</div>
