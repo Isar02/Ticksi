@@ -21,7 +21,30 @@
     <button class="close" type="button" (click)="close()" aria-label="Close">✕</button>
 
     <button class="nav left" type="button" (click)="prev()" aria-label="Previous">‹</button>
-    <img class="full" [src]="toUrl(images[activeIndex])" [alt]="'Event image ' + (activeIndex + 1)" />
+    <div
+  class="full-wrap"
+  #zoomWrap
+  [class.zoom-hover]="hovering"
+  [class.zoomed]="zoomed"
+  (pointerenter)="onPointerEnter()"
+  (pointerleave)="onPointerLeave()"
+  (pointermove)="onPointerMove($event)"
+  (click)="toggleZoom($event)"
+  role="button"
+  tabindex="0"
+  [attr.aria-label]="zoomed ? 'Zoom out' : 'Zoom in'"
+>
+  <img
+    class="full"
+    [src]="toUrl(images[activeIndex])"
+    [alt]="'Event image ' + (activeIndex + 1)"
+    draggable="false"
+  />
+</div>
+
+<div class="hint" *ngIf="canHover">Hover to zoom • Click to lock/unlock</div>
+<div class="hint" *ngIf="!canHover">Tap to zoom • Move finger to focus</div>
+
     <button class="nav right" type="button" (click)="next()" aria-label="Next">›</button>
 
     <div class="counter">{{ activeIndex + 1 }} / {{ images.length }}</div>
