@@ -122,3 +122,54 @@ $primary-color: #9E6CAF;
   from { transform: scale(0.98); opacity: 0.7; }
   to   { transform: scale(1); opacity: 1; }
 }
+
+/* ---- ZOOM core ---- */
+.full-wrap {
+  width: 100%;
+  max-height: 78vh;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+
+  /* fokus tačka (transform-origin) */
+  --ox: 50%;
+  --oy: 50%;
+
+  /* stabilno na mobile */
+  touch-action: none;
+}
+
+.full-wrap .full {
+  width: 100%;
+  height: auto;
+  display: block;
+
+  transform-origin: var(--ox) var(--oy);
+  transform: scale(1);
+  transition: transform 180ms ease;
+  will-change: transform, transform-origin;
+  user-select: none;
+}
+
+.full-wrap.zoom-hover .full,
+.full-wrap.zoomed .full {
+  transform: scale(2);
+}
+
+.full-wrap.zoom-hover,
+.full-wrap.zoomed {
+  cursor: zoom-out;
+}
+
+.full-wrap:not(.zoom-hover):not(.zoomed) {
+  cursor: zoom-in;
+}
+
+.hint {
+  margin-top: 6px;
+  text-align: center;
+  opacity: 0.65;
+  font-size: 12px;
+}
+

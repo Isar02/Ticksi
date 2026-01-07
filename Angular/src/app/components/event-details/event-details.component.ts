@@ -13,6 +13,7 @@ import { EventImageGalleryComponent } from './event-image-gallery.component';
   imports: [CommonModule, RouterModule, EventImageGalleryComponent],
   templateUrl: './event-details.component.html',
   styleUrl: './event-details.component.scss',
+  
 })
 export class EventDetailsComponent implements OnInit {
   eventId!: string;
@@ -22,7 +23,7 @@ export class EventDetailsComponent implements OnInit {
 
   loading = true;
   error?: string;
-
+  
   constructor(
     private route: ActivatedRoute,
     private router: Router,
