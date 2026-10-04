@@ -22,12 +22,7 @@ public class AuthController : ControllerBase
         [FromBody] RegisterCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command, cancellationToken);
-
-        if (!result.IsSuccess)
-            return BadRequest(new { message = result.ErrorMessage, errors = result.Errors });
-
-        return Ok(result.Data);
+        return Ok(await _mediator.Send(command, cancellationToken));
     }
 
     [HttpPost("login")]
@@ -35,11 +30,6 @@ public class AuthController : ControllerBase
         [FromBody] LoginCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command, cancellationToken);
-
-        if (!result.IsSuccess)
-            return Unauthorized(new { message = result.ErrorMessage, errors = result.Errors });
-
-        return Ok(result.Data);
+        return Ok(await _mediator.Send(command, cancellationToken));
     }
 }

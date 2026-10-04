@@ -1,12 +1,14 @@
 using System.IO;
 using System.Text;
+using API.Errors;
 using Ticksi.Infrastructure.Data;
 using Ticksi.Infrastructure.Services;
+using Ticksi.Application.Common.Behaviors;
 using Ticksi.Application.Interfaces;
 using FileStorageService = Ticksi.Infrastructure.Services.FileStorageService;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -23,7 +25,19 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.AllowInputFormatterExceptionMessages = false)
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressMapClientErrors = true;
+        options.InvalidModelStateResponseFactory = context =>
+            new BadRequestObjectResult(ErrorResponse.Validation(
+                context.ModelState, ErrorResponse.TraceIdOf(context.HttpContext)));
+    });
+
+builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddCors(options => 
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -79,7 +93,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Register MediatR for CQRS pattern
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
 // Register repositories
 builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
@@ -90,7 +108,6 @@ builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 // Register FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(typeof(IAppDbContext).Assembly);
 
 
@@ -133,6 +150,14 @@ builder.Services.AddSwaggerGen(c =>
 
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseStatusCodePages(context =>
+{
+    var httpContext = context.HttpContext;
+    var error = ErrorResponse.ForStatus(httpContext.Response.StatusCode, ErrorResponse.TraceIdOf(httpContext));
+    return httpContext.Response.WriteAsJsonAsync(error);
+});
 
 // Seed database
 using (var scope = app.Services.CreateScope())

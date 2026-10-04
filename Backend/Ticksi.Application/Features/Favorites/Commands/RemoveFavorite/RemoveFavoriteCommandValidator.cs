@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace Ticksi.Application.Features.Favorites.Commands.AddFavorite;
+namespace Ticksi.Application.Features.Favorites.Commands.RemoveFavorite;
 
-public class AddFavoriteCommandValidator : AbstractValidator<AddFavoriteCommand>
+public class RemoveFavoriteCommandValidator : AbstractValidator<RemoveFavoriteCommand>
 {
-    public AddFavoriteCommandValidator()
+    public RemoveFavoriteCommandValidator()
     {
         RuleFor(x => x.EventPublicId).NotEmpty().WithMessage("Event is required.");
         RuleFor(x => x.UserPublicId).NotEmpty().WithMessage("User is required.");

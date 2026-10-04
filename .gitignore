@@ -491,3 +491,6 @@ API/tickets.db*
 
 # Uploaded files (auto-created at runtime)
 Backend/API/wwwroot/images/
+
+# Private working notes
+doc/

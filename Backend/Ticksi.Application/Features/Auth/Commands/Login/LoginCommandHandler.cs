@@ -6,14 +6,14 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
-using Ticksi.Application.Models;
 using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.Auth.Commands.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, ServiceResult<AuthResponseDto>>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto>
     {
         private readonly IAppDbContext _context;
         private readonly IConfiguration _configuration;
@@ -24,35 +24,22 @@ namespace Ticksi.Application.Features.Auth.Commands.Login
             _configuration = configuration;
         }
 
-        public async Task<ServiceResult<AuthResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _context.AppUsers
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
 
-            if (user == null)
-            {
-                var errorMessage = _configuration["Messages:Auth:InvalidCredentials"] ?? "Invalid credentials.";
-                return ServiceResult<AuthResponseDto>.Failure(errorMessage);
-            }
+            if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
+                throw new UnauthorizedException("Invalid email or password.");
 
-            if (!VerifyPassword(request.Password, user.PasswordHash))
+            return new AuthResponseDto
             {
-                var errorMessage = _configuration["Messages:Auth:InvalidCredentials"] ?? "Invalid credentials.";
-                return ServiceResult<AuthResponseDto>.Failure(errorMessage);
-            }
-
-            var token = GenerateJwtToken(user);
-
-            var response = new AuthResponseDto
-            {
-                Token = token,
+                Token = GenerateJwtToken(user),
                 Email = user.Email,
                 PublicId = user.PublicId.ToString(),
                 FirstName = user.FirstName
             };
-
-            return ServiceResult<AuthResponseDto>.Success(response);
         }
 
         private string GenerateJwtToken(AppUser user)
