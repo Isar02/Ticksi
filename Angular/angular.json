@@ -122,7 +122,6 @@
               }
             ],
             "styles": [
-              "@angular/material/prebuilt-themes/magenta-violet.css",
               "src/styles.scss"
             ],
             "scripts": []

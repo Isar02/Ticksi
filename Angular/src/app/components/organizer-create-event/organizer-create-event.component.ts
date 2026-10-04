@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, LOCALE_ID } from '@angular/core';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ToastService } from '../../core/services/toast.service';
 
 type EventType =
   | 'CONCERT'
@@ -50,6 +51,11 @@ export class OrganizerCreateEventComponent {
     // used only for UI, not uploaded anywhere (frontend-only)
     coverImage: [null as File | null],
   });
+
+  constructor(
+    private toast: ToastService,
+    @Inject(LOCALE_ID) private locale: string
+  ) {}
 
   // convenience getter used in template
   get f() {
@@ -110,35 +116,13 @@ export class OrganizerCreateEventComponent {
       return;
     }
 
-    // frontend-only payload (no backend)
-    const v = this.form.value;
-
-    const payload = {
-      title: v.title ?? '',
-      type: v.type ?? 'CONCERT',
-      date: v.date ?? '',
-      time: v.time ?? '',
-      venue: v.venue ?? '',
-      city: v.city ?? '',
-      address: v.address ?? '',
-      description: v.description ?? '',
-      capacity: v.capacity ?? 0,
-      priceFrom: v.priceFrom ?? 0,
-      currency: v.currency ?? 'BAM',
-      isPublic: !!v.isPublic,
-      salesStart: v.salesStart ?? '',
-      salesEnd: v.salesEnd ?? '',
-      coverImageName: v.coverImage ? v.coverImage.name : null,
-    };
-
-    console.log('NEW EVENT (frontend-only):', payload);
-    alert('Event saved (frontend-only). Check Console for payload ✅');
+    this.toast.info('Saving events is not available yet.');
   }
 
   get dateTimeLabel(): string {
     const d = this.form.value.date;
     const t = this.form.value.time;
     if (!d || !t) return '—';
-    return `${d} • ${t}`;
+    return formatDate(`${d}T${t}`, 'short', this.locale);
   }
 }
