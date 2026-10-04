@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Ticksi.Application.Interfaces;
 using Ticksi.Application.Options;
 using Ticksi.Infrastructure.Data;
+using Ticksi.Infrastructure.Data.Seeders;
 using Ticksi.Infrastructure.Options;
 using Ticksi.Infrastructure.Security;
 using Ticksi.Infrastructure.Services;
@@ -30,12 +31,20 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<SeedingOptions>()
+            .Bind(configuration.GetSection(SeedingOptions.SectionName))
+            .Validate(seeding => !seeding.DemoData || !string.IsNullOrWhiteSpace(seeding.DemoPassword),
+                "Seeding:DemoPassword is required when demo data is enabled.")
+            .ValidateOnStart();
+
         services.AddDbContext<AppDbContext>((provider, options) =>
             options.UseSqlServer(provider.GetRequiredService<IOptions<ConnectionStringsOptions>>().Value.DefaultConnection));
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+        services.AddScoped<DemoDataSeeder>();
 
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        services.AddSingleton<IPasswordHasher, Sha256PasswordHasher>();
         services.AddSingleton(TimeProvider.System);
 
         return services;

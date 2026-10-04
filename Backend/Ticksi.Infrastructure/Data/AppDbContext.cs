@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Ticksi.Application.Interfaces;
 using Ticksi.Domain.Entities;
+using Ticksi.Infrastructure.Data.Seeders;
 
 namespace Ticksi.Infrastructure.Data;
 
@@ -28,5 +29,6 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        StaticDataSeeder.Seed(modelBuilder);
     }
 }

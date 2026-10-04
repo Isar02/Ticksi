@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Ticksi.Infrastructure.Data.Seeders;
+using Ticksi.Infrastructure.Options;
 
 namespace Ticksi.Infrastructure.Data;
 
@@ -17,7 +19,9 @@ public static class DatabaseInitializer
         {
             var context = provider.GetRequiredService<AppDbContext>();
             await context.Database.MigrateAsync(cancellationToken);
-            await DbSeeder.SeedAsync(context, provider.GetRequiredService<IConfiguration>(), cancellationToken);
+
+            if (provider.GetRequiredService<IOptions<SeedingOptions>>().Value.DemoData)
+                await provider.GetRequiredService<DemoDataSeeder>().SeedAsync(cancellationToken);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
