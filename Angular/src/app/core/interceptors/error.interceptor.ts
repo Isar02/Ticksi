@@ -1,6 +1,8 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { catchError, from, switchMap, throwError } from 'rxjs';
+import { HttpContext, HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, from, switchMap, tap, throwError } from 'rxjs';
 import { ApiError } from '../models/api-error';
+import { ToastService } from '../services/toast.service';
 
 interface ErrorBody {
   code: string;
@@ -15,14 +17,35 @@ const fallbackMessages: Record<number, string> = {
   404: 'The requested resource was not found.'
 };
 
-export const errorInterceptor: HttpInterceptorFn = (request, next) =>
-  next(request).pipe(
+const SHOW_ERROR_TOAST = new HttpContextToken<boolean>(() => true);
+
+// For requests whose caller shows every failure itself, such as a form.
+export function withoutErrorToast(): HttpContext {
+  return new HttpContext().set(SHOW_ERROR_TOAST, false);
+}
+
+export const errorInterceptor: HttpInterceptorFn = (request, next) => {
+  const toast = inject(ToastService);
+
+  return next(request).pipe(
     catchError((error: unknown) =>
       error instanceof HttpErrorResponse
         ? from(toApiError(error)).pipe(switchMap(apiError => throwError(() => apiError)))
         : throwError(() => error)
-    )
+    ),
+    tap({
+      error: (error: unknown) => {
+        if (request.context.get(SHOW_ERROR_TOAST) && isUnexpected(error)) {
+          toast.error(error.message);
+        }
+      }
+    })
   );
+};
+
+function isUnexpected(error: unknown): error is ApiError {
+  return error instanceof ApiError && (error.status === 0 || error.status === 403 || error.status === 409 || error.status >= 500);
+}
 
 async function toApiError(response: HttpErrorResponse): Promise<ApiError> {
   const body = await readErrorBody(response.error);

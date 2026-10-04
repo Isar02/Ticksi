@@ -3,7 +3,9 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, firstValueFrom, from, map, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { withoutErrorToast } from '../core/interceptors/error.interceptor';
 import { ApiError } from '../core/models/api-error';
+import { ToastService } from '../core/services/toast.service';
 import { AuthResponse, LoginRequest, RegisterRequest, UserInfo } from '../models/auth.models';
 
 // The id is given at sign-in and kept through token rotation, so a new sign-in is never mistaken for a rotation.
@@ -29,6 +31,7 @@ const REFRESH_LOCK = 'ticksi_session_refresh';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
   private readonly authUrl = `${environment.apiUrl}/auth`;
   private readonly session = signal<StoredSession | null>(readStoredSession());
   private refreshInFlight: RefreshInFlight | null = null;
@@ -45,12 +48,12 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<void> {
-    return this.http.post<AuthResponse>(`${this.authUrl}/login`, credentials)
+    return this.http.post<AuthResponse>(`${this.authUrl}/login`, credentials, { context: withoutErrorToast() })
       .pipe(map(response => this.startSession(response, crypto.randomUUID())));
   }
 
   register(data: RegisterRequest): Observable<void> {
-    return this.http.post<AuthResponse>(`${this.authUrl}/register`, data)
+    return this.http.post<AuthResponse>(`${this.authUrl}/register`, data, { context: withoutErrorToast() })
       .pipe(map(response => this.startSession(response, crypto.randomUUID())));
   }
 
@@ -117,11 +120,16 @@ export class AuthService {
     let response: AuthResponse;
     try {
       response = await firstValueFrom(
-        this.http.post<AuthResponse>(`${this.authUrl}/refresh`, { refreshToken: original.refreshToken })
+        this.http.post<AuthResponse>(
+          `${this.authUrl}/refresh`,
+          { refreshToken: original.refreshToken },
+          { context: withoutErrorToast() }
+        )
       );
     } catch (error) {
       if (error instanceof ApiError && error.status === 401 && isStored(original)) {
         this.clearSession();
+        this.toast.info('Your session has expired. Please sign in again.');
         this.router.navigate(['/login']);
       }
       throw error;
@@ -137,7 +145,7 @@ export class AuthService {
   }
 
   private revokeOnServer(refreshToken: string): void {
-    this.http.post(`${this.authUrl}/logout`, { refreshToken }).subscribe({ error: () => {} });
+    this.http.post(`${this.authUrl}/logout`, { refreshToken }, { context: withoutErrorToast() }).subscribe({ error: () => {} });
   }
 
   private startSession(response: AuthResponse, id: string): void {

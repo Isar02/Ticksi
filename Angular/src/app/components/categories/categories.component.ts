@@ -7,6 +7,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { PagedResult } from '../../services/category.service';
 import { environment} from '../../../environments/environment';
+import { ApiError } from '../../core/models/api-error';
+import { ToastService } from '../../core/services/toast.service';
 
 
 
@@ -27,7 +29,8 @@ export class CategoriesComponent implements OnInit {
   constructor(
     private categoryService: CategoryService,
     private reportService: ReportService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -113,9 +116,8 @@ export class CategoriesComponent implements OnInit {
           this.downloadingCategories.delete(category.publicId);
           console.log('PDF report downloaded successfully');
         },
-        error: (error) => {
-          console.error('Error downloading report:', error);
-          alert(error.message || 'Failed to download PDF report. Please try again.');
+        error: (error: ApiError) => {
+          this.toast.error(error.message);
           this.downloadingCategories.delete(category.publicId);
         }
       });

@@ -8,12 +8,13 @@
       </div>
 
       <div class="toolbar-right">
-        <!-- Fake search (isti look kao public) -->
-        <div class="search-wrapper">
-          <input type="text" placeholder="Search categories..." disabled />
-        </div>
+        <label class="search-field">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input type="text" placeholder="Search categories" aria-label="Search categories" disabled />
+        </label>
 
-        <button mat-raised-button color="primary" (click)="openForm()">
+        <button type="button" class="add-btn" (click)="openForm()">
+          <span class="material-icons" aria-hidden="true">add</span>
           Add category
         </button>
       </div>
@@ -24,7 +25,8 @@
       <div class="empty-icon">📂</div>
       <h3>No categories yet</h3>
       <p>Create your first category to start organizing your content.</p>
-      <button mat-raised-button color="primary" (click)="openForm()">
+      <button type="button" class="add-btn" (click)="openForm()">
+        <span class="material-icons" aria-hidden="true">add</span>
         Add category
       </button>
     </div>
@@ -58,33 +60,27 @@
 
           <div class="actions">
             <button
-              mat-stroked-button
-              class="download-btn"
+              type="button"
+              class="action-btn"
               (click)="downloadReport(category)"
               [disabled]="isDownloading(category.publicId)"
               title="Download PDF report of events in this category"
             >
-              <span *ngIf="!isDownloading(category.publicId)">📄 Download PDF</span>
-              <span *ngIf="isDownloading(category.publicId)">⏳ Downloading...</span>
+              <span class="material-icons" aria-hidden="true">{{ isDownloading(category.publicId) ? 'hourglass_empty' : 'file_download' }}</span>
+              {{ isDownloading(category.publicId) ? 'Downloading…' : 'Download PDF' }}
             </button>
 
-            <button
-              mat-stroked-button
-              color="primary"
-              class="edit-btn"
-              (click)="openForm(category)"
-            >
-              Edit
-            </button>
+            <div class="actions-end">
+              <button type="button" class="action-btn" (click)="openForm(category)">
+                <span class="material-icons" aria-hidden="true">edit</span>
+                Edit
+              </button>
 
-            <button
-              mat-stroked-button
-              color="warn"
-              class="delete-btn"
-              (click)="deleteCategory(category.publicId)"
-            >
-              Delete
-            </button>
+              <button type="button" class="action-btn action-btn--danger" (click)="deleteCategory(category.publicId)">
+                <span class="material-icons" aria-hidden="true">delete_outline</span>
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>

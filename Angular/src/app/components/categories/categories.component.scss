@@ -69,64 +69,78 @@ $mobile: 768px;
   border-radius: 2px;
 }
 
-// --- ADD CATEGORY BUTTON ---
-button[mat-raised-button] {
-  background: linear-gradient(135deg, #9e6caf, #b889cc);
-  color: white;
-  border-radius: 999px;
-  padding: 8px 22px;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.03em;
-  box-shadow: 0 8px 20px rgba(158, 108, 175, 0.35);
-  transition: all 0.25s ease;
-  border: none;
-}
-
-button[mat-raised-button]:hover {
-  background: linear-gradient(135deg, #8a5c9a, #a97ebd);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(158, 108, 175, 0.45);
-}
-
-button[mat-raised-button]:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 14px rgba(158, 108, 175, 0.35);
-}
-
-// --- SEARCH INPUT U TOOLBARU ---
-.search-wrapper {
+// --- TOOLBAR CONTROLS ---
+.search-field {
   display: flex;
   align-items: center;
-  background: $light-gray;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px 0 12px;
+  border: 1px solid #ebe5ee;
+  border-radius: 12px;
+  background: #faf8fb;
+  color: #8b8292;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  .material-icons {
+    font-size: 20px;
+  }
 
   input {
-    border: none;
+    width: 180px;
+    border: 0;
     outline: none;
     background: transparent;
-    font-size: 13px;
+    font: inherit;
+    font-size: 14px;
     color: $text-dark;
-    padding-left: 4px;
-    width: 170px;
 
     &::placeholder {
-      color: $text-light;
-      opacity: 0.8;
+      color: #9a92a0;
     }
   }
 
   &:hover {
-    background: #ececec;
+    background: #f6f2f8;
   }
 
   &:focus-within {
-    border-color: rgba($primary-color, 0.5);
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-    background: #f9f5fb;
+    border-color: $primary-color;
+    background: $white;
+  }
+}
+
+.add-btn,
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.add-btn {
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: $primary-color;
+  color: $white;
+  font-size: 14px;
+
+  .material-icons {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: $primary-hover;
   }
 }
 
@@ -176,12 +190,6 @@ button[mat-raised-button]:active {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-  }
 }
 
 // poster dio
@@ -238,64 +246,73 @@ button[mat-raised-button]:active {
   min-height: 36px;
 }
 
-// akcije
 .actions {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #f0ebf2;
 }
 
-.actions button[mat-stroked-button] {
-  border-radius: 999px;
-  padding: 4px 14px;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+.actions-end {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
 }
 
-// download button styling
-.download-btn {
-  border-color: rgba($primary-color, 0.5);
-  color: $primary-color;
+.action-btn {
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #5d5463;
+  font-size: 13px;
+
+  .material-icons {
+    font-size: 18px;
+  }
 
   &:hover:not(:disabled) {
-    border-color: $primary-color;
-    background: rgba($primary-color, 0.06);
-    transform: translateY(-1px);
+    background: #f5eff8;
+    color: $primary-hover;
   }
 
   &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    border-color: rgba($primary-color, 0.3);
-    color: rgba($primary-color, 0.6);
+    color: #a69dab;
+    cursor: progress;
   }
-}
 
-// edit / delete nijanse
-.edit-btn {
-  border-color: rgba($primary-color, 0.5);
-  color: $primary-color;
-
-  &:hover {
-    border-color: $primary-color;
-    background: rgba($primary-color, 0.06);
+  &--danger {
+    color: #b5434e;
   }
-}
 
-.delete-btn {
-  border-color: rgba(220, 53, 69, 0.5);
-  color: #b02a37;
-
-  &:hover {
-    border-color: rgba(220, 53, 69, 0.8);
-    background: rgba(220, 53, 69, 0.06);
+  &--danger:hover:not(:disabled) {
+    background: #fdf0f1;
+    color: #c23a46;
   }
 }
 
 // --- RESPONSIVE ---
 @media (max-width: $mobile) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .toolbar-right,
+  .search-field {
+    flex: 1;
+  }
+
+  .search-field input {
+    width: 100%;
+    min-width: 0;
+  }
+
   .category-grid {
     grid-template-columns: 1fr;
   }

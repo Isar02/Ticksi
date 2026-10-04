@@ -1,0 +1,18 @@
+<div class="ticket" [class.ticket--destructive]="options.destructive">
+  <div class="ticket__body">
+    <span class="ticket__badge" aria-hidden="true">
+      <span class="material-icons">{{ options.destructive ? 'warning_amber' : 'help_outline' }}</span>
+    </span>
+    <h2 id="confirm-dialog-title" class="ticket__title">{{ options.title }}</h2>
+    <p id="confirm-dialog-message" class="ticket__message">{{ options.message }}</p>
+  </div>
+
+  <div class="ticket__stub">
+    <button type="button" class="ticket__button ticket__button--cancel" [mat-dialog-close]="false">
+      {{ options.cancelText ?? 'Cancel' }}
+    </button>
+    <button type="button" class="ticket__button ticket__button--confirm" [mat-dialog-close]="true">
+      {{ options.confirmText ?? 'Confirm' }}
+    </button>
+  </div>
+</div>
