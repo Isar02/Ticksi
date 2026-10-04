@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Ticksi.Application.Common;
 using Ticksi.Application.Interfaces;
 using Ticksi.Application.Options;
 using Ticksi.Domain.Entities;
@@ -40,11 +41,10 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options, TimeProvider t
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.PublicId.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new Claim(ClaimTypes.Role, roleName),
-            new Claim("RoleId", roleName)
+            new Claim(AuthClaims.PublicId, user.PublicId.ToString()),
+            new Claim(AuthClaims.Email, user.Email),
+            new Claim(AuthClaims.Name, $"{user.FirstName} {user.LastName}"),
+            new Claim(AuthClaims.Role, roleName)
         };
 
         var credentials = new SigningCredentials(

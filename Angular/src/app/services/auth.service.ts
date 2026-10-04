@@ -146,7 +146,7 @@ export class AuthService {
 
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.RoleId || null;
+    return payload.role || null;
   } catch {
     return null;
   }
