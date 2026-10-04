@@ -1,30 +1,30 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Interfaces;
 
 namespace Ticksi.Application.Features.EventCategories.Commands.UpdateEventCategory
 {
-    public class UpdateEventCategoryCommandHandler : IRequestHandler<UpdateEventCategoryCommand, bool>
+    public class UpdateEventCategoryCommandHandler : IRequestHandler<UpdateEventCategoryCommand>
     {
-        private readonly IEventCategoryRepository _repository;
+        private readonly IAppDbContext _context;
 
-        public UpdateEventCategoryCommandHandler(IEventCategoryRepository repository)
+        public UpdateEventCategoryCommandHandler(IAppDbContext context)
         {
-            _repository = repository;
+            _context = context;
         }
 
-        public async Task<bool> Handle(UpdateEventCategoryCommand request, CancellationToken cancellationToken)
+        public async Task Handle(UpdateEventCategoryCommand request, CancellationToken cancellationToken)
         {
-            var existingCategory = await _repository.GetByPublicIDAsync(request.PublicId);
-            if (existingCategory == null)
-                return false;
+            var category = await _context.EventCategories
+                .FirstOrDefaultAsync(c => c.PublicId == request.PublicId, cancellationToken)
+                ?? throw new NotFoundException("Event category not found.");
 
-            existingCategory.Name = request.Name;
-            existingCategory.Description = request.Description;
-            existingCategory.PosterUrl = request.PosterUrl;
+            category.Name = request.Name;
+            category.Description = request.Description;
+            category.PosterUrl = request.PosterUrl;
 
-            await _repository.UpdateAsync(existingCategory);
-            return true;
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
-

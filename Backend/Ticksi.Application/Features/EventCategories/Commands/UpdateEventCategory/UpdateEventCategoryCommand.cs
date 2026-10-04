@@ -2,7 +2,7 @@ using MediatR;
 
 namespace Ticksi.Application.Features.EventCategories.Commands.UpdateEventCategory
 {
-    public class UpdateEventCategoryCommand : IRequest<bool>
+    public class UpdateEventCategoryCommand : IRequest
     {
         public Guid PublicId { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -11,4 +11,3 @@ namespace Ticksi.Application.Features.EventCategories.Commands.UpdateEventCatego
         public string PosterUrl { get; set; } = string.Empty;
     }
 }
-

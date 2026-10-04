@@ -23,6 +23,7 @@ namespace Ticksi.Application.Interfaces
         DbSet<Transaction> Transactions { get; }
         DbSet<Refund> Refunds { get; }
         DbSet<Seat> Seats { get; }
+        DbSet<Favorite> Favorites { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

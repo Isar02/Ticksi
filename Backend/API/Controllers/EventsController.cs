@@ -1,9 +1,9 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Ticksi.Application.Common;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Events.Queries.GetEventImages;
 using Ticksi.Application.Features.Events.Queries.GetEvents;
-using Ticksi.Domain.Entities;
 using Ticksi.Application.Features.Events.Queries.GetEventById;
 
 namespace API.Controllers

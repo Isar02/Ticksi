@@ -8,41 +8,48 @@ namespace Ticksi.Application.Features.Favorites.Commands.AddFavorite;
 
 public class AddFavoriteCommandHandler : IRequestHandler<AddFavoriteCommand>
 {
-    private readonly IFavoriteRepository _favoriteRepository;
+    private const string AlreadyFavorite = "This event is already in your favorites.";
+
     private readonly IAppDbContext _context;
 
-    public AddFavoriteCommandHandler(IFavoriteRepository favoriteRepository, IAppDbContext context)
+    public AddFavoriteCommandHandler(IAppDbContext context)
     {
-        _favoriteRepository = favoriteRepository;
         _context = context;
     }
 
     public async Task Handle(AddFavoriteCommand request, CancellationToken cancellationToken)
     {
-        var user = await _context.AppUsers
-            .FirstOrDefaultAsync(u => u.PublicId == request.UserPublicId, cancellationToken)
+        var userId = await _context.AppUsers
+            .Where(u => u.PublicId == request.UserPublicId)
+            .Select(u => (int?)u.Id)
+            .FirstOrDefaultAsync(cancellationToken)
             ?? throw new UnauthorizedException("Your account could not be found.");
 
-        var eventEntity = await _context.Events
-            .FirstOrDefaultAsync(e => e.PublicId == request.EventPublicId, cancellationToken)
+        var eventId = await _context.Events
+            .Where(e => e.PublicId == request.EventPublicId)
+            .Select(e => (int?)e.Id)
+            .FirstOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException("Event not found.");
 
-        if (await _favoriteRepository.GetByUserAndEventAsync(request.UserPublicId, request.EventPublicId) != null)
-            throw new ConflictException("This event is already in your favorites.");
+        if (await IsFavoriteAsync(userId, eventId, cancellationToken))
+            throw new ConflictException(AlreadyFavorite);
+
+        _context.Favorites.Add(new Favorite { AppUserId = userId, EventId = eventId });
 
         try
         {
-            await _favoriteRepository.AddAsync(new Favorite { AppUserId = user.Id, EventId = eventEntity.Id });
+            await _context.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        catch (DbUpdateException)
         {
-            throw new ConflictException("This event is already in your favorites.");
+            // A parallel request may have added the same favorite between the check and the save.
+            if (!await IsFavoriteAsync(userId, eventId, cancellationToken))
+                throw;
+
+            throw new ConflictException(AlreadyFavorite);
         }
     }
 
-    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
-    {
-        var message = ex.InnerException?.Message ?? ex.Message;
-        return message.Contains("IX_Favorites_AppUserId_EventId", StringComparison.OrdinalIgnoreCase);
-    }
+    private Task<bool> IsFavoriteAsync(int userId, int eventId, CancellationToken cancellationToken) =>
+        _context.Favorites.AnyAsync(f => f.AppUserId == userId && f.EventId == eventId, cancellationToken);
 }

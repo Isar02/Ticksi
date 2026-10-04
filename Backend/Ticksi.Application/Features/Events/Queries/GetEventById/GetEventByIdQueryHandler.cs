@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
@@ -13,25 +8,21 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventById
 {
     public class GetEventByIdQueryHandler : IRequestHandler<GetEventByIdQuery, EventReadDto>
     {
-        private readonly IEventRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IAppDbContext _context;
 
-        public GetEventByIdQueryHandler(IEventRepository repository, IMapper mapper)
+        public GetEventByIdQueryHandler(IAppDbContext context)
         {
-            _repository = repository;
-            _mapper = mapper;
+            _context = context;
         }
 
         public async Task<EventReadDto> Handle(GetEventByIdQuery request, CancellationToken cancellationToken)
         {
-            // Ovdje treba repo metoda koja vraća Event + related entitete (Category, Location, Type, Organizer)
-            var ev = await _repository.GetByPublicIdAsync(request.EventId, cancellationToken);
-
-            if (ev == null) throw new NotFoundException("Event not found.");
-
-            return _mapper.Map<EventReadDto>(ev);
+            return await _context.Events
+                .AsNoTracking()
+                .Where(e => e.PublicId == request.EventId)
+                .Select(EventProjections.ToReadDto)
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException("Event not found.");
         }
     }
 }
-
-

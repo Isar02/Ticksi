@@ -1,13 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Ticksi.Application.Common;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.EventCategories.Commands.CreateEventCategory;
 using Ticksi.Application.Features.EventCategories.Commands.DeleteEventCategory;
 using Ticksi.Application.Features.EventCategories.Commands.UpdateEventCategory;
 using Ticksi.Application.Features.EventCategories.Queries.GetEventCategories;
 using Ticksi.Application.Features.EventCategories.Queries.GetEventCategoryById;
-using Ticksi.Domain.Entities;
 
 namespace API.Controllers
 {
@@ -39,12 +39,7 @@ namespace API.Controllers
             CancellationToken cancellationToken)
         {
             var query = new GetEventCategoryByIdQuery { PublicId = publicId };
-            var categoryDto = await _mediator.Send(query, cancellationToken);
-            
-            if (categoryDto == null)
-                return NotFound();
-
-            return Ok(categoryDto);
+            return Ok(await _mediator.Send(query, cancellationToken));
         }
 
         // POST
@@ -67,11 +62,7 @@ namespace API.Controllers
             CancellationToken cancellationToken)
         {
             command.PublicId = publicId;
-            var success = await _mediator.Send(command, cancellationToken);
-            
-            if (!success)
-                return NotFound();
-
+            await _mediator.Send(command, cancellationToken);
             return NoContent();
         }
 
@@ -83,11 +74,7 @@ namespace API.Controllers
             CancellationToken cancellationToken)
         {
             var command = new DeleteEventCategoryCommand { PublicId = publicId };
-            var success = await _mediator.Send(command, cancellationToken);
-            
-            if (!success)
-                return NotFound();
-
+            await _mediator.Send(command, cancellationToken);
             return NoContent();
         }
     }
