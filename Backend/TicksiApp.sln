@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticksi.Application", "Ticks
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticksi.Infrastructure", "Ticksi.Infrastructure\Ticksi.Infrastructure.csproj", "{2040BB51-4391-45EF-94A8-DAFBDE7B9DF9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticksi.Tests", "Ticksi.Tests\Ticksi.Tests.csproj", "{F7B77034-FC63-4DD2-81C8-00FBED6FD850}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{2040BB51-4391-45EF-94A8-DAFBDE7B9DF9}.Release|x64.Build.0 = Release|Any CPU
 		{2040BB51-4391-45EF-94A8-DAFBDE7B9DF9}.Release|x86.ActiveCfg = Release|Any CPU
 		{2040BB51-4391-45EF-94A8-DAFBDE7B9DF9}.Release|x86.Build.0 = Release|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Debug|x64.Build.0 = Debug|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Debug|x86.Build.0 = Debug|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Release|x64.ActiveCfg = Release|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Release|x64.Build.0 = Release|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Release|x86.ActiveCfg = Release|Any CPU
+		{F7B77034-FC63-4DD2-81C8-00FBED6FD850}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
