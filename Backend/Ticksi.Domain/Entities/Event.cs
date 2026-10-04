@@ -5,9 +5,8 @@ namespace Ticksi.Domain.Entities
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public DateTime Date { get; set; }
-        public decimal Price { get; set; }
-        public int TicketCount { get; set; }
         public string Contact { get; set; } = string.Empty;
+        public string? PosterUrl { get; set; }
 
         // Foreign keys
         public int AppUserId { get; set; } // Creator
@@ -26,7 +25,7 @@ namespace Ticksi.Domain.Entities
         public Location? Location { get; set; }
 
         // Navigation
+        public ICollection<TicketType> TicketTypes { get; set; } = new List<TicketType>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     }
 }

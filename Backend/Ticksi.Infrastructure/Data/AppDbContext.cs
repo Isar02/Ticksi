@@ -19,21 +19,20 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
 
+    public DbSet<TicketType> TicketTypes { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<Location> Locations { get; set; }
-    public DbSet<Seat> Seats { get; set; }
     public DbSet<Review> Reviews { get; set; }
-    public DbSet<Transaction> Transactions { get; set; }
-    public DbSet<Refund> Refunds { get; set; }
     public DbSet<Notification> Notifications { get; set; }
-    public DbSet<PromoCode> PromoCodes { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
 
 protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
+
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
     // Goes through each class
     foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -89,40 +88,10 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
     });
 
     // Relationships
-    modelBuilder.Entity<Order>()
-    .HasOne(o => o.AppUser)
-    .WithMany(u => u.Orders)
-    .HasForeignKey(o => o.AppUserId)
-    .OnDelete(DeleteBehavior.Restrict);
-
 modelBuilder.Entity<Review>()
     .HasOne(r => r.AppUser)
     .WithMany(u => u.Reviews)
     .HasForeignKey(r => r.AppUserId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-modelBuilder.Entity<Ticket>()
-    .HasOne(t => t.AppUser)
-    .WithMany(u => u.Tickets)
-    .HasForeignKey(t => t.AppUserId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-modelBuilder.Entity<Transaction>()
-    .HasOne(tr => tr.AppUser)
-    .WithMany(u => u.Transactions)
-    .HasForeignKey(tr => tr.AppUserId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-modelBuilder.Entity<CartItem>()
-    .HasOne(ci => ci.Ticket)
-    .WithMany(t => t.CartItems)
-    .HasForeignKey(ci => ci.TicketId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-modelBuilder.Entity<OrderItem>()
-    .HasOne(oi => oi.Ticket)
-    .WithMany(t => t.OrderItems)
-    .HasForeignKey(oi => oi.TicketId)
     .OnDelete(DeleteBehavior.Restrict);
 
 // Favorite Configuration - Unique constraint on (AppUserId, EventId)

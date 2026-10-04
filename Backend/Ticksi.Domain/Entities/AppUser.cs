@@ -17,8 +17,6 @@ public class AppUser : BaseEntity
 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
-        public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 
 
 }

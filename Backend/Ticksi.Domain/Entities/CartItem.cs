@@ -1,13 +1,13 @@
-namespace Ticksi.Domain.Entities
+namespace Ticksi.Domain.Entities;
+
+public class CartItem : BaseEntity
 {
-    public class CartItem : BaseEntity
-    {
-        public int CartId { get; set; }
-        public Cart? Cart { get; set; }
+    public int CartId { get; set; }
+    public Cart? Cart { get; set; }
 
-        public int TicketId { get; set; }
-        public Ticket? Ticket { get; set; }
+    public int TicketTypeId { get; set; }
+    public TicketType? TicketType { get; set; }
 
-        public decimal Price { get; set; } // Snapshot price when added
-    }
+    public int Quantity { get; set; }
+    public bool IsSavedForLater { get; set; }
 }

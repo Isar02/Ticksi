@@ -12,6 +12,7 @@ namespace Ticksi.Application.Interfaces
         DbSet<EventType> EventTypes { get; }
         DbSet<Location> Locations { get; }
         DbSet<OrganizerCompany> OrganizerCompanies { get; }
+        DbSet<TicketType> TicketTypes { get; }
         DbSet<Ticket> Tickets { get; }
         DbSet<Order> Orders { get; }
         DbSet<OrderItem> OrderItems { get; }
@@ -19,10 +20,6 @@ namespace Ticksi.Application.Interfaces
         DbSet<CartItem> CartItems { get; }
         DbSet<Review> Reviews { get; }
         DbSet<Notification> Notifications { get; }
-        DbSet<PromoCode> PromoCodes { get; }
-        DbSet<Transaction> Transactions { get; }
-        DbSet<Refund> Refunds { get; }
-        DbSet<Seat> Seats { get; }
         DbSet<Favorite> Favorites { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

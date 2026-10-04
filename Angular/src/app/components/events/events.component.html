@@ -114,7 +114,7 @@
       <div class="event-card-content">
         <h3 class="event-title">{{ event.name }}</h3>
         <p class="event-date">{{ event.date | date: 'mediumDate' }}</p>
-        <p class="event-price">{{ event.price | currency }}</p>
+        <p class="event-price" *ngIf="event.lowestPrice !== null">From {{ event.lowestPrice | currency }}</p>
 
         <a [routerLink]="['/event', event.publicId]" class="btn-secondary view-details-btn">
           View Details

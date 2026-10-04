@@ -17,8 +17,8 @@
       </div>
 
       <div class="price-area">
-        <div class="price">{{ event.price | currency }}</div>
-        <div class="small">Tickets: {{ event.ticketCount }}</div>
+        <div class="price" *ngIf="event.lowestPrice !== null">From {{ event.lowestPrice | currency }}</div>
+        <div class="small">Tickets left: {{ event.availableTickets }}</div>
       </div>
     </header>
 

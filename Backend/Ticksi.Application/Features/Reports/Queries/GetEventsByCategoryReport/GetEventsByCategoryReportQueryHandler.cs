@@ -25,9 +25,15 @@ public class GetEventsByCategoryReportQueryHandler : IRequestHandler<GetEventsBy
 
         var events = await _context.Events
             .AsNoTracking()
-            .Include(e => e.Location)
             .Where(e => e.EventCategoryId == category.Id)
             .OrderBy(e => e.Date)
+            .Select(e => new EventsByCategoryReportRow(
+                e.Name,
+                e.Date,
+                e.Location!.Name,
+                e.Location.City,
+                e.Location.Address,
+                e.TicketTypes.Min(t => (decimal?)t.Price)))
             .ToListAsync(cancellationToken);
 
         return new EventsByCategoryReportDocument(category.Name, events).GeneratePdf();

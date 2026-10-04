@@ -8,7 +8,6 @@ public class Location : BaseEntity
         public int Capacity { get; set; }
 
         // Navigation
-        public ICollection<Seat> Seats { get; set; } = new List<Seat>();
         public ICollection<Event> Events { get; set; } = new List<Event>();
     
 }
