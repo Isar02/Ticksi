@@ -36,10 +36,10 @@ public class GetEventsQueryHandler : IRequestHandler<GetEventsQuery, PagedResult
             events = events.Where(e => e.Date <= request.DateTo.Value);
 
         if (request.MinPrice.HasValue)
-            events = events.Where(e => e.Price >= request.MinPrice.Value);
+            events = events.Where(e => e.TicketTypes.Min(t => (decimal?)t.Price) >= request.MinPrice.Value);
 
         if (request.MaxPrice.HasValue)
-            events = events.Where(e => e.Price <= request.MaxPrice.Value);
+            events = events.Where(e => e.TicketTypes.Min(t => (decimal?)t.Price) <= request.MaxPrice.Value);
 
         return await Sort(events, request.SortBy, request.SortDescending)
             .ThenBy(e => e.Id)
@@ -51,7 +51,9 @@ public class GetEventsQueryHandler : IRequestHandler<GetEventsQuery, PagedResult
         sortBy?.ToLowerInvariant() switch
         {
             "name" => descending ? events.OrderByDescending(e => e.Name) : events.OrderBy(e => e.Name),
-            "price" => descending ? events.OrderByDescending(e => e.Price) : events.OrderBy(e => e.Price),
+            "price" => descending
+                ? events.OrderByDescending(e => e.TicketTypes.Min(t => (decimal?)t.Price))
+                : events.OrderBy(e => e.TicketTypes.Min(t => (decimal?)t.Price)),
             _ => descending ? events.OrderByDescending(e => e.Date) : events.OrderBy(e => e.Date)
         };
 }

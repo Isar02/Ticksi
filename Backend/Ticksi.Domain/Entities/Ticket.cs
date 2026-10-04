@@ -1,23 +1,18 @@
-namespace Ticksi.Domain.Entities
+using Ticksi.Domain.Enums;
+
+namespace Ticksi.Domain.Entities;
+
+public class Ticket : BaseEntity
 {
-    public class Ticket : BaseEntity
+    public int OrderItemId { get; set; }
+    public OrderItem? OrderItem { get; set; }
+
+    public string Code { get; set; } = string.Empty;
+    public TicketStatus Status { get; set; } = TicketStatus.Valid;
+    public DateTime IssuedAtUtc { get; set; }
+
+    public static class Constraints
     {
-        public int EventId { get; set; }
-        public Event? Event { get; set; }
-
-        public int AppUserId { get; set; } // Buyer
-        public AppUser? AppUser { get; set; }
-
-        public int? SeatId { get; set; } // Nullable for standing tickets
-        public Seat? Seat { get; set; }
-
-        public DateTime PurchaseDate { get; set; } = DateTime.UtcNow;
-        public string QrCode { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public string Status { get; set; } = "Reserved";
-
-        // Navigation
-        public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
-        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public const int CodeMaxLength = 32;
     }
 }

@@ -1,16 +1,15 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.Reports.Documents
 {
     public class EventsByCategoryReportDocument : IDocument
     {
         private readonly string _categoryName;
-        private readonly List<Event> _events;
+        private readonly IReadOnlyList<EventsByCategoryReportRow> _events;
 
-        public EventsByCategoryReportDocument(string categoryName, List<Event> events)
+        public EventsByCategoryReportDocument(string categoryName, IReadOnlyList<EventsByCategoryReportRow> events)
         {
             _categoryName = categoryName;
             _events = events;
@@ -77,7 +76,7 @@ namespace Ticksi.Application.Features.Reports.Documents
                         columns.RelativeColumn(3); // Event Name
                         columns.RelativeColumn(2); // Date
                         columns.RelativeColumn(3); // Location
-                        columns.RelativeColumn(1); // Price
+                        columns.RelativeColumn(1); // Lowest price
                     });
 
                     // Header row
@@ -86,7 +85,7 @@ namespace Ticksi.Application.Features.Reports.Documents
                         header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Event Name").FontColor(Colors.White).Bold();
                         header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Date").FontColor(Colors.White).Bold();
                         header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Location").FontColor(Colors.White).Bold();
-                        header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Price").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("From").FontColor(Colors.White).Bold();
                     });
 
                     // Data rows
@@ -97,14 +96,12 @@ namespace Ticksi.Application.Features.Reports.Documents
 
                         table.Cell().Background(backgroundColor).Padding(8).Text(eventItem.Name);
                         table.Cell().Background(backgroundColor).Padding(8).Text(eventItem.Date.ToString("yyyy-MM-dd"));
-                        
-                        // Format location with name, city, and address
-                        var locationText = eventItem.Location != null
-                            ? $"{eventItem.Location.Name}\n{eventItem.Location.City}\n{eventItem.Location.Address}"
-                            : "N/A";
+
+                        var locationText = $"{eventItem.LocationName}\n{eventItem.City}\n{eventItem.Address}";
                         table.Cell().Background(backgroundColor).Padding(8).Text(locationText).FontSize(9);
-                        
-                        table.Cell().Background(backgroundColor).Padding(8).Text($"${eventItem.Price:F2}");
+
+                        var priceText = eventItem.LowestPrice is { } price ? $"${price:F2}" : "-";
+                        table.Cell().Background(backgroundColor).Padding(8).Text(priceText);
 
                         rowIndex++;
                     }

@@ -3,9 +3,10 @@ export interface Event {
   name: string;
   description: string;
   date: string;
-  price: number;
-  ticketCount: number;
   contact: string;
+  posterUrl: string | null;
+  lowestPrice: number | null;
+  availableTickets: number;
   eventCategoryName: string;
   eventCategoryPublicId: string;
   locationName: string;

@@ -1,19 +1,16 @@
-namespace Ticksi.Domain.Entities
+using Ticksi.Domain.Enums;
+
+namespace Ticksi.Domain.Entities;
+
+public class Order : BaseEntity
 {
-    public class Order : BaseEntity
-    {
-        public int CartId { get; set; }
-        public Cart? Cart { get; set; }
+    public int AppUserId { get; set; }
+    public AppUser? AppUser { get; set; }
 
-        public int AppUserId { get; set; }
-        public AppUser? AppUser { get; set; }
+    public OrderStatus Status { get; set; } = OrderStatus.Pending;
+    public decimal TotalAmount { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime? PaidAtUtc { get; set; }
 
-        public string OrderStatus { get; set; } = "Pending";
-        public decimal TotalAmount { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
-    }
+    public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 }
