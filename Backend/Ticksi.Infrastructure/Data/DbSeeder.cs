@@ -8,17 +8,14 @@ namespace Ticksi.Infrastructure.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(AppDbContext context, IConfiguration configuration)
+    public static async Task SeedAsync(AppDbContext context, IConfiguration configuration, CancellationToken cancellationToken)
     {
-        // Ensure database is created
-        await context.Database.EnsureCreatedAsync();
-
         // Read role names from configuration
         var roleNames = configuration.GetSection("Seeding:DefaultRoles").Get<string[]>() 
             ?? new[] { "Admin", "User", "Organizer" };
 
         // Seed Roles if they don't exist
-        if (!await context.Roles.AnyAsync())
+        if (!await context.Roles.AnyAsync(cancellationToken))
         {
             var roles = roleNames.Select(roleName => new Role 
             { 
@@ -26,23 +23,22 @@ public static class DbSeeder
                 PublicId = Guid.NewGuid()
             }).ToArray();
 
-            await context.Roles.AddRangeAsync(roles);
-            await context.SaveChangesAsync();
+            context.Roles.AddRange(roles);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         // Seed Admin User if it doesn't exist
-        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin", cancellationToken);
         if (adminRole == null)
             throw new Exception("Admin role not found. Please ensure roles are seeded first.");
 
         var adminEmail = configuration["Seeding:AdminEmail"] ?? "admin@ticksi.com";
-        var adminExists = await context.AppUsers.AnyAsync(u => u.Email == adminEmail);
+        var adminExists = await context.AppUsers.AnyAsync(u => u.Email == adminEmail, cancellationToken);
 
         if (!adminExists)
         {
             var defaultPassword = configuration["Seeding:DefaultPassword"] ?? "Admin123!";
             var adminPhone = configuration["Seeding:AdminPhone"] ?? "+38761123456";
-            var defaultStatus = configuration["Seeding:DefaultStatus"] ?? "Active";
 
             var adminUser = new AppUser
             {
@@ -52,13 +48,12 @@ public static class DbSeeder
                 PasswordHash = HashPassword(defaultPassword),
                 Phone = adminPhone,
                 RegistrationDate = DateTime.UtcNow,
-                Status = defaultStatus,
                 RoleId = adminRole.Id,
                 PublicId = Guid.NewGuid()
             };
 
-            await context.AppUsers.AddAsync(adminUser);
-            await context.SaveChangesAsync();
+            context.AppUsers.Add(adminUser);
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 
