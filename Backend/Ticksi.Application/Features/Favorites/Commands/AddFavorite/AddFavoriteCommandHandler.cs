@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Ticksi.Application.Common;
 using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Interfaces;
 using Ticksi.Domain.Entities;
@@ -11,16 +12,20 @@ public class AddFavoriteCommandHandler : IRequestHandler<AddFavoriteCommand>
     private const string AlreadyFavorite = "This event is already in your favorites.";
 
     private readonly IAppDbContext _context;
+    private readonly ICurrentUser _currentUser;
 
-    public AddFavoriteCommandHandler(IAppDbContext context)
+    public AddFavoriteCommandHandler(IAppDbContext context, ICurrentUser currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task Handle(AddFavoriteCommand request, CancellationToken cancellationToken)
     {
+        var userPublicId = _currentUser.RequirePublicId();
+
         var userId = await _context.AppUsers
-            .Where(u => u.PublicId == request.UserPublicId)
+            .Where(u => u.PublicId == userPublicId)
             .Select(u => (int?)u.Id)
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new UnauthorizedException("Your account could not be found.");

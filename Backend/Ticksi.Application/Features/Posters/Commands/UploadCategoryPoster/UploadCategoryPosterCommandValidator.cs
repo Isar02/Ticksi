@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Ticksi.Application.Options;
 
 namespace Ticksi.Application.Features.Categories.Commands.UploadCategoryPoster
 {
@@ -8,11 +9,10 @@ namespace Ticksi.Application.Features.Categories.Commands.UploadCategoryPoster
         private readonly long _maxFileSizeBytes;
         private readonly string[] _allowedImageTypes;
 
-        public UploadCategoryPosterCommandValidator(IConfiguration configuration)
+        public UploadCategoryPosterCommandValidator(IOptions<FileUploadOptions> uploadOptions)
         {
-            _maxFileSizeBytes = configuration.GetValue<long>("FileUpload:MaxFileSizeBytes", 5242880);
-            _allowedImageTypes = configuration.GetSection("FileUpload:AllowedImageTypes").Get<string[]>()
-                ?? new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            _maxFileSizeBytes = uploadOptions.Value.MaxFileSizeBytes;
+            _allowedImageTypes = uploadOptions.Value.AllowedImageTypes;
 
             RuleFor(x => x.File).NotNull().WithMessage("File is required.");
 
