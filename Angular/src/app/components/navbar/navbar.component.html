@@ -19,7 +19,7 @@
 
 
   @if (authService.isAuthenticated()) {
-    <span class="user-name">{{ authService.getCurrentUser()?.firstName }}</span>
+    <span class="user-name">{{ authService.currentUser()?.firstName }}</span>
     <button class="btn-logout" (click)="logout()">Log out</button>
   } @else {
     <a routerLink="/login" class="btn-login">Log in</a>

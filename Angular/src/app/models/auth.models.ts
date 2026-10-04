@@ -23,17 +23,11 @@ export interface AuthResponse {
   firstName: string;
 }
 
-// Error Response
-export interface ApiErrorResponse {
-  message: string;
-  errors: string[];
-}
-
 // User state for storing in app
 export interface UserInfo {
   email: string;
   publicId: string;
-  token: string;
   firstName: string;
+  role: string | null;
 }
 

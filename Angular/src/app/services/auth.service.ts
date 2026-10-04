@@ -1,156 +1,201 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
-import { environment } from '../../environments/environment.development';
-import { LoginRequest, RegisterRequest, AuthResponse, UserInfo } from '../models/auth.models';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, finalize, firstValueFrom, from, map, shareReplay, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { ApiError } from '../core/models/api-error';
+import { AuthResponse, LoginRequest, RegisterRequest, UserInfo } from '../models/auth.models';
+
+// The id is given at sign-in and kept through token rotation, so a new sign-in is never mistaken for a rotation.
+interface StoredSession {
+  id: string;
+  accessToken: string;
+  refreshToken: string;
+  refreshTokenExpiresAtUtc: string;
+  user: UserInfo;
+}
+
+interface RefreshInFlight {
+  sessionId: string;
+  accessToken$: Observable<string>;
+}
+
+const SESSION_KEY = 'ticksi_session';
+const REFRESH_LOCK = 'ticksi_session_refresh';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly TOKEN_KEY = 'ticksi_token';
-  private readonly USER_KEY = 'ticksi_user';
-  private readonly REFRESH_TOKEN_KEY = 'ticksi_refresh_token';
-  
-  private currentUserSubject = new BehaviorSubject<UserInfo | null>(this.getUserFromStorage());
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly authUrl = `${environment.apiUrl}/auth`;
+  private readonly session = signal<StoredSession | null>(readStoredSession());
+  private refreshInFlight: RefreshInFlight | null = null;
 
-  constructor(private http: HttpClient) {}
+  readonly currentUser = computed(() => this.session()?.user ?? null);
 
-  // Login wtih password and email
-  login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials)
-      .pipe(
-        tap(response => this.handleAuthSuccess(response)),
-        catchError(this.handleError)
-      );
+  constructor() {
+    // Another tab may rotate, replace or end the session; this tab must not keep using the old one.
+    window.addEventListener('storage', event => {
+      if (event.key === SESSION_KEY || event.key === null) {
+        this.session.set(readStoredSession());
+      }
+    });
   }
 
-  // Register new user
-  register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, data)
-      .pipe(
-        tap(response => this.handleAuthSuccess(response)),
-        catchError(this.handleError)
-      );
+  login(credentials: LoginRequest): Observable<void> {
+    return this.http.post<AuthResponse>(`${this.authUrl}/login`, credentials)
+      .pipe(map(response => this.startSession(response, crypto.randomUUID())));
   }
 
-  // Logout user, clear stored data and revoke the refresh token
+  register(data: RegisterRequest): Observable<void> {
+    return this.http.post<AuthResponse>(`${this.authUrl}/register`, data)
+      .pipe(map(response => this.startSession(response, crypto.randomUUID())));
+  }
+
   logout(): void {
-    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-    this.clearStorage();
-    this.currentUserSubject.next(null);
+    const refreshToken = this.session()?.refreshToken;
+    this.clearSession();
 
     if (refreshToken) {
-      this.http.post(`${environment.apiUrl}/auth/logout`, { refreshToken })
-        .subscribe({ error: () => {} });
+      this.revokeOnServer(refreshToken);
     }
   }
 
-  // Check if user is currently authenticated
+  refreshSession(sessionId: string): Observable<string> {
+    const current = this.session();
+    if (current?.id !== sessionId) {
+      return throwError(() => sessionChanged());
+    }
+
+    if (this.refreshInFlight?.sessionId !== sessionId) {
+      const accessToken$: Observable<string> = from(
+        navigator.locks.request(REFRESH_LOCK, () => this.refreshOnce(current))
+      ).pipe(
+        finalize(() => {
+          if (this.refreshInFlight?.accessToken$ === accessToken$) {
+            this.refreshInFlight = null;
+          }
+        }),
+        shareReplay(1)
+      );
+      this.refreshInFlight = { sessionId, accessToken$ };
+    }
+
+    return this.refreshInFlight.accessToken$;
+  }
+
+  sessionId(): string | null {
+    return this.session()?.id ?? null;
+  }
+
   isAuthenticated(): boolean {
-    const token = this.getToken();
-    if (!token) {
-      return false;
-    }
-
-    return !this.isTokenExpired(token);
+    return this.session() !== null;
   }
 
-  
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  
-  getCurrentUser(): UserInfo | null {
-    return this.currentUserSubject.value;
-  }
-
-  // Successful authentication handler
-  private handleAuthSuccess(response: AuthResponse): void {
-    const userInfo: UserInfo = {
-      email: response.email,
-      publicId: response.publicId,
-      token: response.accessToken,
-      firstName: response.firstName
-      
-    };
-
-    localStorage.setItem(this.TOKEN_KEY, response.accessToken);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(userInfo));
-    this.currentUserSubject.next(userInfo);
-  }
-
-  
-    //Get user from local storage on service init
-   
-  private getUserFromStorage(): UserInfo | null {
-    const userJson = localStorage.getItem(this.USER_KEY);
-    if (userJson) {
-      try {
-        const user = JSON.parse(userJson) as UserInfo;
-        if (user.token && !this.isTokenExpired(user.token)) {
-          return user;
-        }
-        // Token expired - clear storage
-        this.clearStorage();
-      } catch {
-        this.clearStorage();
-      }
-    }
-    return null;
-  }
-
-  private clearStorage(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-  }
-
-  
-  private isTokenExpired(token: string): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expiry = payload.exp * 1000;
-      return Date.now() >= expiry;
-    } catch {
-      return true;
-    }
-  }
-
-  // Handle HTTP Errors
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An error occurred. Please try again.';
-    
-    if (error.error) {
-      if (typeof error.error === 'string') {
-        errorMessage = error.error;
-      } 
-      else if (error.error.message) {
-        errorMessage = error.error.message;
-      } 
-      else if (error.error.errors && error.error.errors.length > 0) {
-        errorMessage = error.error.errors[0];
-      }
-    }
-    
-    return throwError(() => new Error(errorMessage));
+    return this.session()?.accessToken ?? null;
   }
 
   getUserRole(): string | null {
-  const token = this.getToken();
-  if (!token) return null;
+    return this.currentUser()?.role ?? null;
+  }
 
+  // Runs under a lock shared by all tabs, so only one of them sends a given refresh token.
+  private async refreshOnce(original: StoredSession): Promise<string> {
+    const stored = readStoredSession();
+    if (!stored || stored.id !== original.id) {
+      throw sessionChanged();
+    }
+
+    if (stored.refreshToken !== original.refreshToken) {
+      this.session.set(stored);
+      return stored.accessToken;
+    }
+
+    let response: AuthResponse;
+    try {
+      response = await firstValueFrom(
+        this.http.post<AuthResponse>(`${this.authUrl}/refresh`, { refreshToken: original.refreshToken })
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401 && isStored(original)) {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      }
+      throw error;
+    }
+
+    if (!isStored(original)) {
+      this.revokeOnServer(response.refreshToken);
+      throw sessionChanged();
+    }
+
+    this.startSession(response, original.id);
+    return response.accessToken;
+  }
+
+  private revokeOnServer(refreshToken: string): void {
+    this.http.post(`${this.authUrl}/logout`, { refreshToken }).subscribe({ error: () => {} });
+  }
+
+  private startSession(response: AuthResponse, id: string): void {
+    const session: StoredSession = {
+      id,
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+      refreshTokenExpiresAtUtc: response.refreshTokenExpiresAtUtc,
+      user: {
+        email: response.email,
+        publicId: response.publicId,
+        firstName: response.firstName,
+        role: readRole(response.accessToken)
+      }
+    };
+
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    this.session.set(session);
+  }
+
+  private clearSession(): void {
+    localStorage.removeItem(SESSION_KEY);
+    this.session.set(null);
+  }
+}
+
+function sessionChanged(): Error {
+  return new Error('The session changed before it could be refreshed.');
+}
+
+function isStored(session: StoredSession): boolean {
+  const stored = readStoredSession();
+  return stored?.id === session.id && stored.refreshToken === session.refreshToken;
+}
+
+function readStoredSession(): StoredSession | null {
+  const session = parseSession(localStorage.getItem(SESSION_KEY));
+  if (session?.id && Date.parse(session.refreshTokenExpiresAtUtc) > Date.now()) {
+    return session;
+  }
+
+  localStorage.removeItem(SESSION_KEY);
+  return null;
+}
+
+function parseSession(json: string | null): StoredSession | null {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.role || null;
+    return json ? (JSON.parse(json) as StoredSession) : null;
   } catch {
     return null;
   }
 }
 
+function readRole(accessToken: string): string | null {
+  try {
+    const payload = accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(payload)).role ?? null;
+  } catch {
+    return null;
+  }
 }
-
