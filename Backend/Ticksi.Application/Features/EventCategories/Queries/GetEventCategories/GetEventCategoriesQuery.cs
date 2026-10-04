@@ -1,6 +1,6 @@
 using MediatR;
+using Ticksi.Application.Common;
 using Ticksi.Application.DTOs;
-using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.EventCategories.Queries.GetEventCategories
 {
@@ -12,4 +12,3 @@ namespace Ticksi.Application.Features.EventCategories.Queries.GetEventCategories
         public int PageSize { get; set; } = 8;
     }
 }
-

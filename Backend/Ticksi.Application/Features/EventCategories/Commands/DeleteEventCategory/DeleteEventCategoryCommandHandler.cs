@@ -1,26 +1,27 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Interfaces;
 
 namespace Ticksi.Application.Features.EventCategories.Commands.DeleteEventCategory
 {
-    public class DeleteEventCategoryCommandHandler : IRequestHandler<DeleteEventCategoryCommand, bool>
+    public class DeleteEventCategoryCommandHandler : IRequestHandler<DeleteEventCategoryCommand>
     {
-        private readonly IEventCategoryRepository _repository;
+        private readonly IAppDbContext _context;
 
-        public DeleteEventCategoryCommandHandler(IEventCategoryRepository repository)
+        public DeleteEventCategoryCommandHandler(IAppDbContext context)
         {
-            _repository = repository;
+            _context = context;
         }
 
-        public async Task<bool> Handle(DeleteEventCategoryCommand request, CancellationToken cancellationToken)
+        public async Task Handle(DeleteEventCategoryCommand request, CancellationToken cancellationToken)
         {
-            var existingCategory = await _repository.GetByPublicIDAsync(request.PublicId);
-            if (existingCategory == null)
-                return false;
+            var category = await _context.EventCategories
+                .FirstOrDefaultAsync(c => c.PublicId == request.PublicId, cancellationToken)
+                ?? throw new NotFoundException("Event category not found.");
 
-            await _repository.DeleteAsync(existingCategory);
-            return true;
+            _context.EventCategories.Remove(category);
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
-

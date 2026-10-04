@@ -1,22 +1,20 @@
 using FluentValidation;
+using Ticksi.Application.Common;
 
 namespace Ticksi.Application.Features.Events.Queries.GetEvents;
 
 public class GetEventsQueryValidator : AbstractValidator<GetEventsQuery>
 {
-    private const int MaxPageSize = 50;
-    private const int MaxPage = int.MaxValue / MaxPageSize;
-
     private static readonly string[] SortFields = ["name", "date", "price"];
 
     public GetEventsQueryValidator()
     {
         RuleFor(x => x.Page)
-            .GreaterThanOrEqualTo(1).WithMessage("Page must be 1 or greater.")
-            .LessThanOrEqualTo(MaxPage).WithMessage("Page is out of range.");
+            .GreaterThanOrEqualTo(1).WithMessage("Page must be 1 or greater.");
 
         RuleFor(x => x.PageSize)
-            .InclusiveBetween(1, MaxPageSize).WithMessage($"Page size must be between 1 and {MaxPageSize}.");
+            .InclusiveBetween(1, PagingExtensions.MaxPageSize)
+            .WithMessage($"Page size must be between 1 and {PagingExtensions.MaxPageSize}.");
 
         RuleFor(x => x.Search)
             .MaximumLength(100).WithMessage("Search cannot exceed 100 characters.");

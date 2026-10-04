@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
@@ -8,13 +7,11 @@ namespace Ticksi.Application.Features.EventCategories.Commands.CreateEventCatego
 {
     public class CreateEventCategoryCommandHandler : IRequestHandler<CreateEventCategoryCommand, EventCategoryReadDto>
     {
-        private readonly IEventCategoryRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IAppDbContext _context;
 
-        public CreateEventCategoryCommandHandler(IEventCategoryRepository repository, IMapper mapper)
+        public CreateEventCategoryCommandHandler(IAppDbContext context)
         {
-            _repository = repository;
-            _mapper = mapper;
+            _context = context;
         }
 
         public async Task<EventCategoryReadDto> Handle(CreateEventCategoryCommand request, CancellationToken cancellationToken)
@@ -26,10 +23,16 @@ namespace Ticksi.Application.Features.EventCategories.Commands.CreateEventCatego
                 PosterUrl = request.PosterUrl
             };
 
-            await _repository.AddAsync(category);
+            _context.EventCategories.Add(category);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            return _mapper.Map<EventCategoryReadDto>(category);
+            return new EventCategoryReadDto
+            {
+                PublicId = category.PublicId,
+                Name = category.Name,
+                Description = category.Description,
+                PosterUrl = category.PosterUrl
+            };
         }
     }
 }
-

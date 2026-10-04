@@ -1,29 +1,28 @@
-using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
 
 namespace Ticksi.Application.Features.EventCategories.Queries.GetEventCategoryById
 {
-    public class GetEventCategoryByIdQueryHandler : IRequestHandler<GetEventCategoryByIdQuery, EventCategoryReadDto?>
+    public class GetEventCategoryByIdQueryHandler : IRequestHandler<GetEventCategoryByIdQuery, EventCategoryReadDto>
     {
-        private readonly IEventCategoryRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IAppDbContext _context;
 
-        public GetEventCategoryByIdQueryHandler(IEventCategoryRepository repository, IMapper mapper)
+        public GetEventCategoryByIdQueryHandler(IAppDbContext context)
         {
-            _repository = repository;
-            _mapper = mapper;
+            _context = context;
         }
 
-        public async Task<EventCategoryReadDto?> Handle(GetEventCategoryByIdQuery request, CancellationToken cancellationToken)
+        public async Task<EventCategoryReadDto> Handle(GetEventCategoryByIdQuery request, CancellationToken cancellationToken)
         {
-            var category = await _repository.GetByPublicIDAsync(request.PublicId);
-            if (category == null)
-                return null;
-
-            return _mapper.Map<EventCategoryReadDto>(category);
+            return await _context.EventCategories
+                .AsNoTracking()
+                .Where(c => c.PublicId == request.PublicId)
+                .Select(EventCategoryProjections.ToReadDto)
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException("Event category not found.");
         }
     }
 }
-

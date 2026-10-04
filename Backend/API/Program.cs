@@ -90,19 +90,12 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
 // Register MediatR for CQRS pattern
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly);
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
-
-// Register repositories
-builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 
 // Register services
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();

@@ -1,44 +1,40 @@
-using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Ticksi.Application.Common;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
-using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.EventCategories.Queries.GetEventCategories
 {
     public class GetEventCategoriesQueryHandler : IRequestHandler<GetEventCategoriesQuery, PagedResult<EventCategoryReadDto>>
     {
-        private readonly IEventCategoryRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IAppDbContext _context;
 
-        public GetEventCategoriesQueryHandler(IEventCategoryRepository repository, IMapper mapper)
+        public GetEventCategoriesQueryHandler(IAppDbContext context)
         {
-            _repository = repository;
-            _mapper = mapper;
+            _context = context;
         }
 
         public async Task<PagedResult<EventCategoryReadDto>> Handle(GetEventCategoriesQuery request, CancellationToken cancellationToken)
         {
-            var queryDto = new EventCategoryQueryDto
+            var categories = _context.EventCategories.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
             {
-                Search = request.Search,
-                Filter = request.Filter,
-                Page = request.Page,
-                PageSize = request.PageSize
-            };
+                var term = request.Search.Trim();
+                categories = categories.Where(c => c.Name.Contains(term) || c.Description.Contains(term));
+            }
 
-            var pagedResult = await _repository.GetPagedCategoriesAsync(queryDto);
+            if (string.Equals(request.Filter, "active", StringComparison.OrdinalIgnoreCase))
+                categories = categories.Where(c => c.IsActive);
+            else if (string.Equals(request.Filter, "inactive", StringComparison.OrdinalIgnoreCase))
+                categories = categories.Where(c => !c.IsActive);
 
-            var dtos = _mapper.Map<List<EventCategoryReadDto>>(pagedResult.Items);
-
-            return new PagedResult<EventCategoryReadDto>
-            {
-                Items = dtos,
-                Page = pagedResult.Page,
-                PageSize = pagedResult.PageSize,
-                TotalCount = pagedResult.TotalCount
-            };
+            return await categories
+                .OrderBy(c => c.Name)
+                .ThenBy(c => c.Id)
+                .Select(EventCategoryProjections.ToReadDto)
+                .ToPagedResultAsync(request.Page, request.PageSize, cancellationToken);
         }
     }
 }
-

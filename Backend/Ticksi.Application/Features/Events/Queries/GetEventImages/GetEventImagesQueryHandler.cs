@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Interfaces;
@@ -13,7 +14,7 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventImages
     public class GetEventImagesQueryHandler
         : IRequestHandler<GetEventImagesQuery, List<string>>
     {
-        private readonly IEventRepository _eventRepository;
+        private readonly IAppDbContext _context;
         private readonly IWebHostEnvironment _environment;
 
         private static readonly HashSet<string> AllowedExtensions =
@@ -21,10 +22,10 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventImages
             { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
         public GetEventImagesQueryHandler(
-            IEventRepository eventRepository,
+            IAppDbContext context,
             IWebHostEnvironment environment)
         {
-            _eventRepository = eventRepository;
+            _context = context;
             _environment = environment;
         }
 
@@ -33,10 +34,10 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventImages
             CancellationToken cancellationToken)
         {
             // 1️⃣ Provjera da li event postoji
-            var eventEntity = await _eventRepository
-                .GetByPublicIdAsync(request.EventId, cancellationToken);
+            var eventExists = await _context.Events
+                .AnyAsync(e => e.PublicId == request.EventId, cancellationToken);
 
-            if (eventEntity == null)
+            if (!eventExists)
                 throw new NotFoundException("Event not found.");
 
             // 2️⃣ Folder gdje se već snimaju slike
@@ -54,7 +55,7 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventImages
             // 3️⃣ Učitaj sve dozvoljene slike
             var files = Directory.GetFiles(imagesPath)
                 .Where(f => AllowedExtensions.Contains(Path.GetExtension(f)))
-                .Select(f => "/images/events/{request.EventId}/" + Path.GetFileName(f))
+                .Select(f => $"/images/events/{request.EventId}/{Path.GetFileName(f)}")
                 .ToList();
 
             return files;
