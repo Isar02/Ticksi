@@ -1,0 +1,25 @@
+<section class="toast-stack" aria-label="Notifications" aria-live="polite">
+  @for (toast of toasts(); track toast.id) {
+    <div
+      #item
+      class="toast"
+      [class]="'toast--' + toast.kind"
+      [class.toast--closing]="toast.closing"
+      [attr.role]="toast.kind === 'error' ? 'alert' : null"
+      (mouseenter)="hold(toast)"
+      (mouseleave)="release(toast, item)"
+      (focusin)="hold(toast)"
+      (focusout)="release(toast, item)"
+      (animationend)="removeIfClosed(toast, $event)">
+      <div class="toast__ticket">
+        <span class="toast__stub" aria-hidden="true">
+          <span class="material-icons">{{ icons[toast.kind] }}</span>
+        </span>
+        <p class="toast__message">{{ toast.message }}</p>
+        <button type="button" class="toast__close" aria-label="Dismiss notification" (click)="close(toast)">
+          <span class="material-icons" aria-hidden="true">close</span>
+        </button>
+      </div>
+    </div>
+  }
+</section>

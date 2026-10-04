@@ -1,0 +1,131 @@
+$stub-width: 52px;
+$notch: 7px;
+
+.toast-stack {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+
+  @media (max-width: 600px) {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+.toast {
+  --tone: #9e6caf;
+  --tone-soft: #f5eff8;
+  width: 100%;
+  pointer-events: auto;
+  filter: drop-shadow(0 12px 24px rgba(58, 36, 70, 0.14)) drop-shadow(0 2px 4px rgba(58, 36, 70, 0.08));
+  animation: toast-in 360ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+
+  &--success {
+    --tone: #2e8b6a;
+    --tone-soft: #eaf6f1;
+  }
+
+  &--error {
+    --tone: #d03a47;
+    --tone-soft: #fdf0f1;
+  }
+
+  &--closing {
+    animation: toast-out 220ms ease-in forwards;
+  }
+}
+
+// Notches punched where the stub meets the ticket.
+.toast__ticket {
+  display: grid;
+  grid-template-columns: $stub-width 1fr auto;
+  align-items: center;
+  min-height: 58px;
+  background: #fff;
+  border-radius: 14px;
+  mask:
+    radial-gradient(circle $notch at $stub-width 0, transparent calc($notch - 0.5px), #000 $notch) top / 100% 51% no-repeat,
+    radial-gradient(circle $notch at $stub-width 100%, transparent calc($notch - 0.5px), #000 $notch) bottom / 100% 51% no-repeat;
+}
+
+.toast__stub {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  color: var(--tone);
+  background:
+    linear-gradient(var(--tone) 50%, transparent 0) right / 2px 8px repeat-y,
+    var(--tone-soft);
+  background-origin: content-box, border-box;
+  padding: $notch + 4px 0;
+
+  .material-icons {
+    font-size: 22px;
+  }
+}
+
+.toast__message {
+  margin: 0;
+  padding: 14px 6px 14px 16px;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.toast__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #f5f5f5;
+    color: #333;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tone);
+    outline-offset: 1px;
+  }
+
+  .material-icons {
+    font-size: 18px;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-2deg);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toast--closing {
+    animation-duration: 1ms;
+  }
+}

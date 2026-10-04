@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
+import { ApiError } from '../models/api-error';
 
 const authUrl = `${environment.apiUrl}/auth/`;
 
@@ -20,8 +21,11 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       }
 
+      // A refresh that could not be completed (no connection, server error) is the request's real failure.
       return auth.refreshSession(sessionId).pipe(
-        catchError(() => throwError(() => error)),
+        catchError((refreshError: unknown) =>
+          throwError(() => (refreshError instanceof ApiError && refreshError.status !== 401 ? refreshError : error))
+        ),
         switchMap(accessToken => next(withAccessToken(request, accessToken)))
       );
     })
