@@ -12,13 +12,13 @@
           <span class="dot">•</span>
           <span>{{ event.locationName }}</span>
           <span class="dot">•</span>
-          <span>{{ event.date | date: 'medium' }}</span>
+          <span>{{ event.date | date: 'short' }}</span>
         </div>
       </div>
 
       <div class="price-area">
         <div class="price" *ngIf="event.lowestPrice !== null">From {{ event.lowestPrice | currency }}</div>
-        <div class="small">Tickets left: {{ event.availableTickets }}</div>
+        <div class="small">Tickets left: {{ event.availableTickets | number }}</div>
       </div>
     </header>
 

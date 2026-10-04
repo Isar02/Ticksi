@@ -60,7 +60,6 @@ export class CategoriesComponent implements OnInit {
   });
 
   dialogRef.afterClosed().subscribe(result => {
-    console.log('Dialog result:', result);
     if (result) {
       if (category) {
         this.categoryService.update(category.publicId, result).subscribe(() => this.loadCategories());
@@ -114,7 +113,6 @@ export class CategoriesComponent implements OnInit {
           const filename = this.reportService.generateFilename(category.name);
           this.reportService.triggerDownload(blob, filename);
           this.downloadingCategories.delete(category.publicId);
-          console.log('PDF report downloaded successfully');
         },
         error: (error: ApiError) => {
           this.toast.error(error.message);

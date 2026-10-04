@@ -197,13 +197,13 @@
 
             <div class="meta-row">
               <span class="meta-label">Capacity</span>
-              <span class="meta-value">{{ form.value.capacity || '—' }}</span>
+              <span class="meta-value">{{ (form.value.capacity | number) || '—' }}</span>
             </div>
 
             <div class="meta-row">
               <span class="meta-label">Price</span>
               <span class="meta-value">
-                {{ (form.value.priceFrom ?? 0) }} {{ form.value.currency || 'BAM' }}
+                {{ (form.value.priceFrom ?? 0) | currency: (form.value.currency || 'BAM') }}
               </span>
             </div>
           </div>

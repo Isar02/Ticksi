@@ -1,5 +1,5 @@
-import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, ViewChild, ElementRef, LOCALE_ID } from '@angular/core';
+import { CommonModule, formatNumber } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -61,7 +61,8 @@ export class CategoryFormComponent {
     fb: FormBuilder,
     private dialogRef: MatDialogRef<CategoryFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { category: Category | null },
-    private posterService: CategoryPosterService
+    private posterService: CategoryPosterService,
+    @Inject(LOCALE_ID) private locale: string
   ) {
     if (data.category) {
       this.categoryForm.patchValue({
@@ -138,7 +139,7 @@ export class CategoryFormComponent {
 
     // Validate file size
     if (file.size > this.maxFileSizeBytes) {
-      const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+      const sizeMb = formatNumber(file.size / (1024 * 1024), this.locale, '1.0-2');
       this.uploadError = `File is too large (${sizeMb} MB). Maximum allowed size is 5 MB.`;
       this.resetSelectedFile();
       return;

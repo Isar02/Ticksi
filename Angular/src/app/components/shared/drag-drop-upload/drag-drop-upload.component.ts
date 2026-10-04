@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, Inject, LOCALE_ID } from '@angular/core';
+import { CommonModule, formatNumber } from '@angular/common';
 import { PosterService } from '../../../services/poster.service';
 import { PosterUploadResponse } from '../../../models/poster.model';
 import { HttpEventType } from '@angular/common/http';
@@ -30,7 +30,10 @@ export class DragDropUploadComponent {
 
   uploadCompleted = false;
 
-  constructor(private posterService: PosterService) {}
+  constructor(
+    private posterService: PosterService,
+    @Inject(LOCALE_ID) private locale: string
+  ) {}
 
   // ✅ IMPORTANT: only open picker when click happens on the drop-zone itself
   onDropZoneClick(event: MouseEvent): void {
@@ -113,8 +116,8 @@ export class DragDropUploadComponent {
     }
 
     if (file.size > this.maxSizeBytes) {
-      const maxMB = (this.maxSizeBytes / (1024 * 1024)).toFixed(2);
-      const fileMB = (file.size / (1024 * 1024)).toFixed(2);
+      const maxMB = formatNumber(this.maxSizeBytes / (1024 * 1024), this.locale, '1.0-2');
+      const fileMB = formatNumber(file.size / (1024 * 1024), this.locale, '1.0-2');
       return `File size (${fileMB}MB) exceeds maximum allowed size (${maxMB}MB)`;
     }
 

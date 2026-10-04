@@ -1,22 +1,26 @@
-/* You can add global styles to this file, and also import other style files */
-
-
-
+@use '@angular/material' as mat;
+@use './theme/theme-colors' as ticksi;
 
 html {
-  overflow-y: scroll; /* Force scrollbar to always show */
+  overflow-y: scroll;
   height: 100%;
+  color-scheme: light;
+
+  @include mat.theme((
+    color: (
+      primary: ticksi.$primary-palette,
+      tertiary: ticksi.$tertiary-palette,
+      theme-type: light
+    ),
+    typography: Roboto,
+    density: 0
+  ));
 }
 
 body {
   height: 100%;
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-}
-
-.mat-dialog-container {
-  background-color: #1e1e1e;
-  color: #fff;
 }
 
 // The confirmation dialog draws its own ticket shape and shadow.
@@ -26,11 +30,6 @@ body {
   overflow: visible;
 }
 
-
 *, *::before, *::after {
   box-sizing: border-box;
 }
-
-
-
-

@@ -19,6 +19,8 @@ import { FavoriteService } from '../../services/favorite.service';
 import { SearchService, SearchSuggestionDto } from '../../services/search.service';
 
 import { Event } from '../../models/event.model';
+import { ApiError } from '../../core/models/api-error';
+import { ToastService } from '../../core/services/toast.service';
 import { LoadingSpinnerComponent } from '../shared/loading-spinner/loading-spinner.component';
 
 @Component({
@@ -57,7 +59,8 @@ export class EventsComponent implements OnInit {
     private eventService: EventService,
     private favoriteService: FavoriteService,
     public authService: AuthService,
-    private searchService: SearchService
+    private searchService: SearchService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -72,13 +75,12 @@ export class EventsComponent implements OnInit {
         tap((term) => {
           const t = (term || '').trim();
 
-          // Ako user kuca novo, resetujemo “picked” filtere (jer je sve u jednom searchu)
+          // Typing a new term drops filters picked from suggestions, since one input drives the search.
           if (t.length > 0) {
             this.selectedCategoryId = undefined;
             this.selectedLocationLabel = undefined;
           }
 
-          // Reload results odmah dok user kuca
           this.resetAndReloadEvents();
 
           if (t.length < 2) {
@@ -132,7 +134,7 @@ export class EventsComponent implements OnInit {
     if (this.suggestions.length > 0) this.showSuggestions = true;
   }
 
-  // blur zatvara dropdown, ali ostavi mali delay da click prođe
+  // The delay lets a click on a suggestion land before the dropdown closes.
   onSearchBlur(): void {
     setTimeout(() => (this.showSuggestions = false), 150);
   }
@@ -141,7 +143,6 @@ export class EventsComponent implements OnInit {
     this.showSuggestions = false;
     this.suggestions = [];
 
-    // Unutar istog search-a: klik postavlja filtere
     if (s.type === 'category') {
       this.selectedCategoryId = s.publicId;
       this.selectedLocationLabel = undefined;
@@ -153,7 +154,6 @@ export class EventsComponent implements OnInit {
     } else {
       // event
       this.searchTerm = s.label;
-      // event selection ne mora resetovati filtere, ali pošto je 1 input, držimo čisto:
       this.selectedCategoryId = undefined;
       this.selectedLocationLabel = undefined;
     }
@@ -162,7 +162,6 @@ export class EventsComponent implements OnInit {
   }
 
   clearSearch(): void {
-    // pošto je sve u jednom inputu: clear briše sve
     this.searchTerm = '';
     this.suggestions = [];
     this.showSuggestions = false;
@@ -191,7 +190,6 @@ export class EventsComponent implements OnInit {
     if (base && !loc) return base;
     if (!base && loc) return loc;
 
-    // izbjegni dupliranje ako je base već location
     if (base.toLowerCase().includes(loc.toLowerCase())) return base;
 
     return `${base} ${loc}`.trim();
@@ -220,10 +218,7 @@ export class EventsComponent implements OnInit {
           this.hasMore = this.currentPage <= this.totalPages;
           this.isLoading = false;
         },
-        error: (error: any) => {
-          console.error('Error loading events:', error);
-          this.isLoading = false;
-        },
+        error: () => (this.isLoading = false),
       });
   }
 
@@ -241,10 +236,10 @@ export class EventsComponent implements OnInit {
   loadFavorites(): void {
     if (!this.authService.isAuthenticated()) return;
 
-    this.favoriteService.getUserFavorites().subscribe({
-      next: (favoriteIds: string[]) => (this.favoriteIds = new Set(favoriteIds)),
-      error: (error: any) => console.error('Error loading favorites:', error),
-    });
+    this.favoriteService
+      .getUserFavorites()
+      .pipe(catchError(() => of([] as string[])))
+      .subscribe((favoriteIds) => (this.favoriteIds = new Set(favoriteIds)));
   }
 
   isFavorite(eventId: string): boolean {
@@ -259,12 +254,12 @@ export class EventsComponent implements OnInit {
     if (isFavorited) {
       this.favoriteService.removeFavorite(eventId).subscribe({
         next: () => this.favoriteIds.delete(eventId),
-        error: (error: any) => console.error('Error removing favorite:', error),
+        error: (error: ApiError) => this.toast.error(error.message),
       });
     } else {
       this.favoriteService.addFavorite(eventId).subscribe({
         next: () => this.favoriteIds.add(eventId),
-        error: (error: any) => console.error('Error adding favorite:', error),
+        error: (error: ApiError) => this.toast.error(error.message),
       });
     }
   }
