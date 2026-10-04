@@ -3,8 +3,10 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, firstValueFrom, from, map, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { loginUrl } from '../core/guards/return-url';
 import { withoutErrorToast } from '../core/interceptors/error.interceptor';
 import { ApiError } from '../core/models/api-error';
+import { Role } from '../core/models/role';
 import { ToastService } from '../core/services/toast.service';
 import { AuthResponse, LoginRequest, RegisterRequest, UserInfo } from '../models/auth.models';
 
@@ -105,6 +107,10 @@ export class AuthService {
     return this.currentUser()?.role ?? null;
   }
 
+  hasAnyRole(roles: readonly Role[]): boolean {
+    return roles.some(role => role === this.getUserRole());
+  }
+
   // Runs under a lock shared by all tabs, so only one of them sends a given refresh token.
   private async refreshOnce(original: StoredSession): Promise<string> {
     const stored = readStoredSession();
@@ -130,7 +136,7 @@ export class AuthService {
       if (error instanceof ApiError && error.status === 401 && isStored(original)) {
         this.clearSession();
         this.toast.info('Your session has expired. Please sign in again.');
-        this.router.navigate(['/login']);
+        this.router.navigateByUrl(loginUrl(this.router, this.router.url));
       }
       throw error;
     }

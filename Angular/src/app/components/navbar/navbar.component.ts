@@ -1,8 +1,9 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { MANAGER_ROLES } from '../../core/models/role';
 
 @Component({
   selector: 'app-navbar',
@@ -13,6 +14,7 @@ import { Router } from '@angular/router';
 })
 export class NavbarComponent {
   isScrolled = false;
+  readonly canManage = computed(() => this.authService.hasAnyRole(MANAGER_ROLES));
 
   constructor(public authService: AuthService, private router: Router) {}
 
@@ -20,8 +22,6 @@ export class NavbarComponent {
   onWindowScroll() {
     this.isScrolled = window.scrollY > 10;
   }
-
-  
 
   logout(): void {
     this.authService.logout();

@@ -1,73 +1,28 @@
 import { Routes } from '@angular/router';
-import { CategoriesComponent } from './components/categories/categories.component';
-import { adminGuard } from './services/admin.guard';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
+import { roleGuard } from './core/guards/role.guard';
+import { MANAGER_ROLES } from './core/models/role';
 
 export const routes: Routes = [
-
   {
-    path: 'login',
-    loadComponent: () => import('./components/auth/login/login.component')
-      .then(m => m.LoginComponent)
+    path: 'auth',
+    canMatch: [guestGuard],
+    loadChildren: () => import('./routes/auth.routes').then(m => m.AUTH_ROUTES)
   },
-
   {
-    path: 'register',
-    loadComponent: () => import('./components/auth/register/register.component')
-      .then(m => m.RegisterComponent)
+    path: 'admin',
+    canMatch: [authGuard, roleGuard(MANAGER_ROLES)],
+    loadChildren: () => import('./routes/admin.routes').then(m => m.ADMIN_ROUTES)
   },
-
   {
-  path: 'admin/categories',
-  loadComponent: () => import('./components/categories/categories.component')
-    .then(m => m.CategoriesComponent),
-  canActivate: [adminGuard]
-},
-
-
-
-  {
-  path: '',
-  loadComponent: () =>
-    import('./components/home/home.component').then(m => m.HomeComponent)
-},
-
- {
-    path: 'categories',
-    loadComponent: () =>
-      import('./components/public-categories/public-categories.component')
-        .then(m => m.PublicCategoriesComponent)
+    path: 'organizer',
+    canMatch: [authGuard, roleGuard(MANAGER_ROLES)],
+    loadChildren: () => import('./routes/organizer.routes').then(m => m.ORGANIZER_ROUTES)
   },
-
   {
-    path: 'events',
-    loadComponent: () =>
-      import('./components/events/events.component')
-        .then(m => m.EventsComponent)
+    path: '',
+    loadChildren: () => import('./routes/public.routes').then(m => m.PUBLIC_ROUTES)
   },
-
-  {
-  path: 'event/:id',
-  loadComponent: () =>
-    import('./components/event-details/event-details.component')
-      .then(m => m.EventDetailsComponent)
-},
-
-
-  {
-  path: 'organizer/events',
-  loadComponent: () =>
-    import('./components/organizer-create-event/organizer-create-event.component')
-      .then(m => m.OrganizerCreateEventComponent),
-      //canActivate: [organizerGuard]  // ili organizerGuard ako imate
-},
-
-
-  {
-    path: '**',
-    redirectTo: ''
-  }
-
-  
-
-
+  { path: '**', redirectTo: '' }
 ];

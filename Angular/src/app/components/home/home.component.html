@@ -13,7 +13,9 @@
 
     <div class="hero-actions">
       <a routerLink="/events" class="btn-primary">Browse Events</a>
-      <button class="btn-secondary" (click)="organizeEvent()">Organize your event</button>
+      @if (canOrganize()) {
+        <button class="btn-secondary" (click)="organizeEvent()">Organize your event</button>
+      }
     </div>
 
   </div>
