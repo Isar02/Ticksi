@@ -11,6 +11,7 @@ import { LoginRequest, RegisterRequest, AuthResponse, UserInfo } from '../models
 export class AuthService {
   private readonly TOKEN_KEY = 'ticksi_token';
   private readonly USER_KEY = 'ticksi_user';
+  private readonly REFRESH_TOKEN_KEY = 'ticksi_refresh_token';
   
   private currentUserSubject = new BehaviorSubject<UserInfo | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -35,11 +36,16 @@ export class AuthService {
       );
   }
 
-  // Logout user and clear stored data
+  // Logout user, clear stored data and revoke the refresh token
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    this.clearStorage();
     this.currentUserSubject.next(null);
+
+    if (refreshToken) {
+      this.http.post(`${environment.apiUrl}/auth/logout`, { refreshToken })
+        .subscribe({ error: () => {} });
+    }
   }
 
   // Check if user is currently authenticated
@@ -67,12 +73,13 @@ export class AuthService {
     const userInfo: UserInfo = {
       email: response.email,
       publicId: response.publicId,
-      token: response.token,
+      token: response.accessToken,
       firstName: response.firstName
       
     };
 
-    localStorage.setItem(this.TOKEN_KEY, response.token);
+    localStorage.setItem(this.TOKEN_KEY, response.accessToken);
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
     localStorage.setItem(this.USER_KEY, JSON.stringify(userInfo));
     this.currentUserSubject.next(userInfo);
   }
@@ -89,12 +96,18 @@ export class AuthService {
           return user;
         }
         // Token expired - clear storage
-        this.logout();
+        this.clearStorage();
       } catch {
-        this.logout();
+        this.clearStorage();
       }
     }
     return null;
+  }
+
+  private clearStorage(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
   }
 
   

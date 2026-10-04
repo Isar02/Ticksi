@@ -21,6 +21,7 @@ namespace Ticksi.Application.Interfaces
         DbSet<Review> Reviews { get; }
         DbSet<Notification> Notifications { get; }
         DbSet<Favorite> Favorites { get; }
+        DbSet<RefreshToken> RefreshTokens { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
