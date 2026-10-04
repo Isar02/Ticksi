@@ -41,9 +41,6 @@ namespace API.Controllers
                 cancellationToken
             );
 
-            if (result == null)
-                return NotFound("Event not found.");
-
             return Ok(result);
         }
 
@@ -54,7 +51,6 @@ namespace API.Controllers
         public async Task<ActionResult<EventReadDto>> GetById(Guid eventId, CancellationToken cancellationToken)
         {
             var dto = await _mediator.Send(new GetEventByIdQuery(eventId), cancellationToken);
-            if (dto == null) return NotFound("Event not found.");
             return Ok(dto);
         }
     }

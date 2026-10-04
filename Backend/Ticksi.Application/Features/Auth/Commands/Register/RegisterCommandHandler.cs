@@ -6,14 +6,14 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
-using Ticksi.Application.Models;
 using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.Auth.Commands.Register
 {
-    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ServiceResult<AuthResponseDto>>
+    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponseDto>
     {
         private readonly IAppDbContext _context;
         private readonly IConfiguration _configuration;
@@ -24,30 +24,13 @@ namespace Ticksi.Application.Features.Auth.Commands.Register
             _configuration = configuration;
         }
 
-        public async Task<ServiceResult<AuthResponseDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
+        public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
-            // Check if user already exists
-            var existingUser = await _context.AppUsers
-                .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+            if (await _context.AppUsers.AnyAsync(u => u.Email == request.Email, cancellationToken))
+                throw new ConflictException("An account with this email already exists.");
 
-            if (existingUser != null)
-            {
-                var errorMessage = _configuration["Messages:Auth:EmailExists"] ?? "Email already exists.";
-                return ServiceResult<AuthResponseDto>.Failure(errorMessage);
-            }
-
-            // Get default role (assuming role with Name = "User")
-            var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User", cancellationToken);
-            if (defaultRole == null)
-            {
-                // If no User role exists, get the first available role
-                defaultRole = await _context.Roles.FirstOrDefaultAsync(cancellationToken);
-                if (defaultRole == null)
-                {
-                    var errorMessage = _configuration["Messages:Auth:RegistrationFailed"] ?? "Registration failed.";
-                    return ServiceResult<AuthResponseDto>.Failure(errorMessage);
-                }
-            }
+            var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User", cancellationToken)
+                ?? throw new InvalidOperationException("The User role has not been seeded.");
 
             var defaultStatus = _configuration["Seeding:DefaultStatus"] ?? "Active";
 
@@ -60,28 +43,19 @@ namespace Ticksi.Application.Features.Auth.Commands.Register
                 Phone = request.Phone,
                 RegistrationDate = DateTime.UtcNow,
                 Status = defaultStatus,
-                RoleId = defaultRole.Id
+                Role = defaultRole
             };
 
             _context.AppUsers.Add(user);
             await _context.SaveChangesAsync(cancellationToken);
 
-            // Reload user with Role navigation property for token generation
-            user = await _context.AppUsers
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken);
-
-            var token = GenerateJwtToken(user!);
-
-            var response = new AuthResponseDto
+            return new AuthResponseDto
             {
-                Token = token,
-                Email = user!.Email,
+                Token = GenerateJwtToken(user),
+                Email = user.Email,
                 PublicId = user.PublicId.ToString(),
                 FirstName = user.FirstName
             };
-
-            return ServiceResult<AuthResponseDto>.Success(response);
         }
 
         private string GenerateJwtToken(AppUser user)

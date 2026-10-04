@@ -1,34 +1,23 @@
 using MediatR;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Interfaces;
 
-namespace Ticksi.Application.Features.Favorites.Commands.RemoveFavorite
+namespace Ticksi.Application.Features.Favorites.Commands.RemoveFavorite;
+
+public class RemoveFavoriteCommandHandler : IRequestHandler<RemoveFavoriteCommand>
 {
-    public class RemoveFavoriteCommandHandler : IRequestHandler<RemoveFavoriteCommand, bool>
+    private readonly IFavoriteRepository _favoriteRepository;
+
+    public RemoveFavoriteCommandHandler(IFavoriteRepository favoriteRepository)
     {
-        private readonly IFavoriteRepository _favoriteRepository;
+        _favoriteRepository = favoriteRepository;
+    }
 
-        public RemoveFavoriteCommandHandler(IFavoriteRepository favoriteRepository)
-        {
-            _favoriteRepository = favoriteRepository;
-        }
+    public async Task Handle(RemoveFavoriteCommand request, CancellationToken cancellationToken)
+    {
+        var favorite = await _favoriteRepository.GetByUserAndEventAsync(request.UserPublicId, request.EventPublicId)
+            ?? throw new NotFoundException("This event is not in your favorites.");
 
-        public async Task<bool> Handle(RemoveFavoriteCommand request, CancellationToken cancellationToken)
-        {
-            // Find the favorite
-            var favorite = await _favoriteRepository.GetByUserAndEventAsync(
-                request.UserPublicId, 
-                request.EventPublicId);
-
-            if (favorite == null)
-            {
-                // Favorite not found
-                return false;
-            }
-
-            // Remove the favorite
-            await _favoriteRepository.DeleteAsync(favorite);
-            return true;
-        }
+        await _favoriteRepository.DeleteAsync(favorite);
     }
 }
-

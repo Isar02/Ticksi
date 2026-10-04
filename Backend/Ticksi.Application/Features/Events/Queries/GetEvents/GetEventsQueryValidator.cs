@@ -1,0 +1,42 @@
+using FluentValidation;
+
+namespace Ticksi.Application.Features.Events.Queries.GetEvents;
+
+public class GetEventsQueryValidator : AbstractValidator<GetEventsQuery>
+{
+    private const int MaxPageSize = 50;
+    private const int MaxPage = int.MaxValue / MaxPageSize;
+
+    private static readonly string[] SortFields = ["name", "date", "price"];
+
+    public GetEventsQueryValidator()
+    {
+        RuleFor(x => x.Page)
+            .GreaterThanOrEqualTo(1).WithMessage("Page must be 1 or greater.")
+            .LessThanOrEqualTo(MaxPage).WithMessage("Page is out of range.");
+
+        RuleFor(x => x.PageSize)
+            .InclusiveBetween(1, MaxPageSize).WithMessage($"Page size must be between 1 and {MaxPageSize}.");
+
+        RuleFor(x => x.Search)
+            .MaximumLength(100).WithMessage("Search cannot exceed 100 characters.");
+
+        RuleFor(x => x.SortBy)
+            .Must(s => SortFields.Contains(s!, StringComparer.OrdinalIgnoreCase))
+            .When(x => !string.IsNullOrWhiteSpace(x.SortBy))
+            .WithMessage("Sort must be one of: name, date, price.");
+
+        RuleFor(x => x.MinPrice)
+            .GreaterThanOrEqualTo(0).WithMessage("Minimum price cannot be negative.");
+
+        RuleFor(x => x.MaxPrice)
+            .GreaterThanOrEqualTo(x => x.MinPrice)
+            .When(x => x.MinPrice.HasValue && x.MaxPrice.HasValue)
+            .WithMessage("Maximum price cannot be lower than the minimum price.");
+
+        RuleFor(x => x.DateTo)
+            .GreaterThanOrEqualTo(x => x.DateFrom)
+            .When(x => x.DateFrom.HasValue && x.DateTo.HasValue)
+            .WithMessage("End date cannot be before the start date.");
+    }
+}

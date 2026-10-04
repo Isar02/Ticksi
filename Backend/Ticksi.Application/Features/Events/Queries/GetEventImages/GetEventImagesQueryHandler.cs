@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Interfaces;
 
 namespace Ticksi.Application.Features.Events.Queries.GetEventImages
@@ -36,7 +37,7 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventImages
                 .GetByPublicIdAsync(request.EventId, cancellationToken);
 
             if (eventEntity == null)
-                return null!; // controller će vratiti 404
+                throw new NotFoundException("Event not found.");
 
             // 2️⃣ Folder gdje se već snimaju slike
             // wwwroot/images/events

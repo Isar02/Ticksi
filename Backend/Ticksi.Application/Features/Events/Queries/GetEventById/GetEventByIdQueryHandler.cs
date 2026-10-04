@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
+using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
 
 namespace Ticksi.Application.Features.Events.Queries.GetEventById
 {
-    public class GetEventByIdQueryHandler : IRequestHandler<GetEventByIdQuery, EventReadDto?>
+    public class GetEventByIdQueryHandler : IRequestHandler<GetEventByIdQuery, EventReadDto>
     {
         private readonly IEventRepository _repository;
         private readonly IMapper _mapper;
@@ -21,12 +22,12 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventById
             _mapper = mapper;
         }
 
-        public async Task<EventReadDto?> Handle(GetEventByIdQuery request, CancellationToken cancellationToken)
+        public async Task<EventReadDto> Handle(GetEventByIdQuery request, CancellationToken cancellationToken)
         {
             // Ovdje treba repo metoda koja vraća Event + related entitete (Category, Location, Type, Organizer)
             var ev = await _repository.GetByPublicIdAsync(request.EventId, cancellationToken);
 
-            if (ev == null) return null;
+            if (ev == null) throw new NotFoundException("Event not found.");
 
             return _mapper.Map<EventReadDto>(ev);
         }

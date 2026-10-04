@@ -28,16 +28,16 @@ export class FavoriteService {
     });
   }
 
-  addFavorite(eventId: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
+  addFavorite(eventId: string): Observable<void> {
+    return this.http.post<void>(
       `${this.apiUrl}/${eventId}`,
       {},
       { headers: this.getAuthHeaders() }
     );
   }
 
-  removeFavorite(eventId: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(
+  removeFavorite(eventId: string): Observable<void> {
+    return this.http.delete<void>(
       `${this.apiUrl}/${eventId}`,
       { headers: this.getAuthHeaders() }
     );

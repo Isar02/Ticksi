@@ -8,7 +8,7 @@ using Ticksi.Application.DTOs;
 
 namespace Ticksi.Application.Features.Events.Queries.GetEventById
 {
-    public record GetEventByIdQuery(Guid EventId) : IRequest<EventReadDto?>
+    public record GetEventByIdQuery(Guid EventId) : IRequest<EventReadDto>
     {
     }
 }
