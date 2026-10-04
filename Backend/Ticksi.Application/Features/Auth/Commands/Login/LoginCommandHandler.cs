@@ -30,17 +30,11 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto
             throw new UnauthorizedException("Invalid email or password.");
 
         if (passwordCheck == PasswordCheck.ValidNeedsRehash)
-        {
             user.PasswordHash = _passwordHasher.Hash(user, request.Password);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
 
-        return new AuthResponseDto
-        {
-            Token = _tokenService.CreateAccessToken(user),
-            Email = user.Email,
-            PublicId = user.PublicId.ToString(),
-            FirstName = user.FirstName
-        };
+        var response = AuthSession.Start(_context, _tokenService, user);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return response;
     }
 }

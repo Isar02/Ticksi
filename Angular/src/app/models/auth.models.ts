@@ -14,7 +14,10 @@ export interface RegisterRequest {
 
 // Response DTOs
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  accessTokenExpiresAtUtc: string;
+  refreshToken: string;
+  refreshTokenExpiresAtUtc: string;
   email: string;
   publicId: string;
   firstName: string;

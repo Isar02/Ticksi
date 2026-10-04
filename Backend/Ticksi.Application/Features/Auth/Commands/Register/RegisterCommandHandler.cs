@@ -40,14 +40,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
         user.PasswordHash = _passwordHasher.Hash(user, request.Password);
 
         _context.AppUsers.Add(user);
+        var response = AuthSession.Start(_context, _tokenService, user);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new AuthResponseDto
-        {
-            Token = _tokenService.CreateAccessToken(user),
-            Email = user.Email,
-            PublicId = user.PublicId.ToString(),
-            FirstName = user.FirstName
-        };
+        return response;
     }
 }
