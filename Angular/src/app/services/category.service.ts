@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { Category } from '../models/category.model';
-import { AuthService } from './auth.service';
 
 export interface PagedResult<T> {
   items: T[];
@@ -18,17 +17,7 @@ export class CategoryService {
 
   private apiUrl = `${environment.apiUrl}/eventcategories`;
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {}
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-  }
+  constructor(private http: HttpClient) {}
 
   getPublicCategories(params: {
     search?: string;
@@ -57,15 +46,15 @@ export class CategoryService {
 
 
   create(category: Category): Observable<Category> {
-    return this.http.post<Category>(this.apiUrl, category, { headers: this.getAuthHeaders() });
+    return this.http.post<Category>(this.apiUrl, category);
   }
 
   update(publicId: string, category: Category): Observable<Category> {
-    return this.http.put<Category>(`${this.apiUrl}/${publicId}`, category, { headers: this.getAuthHeaders() });
+    return this.http.put<Category>(`${this.apiUrl}/${publicId}`, category);
   }
 
   delete(publicId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${publicId}`, { headers: this.getAuthHeaders() });
+    return this.http.delete<void>(`${this.apiUrl}/${publicId}`);
   }
 
 

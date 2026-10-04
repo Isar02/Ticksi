@@ -4,7 +4,7 @@ import { CategoryService, PagedResult } from '../../services/category.service';
 import { Category } from '../../models/category.model';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, Subject } from 'rxjs';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-public-categories',

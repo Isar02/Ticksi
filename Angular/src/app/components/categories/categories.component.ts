@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { PagedResult } from '../../services/category.service';
-import { environment} from '../../../environments/environment.development';
+import { environment} from '../../../environments/environment';
 
 
 
