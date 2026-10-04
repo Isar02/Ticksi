@@ -25,8 +25,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
 
-        if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        var passwordCheck = user is null ? PasswordCheck.Failed : _passwordHasher.Verify(user, request.Password);
+        if (user is null || passwordCheck == PasswordCheck.Failed)
             throw new UnauthorizedException("Invalid email or password.");
+
+        if (passwordCheck == PasswordCheck.ValidNeedsRehash)
+        {
+            user.PasswordHash = _passwordHasher.Hash(user, request.Password);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
 
         return new AuthResponseDto
         {

@@ -37,18 +37,21 @@ public sealed class DemoDataSeeder(
     private async Task<Dictionary<string, AppUser>> AddMissingUsersAsync(CancellationToken cancellationToken)
     {
         var roles = await context.Roles.ToDictionaryAsync(r => r.Name, cancellationToken);
-        var passwordHash = passwordHasher.Hash(seedingOptions.Value.DemoPassword);
 
-        AppUser User(string firstName, string lastName, string email, string phone, string role) => new()
+        AppUser User(string firstName, string lastName, string email, string phone, string role)
         {
-            FirstName = firstName,
-            LastName = lastName,
-            Email = email,
-            Phone = phone,
-            PasswordHash = passwordHash,
-            RegistrationDate = timeProvider.GetUtcNow().UtcDateTime,
-            Role = roles[role]
-        };
+            var user = new AppUser
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Phone = phone,
+                RegistrationDate = timeProvider.GetUtcNow().UtcDateTime,
+                Role = roles[role]
+            };
+            user.PasswordHash = passwordHasher.Hash(user, seedingOptions.Value.DemoPassword);
+            return user;
+        }
 
         AppUser[] demoUsers =
         [
