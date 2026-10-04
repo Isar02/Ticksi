@@ -33,11 +33,11 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
-            PasswordHash = _passwordHasher.Hash(request.Password),
             Phone = request.Phone,
             RegistrationDate = DateTime.UtcNow,
             Role = defaultRole
         };
+        user.PasswordHash = _passwordHasher.Hash(user, request.Password);
 
         _context.AppUsers.Add(user);
         await _context.SaveChangesAsync(cancellationToken);

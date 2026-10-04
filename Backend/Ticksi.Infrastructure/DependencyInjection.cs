@@ -44,7 +44,7 @@ public static class DependencyInjection
 
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
-        services.AddSingleton<IPasswordHasher, Sha256PasswordHasher>();
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton(TimeProvider.System);
 
         return services;
