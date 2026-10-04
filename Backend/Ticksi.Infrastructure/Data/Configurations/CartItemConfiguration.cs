@@ -4,10 +4,12 @@ using Ticksi.Domain.Entities;
 
 namespace Ticksi.Infrastructure.Data.Configurations;
 
-public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
+public class CartItemConfiguration : BaseEntityConfiguration<CartItem>
 {
-    public void Configure(EntityTypeBuilder<CartItem> builder)
+    public override void Configure(EntityTypeBuilder<CartItem> builder)
     {
+        base.Configure(builder);
+
         builder.HasIndex(i => new { i.CartId, i.TicketTypeId })
             .IsUnique();
 

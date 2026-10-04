@@ -20,6 +20,9 @@ namespace Ticksi.Application.Features.EventCategories.Commands.DeleteEventCatego
                 .FirstOrDefaultAsync(c => c.PublicId == request.PublicId, cancellationToken)
                 ?? throw new NotFoundException("Event category not found.");
 
+            if (await _context.Events.AnyAsync(e => e.EventCategoryId == category.Id, cancellationToken))
+                throw new ConflictException("The category still has events and cannot be deleted.");
+
             _context.EventCategories.Remove(category);
             await _context.SaveChangesAsync(cancellationToken);
         }

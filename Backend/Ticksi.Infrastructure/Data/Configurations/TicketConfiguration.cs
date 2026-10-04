@@ -4,10 +4,12 @@ using Ticksi.Domain.Entities;
 
 namespace Ticksi.Infrastructure.Data.Configurations;
 
-public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
+public class TicketConfiguration : BaseEntityConfiguration<Ticket>
 {
-    public void Configure(EntityTypeBuilder<Ticket> builder)
+    public override void Configure(EntityTypeBuilder<Ticket> builder)
     {
+        base.Configure(builder);
+
         builder.Property(t => t.Code)
             .IsRequired()
             .HasMaxLength(Ticket.Constraints.CodeMaxLength);

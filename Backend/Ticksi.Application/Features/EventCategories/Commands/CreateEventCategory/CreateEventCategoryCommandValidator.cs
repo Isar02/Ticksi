@@ -1,4 +1,5 @@
 using FluentValidation;
+using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.EventCategories.Commands.CreateEventCategory
 {
@@ -8,10 +9,16 @@ namespace Ticksi.Application.Features.EventCategories.Commands.CreateEventCatego
         {
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")
-                .MaximumLength(100).WithMessage("Name cannot exceed 100 characters.");
+                .MaximumLength(EventCategory.Constraints.NameMaxLength)
+                .WithMessage("Name cannot exceed {MaxLength} characters.");
 
             RuleFor(x => x.Description)
-                .MaximumLength(500).WithMessage("Description cannot exceed 500 characters.");
+                .MaximumLength(EventCategory.Constraints.DescriptionMaxLength)
+                .WithMessage("Description cannot exceed {MaxLength} characters.");
+
+            RuleFor(x => x.PosterUrl)
+                .MaximumLength(EventCategory.Constraints.PosterUrlMaxLength)
+                .WithMessage("Poster URL cannot exceed {MaxLength} characters.");
         }
     }
 }
