@@ -1,7 +1,6 @@
-using System;
-using Ticksi.Domain.Entities;
-using Ticksi.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Ticksi.Application.Interfaces;
+using Ticksi.Domain.Entities;
 
 namespace Ticksi.Infrastructure.Data;
 
@@ -11,14 +10,10 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public DbSet<Role> Roles { get; set; }
     public DbSet<OrganizerCompany> OrganizerCompanies { get; set; }
     public DbSet<EventType> EventTypes { get; set; }
-
     public DbSet<Event> Events { get; set; }
-
     public DbSet<EventCategory> EventCategories { get; set; }
-
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
-
     public DbSet<TicketType> TicketTypes { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
@@ -28,89 +23,10 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
 
-protected override void OnModelCreating(ModelBuilder modelBuilder)
-  {
-    base.OnModelCreating(modelBuilder);
-
-    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-
-    // Goes through each class
-    foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Checks if class inherited BaseEntity.cs
-        if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
-        {
-            // Adds UNIQUE index on PublicId
-            modelBuilder.Entity(entityType.ClrType)
-                .HasIndex(nameof(BaseEntity.PublicId))
-                .IsUnique();
-        }
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
-
-    // AppUser Configuration
-    modelBuilder.Entity<AppUser>(entity =>
-    {
-        entity.Property(u => u.Email)
-            .IsRequired()
-            .HasMaxLength(256);
-
-        entity.Property(u => u.FirstName)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        entity.Property(u => u.LastName)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        entity.Property(u => u.Phone)
-            .HasMaxLength(20);
-
-        entity.Property(u => u.PasswordHash)
-            .IsRequired();
-
-        entity.Property(u => u.Status)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        entity.HasIndex(u => u.Email)
-            .IsUnique();
-    });
-
-    // Role Configuration
-    modelBuilder.Entity<Role>(entity =>
-    {
-        entity.Property(r => r.Name)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        entity.HasIndex(r => r.Name)
-            .IsUnique();
-    });
-
-    // Relationships
-modelBuilder.Entity<Review>()
-    .HasOne(r => r.AppUser)
-    .WithMany(u => u.Reviews)
-    .HasForeignKey(r => r.AppUserId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-// Favorite Configuration - Unique constraint on (AppUserId, EventId)
-modelBuilder.Entity<Favorite>()
-    .HasIndex(f => new { f.AppUserId, f.EventId })
-    .IsUnique();
-
-modelBuilder.Entity<Favorite>()
-    .HasOne(f => f.AppUser)
-    .WithMany()
-    .HasForeignKey(f => f.AppUserId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-modelBuilder.Entity<Favorite>()
-    .HasOne(f => f.Event)
-    .WithMany()
-    .HasForeignKey(f => f.EventId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-
-  }
 }

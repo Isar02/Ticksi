@@ -4,10 +4,12 @@ using Ticksi.Domain.Entities;
 
 namespace Ticksi.Infrastructure.Data.Configurations;
 
-public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
+public class OrderItemConfiguration : BaseEntityConfiguration<OrderItem>
 {
-    public void Configure(EntityTypeBuilder<OrderItem> builder)
+    public override void Configure(EntityTypeBuilder<OrderItem> builder)
     {
+        base.Configure(builder);
+
         builder.Property(i => i.UnitPrice)
             .HasPrecision(18, 2);
 

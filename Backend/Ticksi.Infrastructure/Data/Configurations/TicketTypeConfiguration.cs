@@ -4,10 +4,12 @@ using Ticksi.Domain.Entities;
 
 namespace Ticksi.Infrastructure.Data.Configurations;
 
-public class TicketTypeConfiguration : IEntityTypeConfiguration<TicketType>
+public class TicketTypeConfiguration : BaseEntityConfiguration<TicketType>
 {
-    public void Configure(EntityTypeBuilder<TicketType> builder)
+    public override void Configure(EntityTypeBuilder<TicketType> builder)
     {
+        base.Configure(builder);
+
         builder.ToTable(table => table.HasCheckConstraint(
             "CK_TicketTypes_QuantityReserved",
             "[QuantityReserved] >= 0 AND [QuantityReserved] <= [Quantity]"));
