@@ -1,49 +1,33 @@
 using MediatR;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Ticksi.Application.Interfaces;
+using Ticksi.Application.Options;
 
-using System.IO;
+namespace Ticksi.Application.Features.Posters.Commands.UploadPoster;
 
-namespace Ticksi.Application.Features.Posters.Commands.UploadPoster
+public class UploadPosterCommandHandler : IRequestHandler<UploadPosterCommand, UploadPosterResponse>
 {
-    public class UploadPosterCommandHandler : IRequestHandler<UploadPosterCommand, UploadPosterResponse>
+    private readonly IFileStorageService _fileStorageService;
+    private readonly FileUploadOptions _uploadOptions;
+
+    public UploadPosterCommandHandler(IFileStorageService fileStorageService, IOptions<FileUploadOptions> uploadOptions)
     {
-        private readonly IFileStorageService _fileStorageService;
-        private readonly IConfiguration _configuration;
+        _fileStorageService = fileStorageService;
+        _uploadOptions = uploadOptions.Value;
+    }
 
-        public UploadPosterCommandHandler(
-            IFileStorageService fileStorageService,
-            IConfiguration configuration)
+    public async Task<UploadPosterResponse> Handle(UploadPosterCommand request, CancellationToken cancellationToken)
+    {
+        var posterPath = Path.Combine(_uploadOptions.EventPosterPath, request.EventPublicId.ToString());
+        var url = await _fileStorageService.SaveFileAsync(request.File, posterPath, cancellationToken);
+
+        return new UploadPosterResponse
         {
-            _fileStorageService = fileStorageService;
-            _configuration = configuration;
-        }
-
-        public async Task<UploadPosterResponse> Handle(UploadPosterCommand request, CancellationToken cancellationToken)
-        {
-            // Get the configured path for event posters
-            var posterBasePath = _configuration["FileUpload:EventPosterPath"] ?? "images/events";
-
-            var posterPath = Path.Combine(
-                posterBasePath,
-                request.EventPublicId.ToString()
-            );
-
-            // Save the file and get the URL
-            var url = await _fileStorageService.SaveFileAsync(request.File, posterPath, cancellationToken);
-
-            var storedFileName = Path.GetFileName(url);
-
-
-            return new UploadPosterResponse
-            {
-                Url = url,
-                OriginalFileName = request.File.FileName,
-                StoredFileName = storedFileName,
-                FileSizeBytes = request.File.Length,
-                ContentType = request.File.ContentType
-            };
-        }
+            Url = url,
+            OriginalFileName = request.File.FileName,
+            StoredFileName = Path.GetFileName(url),
+            FileSizeBytes = request.File.Length,
+            ContentType = request.File.ContentType
+        };
     }
 }
-

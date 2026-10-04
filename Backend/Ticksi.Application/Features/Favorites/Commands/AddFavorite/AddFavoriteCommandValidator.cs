@@ -7,6 +7,5 @@ public class AddFavoriteCommandValidator : AbstractValidator<AddFavoriteCommand>
     public AddFavoriteCommandValidator()
     {
         RuleFor(x => x.EventPublicId).NotEmpty().WithMessage("Event is required.");
-        RuleFor(x => x.UserPublicId).NotEmpty().WithMessage("User is required.");
     }
 }

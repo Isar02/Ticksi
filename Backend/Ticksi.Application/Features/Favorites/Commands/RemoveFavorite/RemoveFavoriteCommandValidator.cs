@@ -7,6 +7,5 @@ public class RemoveFavoriteCommandValidator : AbstractValidator<RemoveFavoriteCo
     public RemoveFavoriteCommandValidator()
     {
         RuleFor(x => x.EventPublicId).NotEmpty().WithMessage("Event is required.");
-        RuleFor(x => x.UserPublicId).NotEmpty().WithMessage("User is required.");
     }
 }

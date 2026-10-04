@@ -1,89 +1,45 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
-using Ticksi.Domain.Entities;
 
-namespace Ticksi.Application.Features.Auth.Commands.Login
+namespace Ticksi.Application.Features.Auth.Commands.Login;
+
+public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto>
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto>
+    private readonly IAppDbContext _context;
+    private readonly IJwtTokenService _tokenService;
+
+    public LoginCommandHandler(IAppDbContext context, IJwtTokenService tokenService)
     {
-        private readonly IAppDbContext _context;
-        private readonly IConfiguration _configuration;
+        _context = context;
+        _tokenService = tokenService;
+    }
 
-        public LoginCommandHandler(IAppDbContext context, IConfiguration configuration)
+    public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _context.AppUsers
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+
+        if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
+            throw new UnauthorizedException("Invalid email or password.");
+
+        return new AuthResponseDto
         {
-            _context = context;
-            _configuration = configuration;
-        }
+            Token = _tokenService.CreateAccessToken(user),
+            Email = user.Email,
+            PublicId = user.PublicId.ToString(),
+            FirstName = user.FirstName
+        };
+    }
 
-        public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
-        {
-            var user = await _context.AppUsers
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
-
-            if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
-                throw new UnauthorizedException("Invalid email or password.");
-
-            return new AuthResponseDto
-            {
-                Token = GenerateJwtToken(user),
-                Email = user.Email,
-                PublicId = user.PublicId.ToString(),
-                FirstName = user.FirstName
-            };
-        }
-
-        private string GenerateJwtToken(AppUser user)
-        {
-            var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
-            var jwtIssuer = _configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("JWT Issuer not configured");
-            var jwtAudience = _configuration["Jwt:Audience"] ?? throw new InvalidOperationException("JWT Audience not configured");
-            var jwtExpirationMinutes = int.Parse(_configuration["Jwt:ExpirationMinutes"] ?? "60");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.PublicId.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new Claim(ClaimTypes.Role, user.Role!.Name), // Standard role claim for authorization
-                new Claim("RoleId", user.Role!.Name) // Keep for backwards compatibility
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: jwtIssuer,
-                audience: jwtAudience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(jwtExpirationMinutes),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
-        }
-
-        private bool VerifyPassword(string password, string passwordHash)
-        {
-            var hashOfInput = HashPassword(password);
-            return hashOfInput == passwordHash;
-        }
+    private static bool VerifyPassword(string password, string passwordHash)
+    {
+        var hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(password)));
+        return hash == passwordHash;
     }
 }
-
