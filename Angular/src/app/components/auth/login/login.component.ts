@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { readReturnUrl } from '../../../core/guards/return-url';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -19,7 +20,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -47,7 +49,7 @@ export class LoginComponent {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/']);
+        this.router.navigateByUrl(readReturnUrl(this.route));
       },
       error: (error) => {
         this.isLoading = false;

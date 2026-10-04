@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { readReturnUrl } from '../../../core/guards/return-url';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -24,7 +25,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.registerForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -124,7 +126,7 @@ export class RegisterComponent {
     this.authService.register(registerData).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/']);
+        this.router.navigateByUrl(readReturnUrl(this.route));
       },
       error: (error) => {
         this.isLoading = false;
