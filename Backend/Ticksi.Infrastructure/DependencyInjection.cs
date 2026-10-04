@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Ticksi.Application.Interfaces;
 using Ticksi.Application.Options;
 using Ticksi.Infrastructure.Data;
+using Ticksi.Infrastructure.Options;
 using Ticksi.Infrastructure.Security;
 using Ticksi.Infrastructure.Services;
 
@@ -23,7 +25,13 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(BuildConnectionString(configuration)));
+        services.AddOptions<ConnectionStringsOptions>()
+            .Bind(configuration.GetSection(ConnectionStringsOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddDbContext<AppDbContext>((provider, options) =>
+            options.UseSqlServer(provider.GetRequiredService<IOptions<ConnectionStringsOptions>>().Value.DefaultConnection));
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
         services.AddScoped<IFileStorageService, FileStorageService>();
@@ -31,17 +39,5 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
 
         return services;
-    }
-
-    private static string BuildConnectionString(IConfiguration configuration)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
-
-        var solutionRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
-        var databaseFile = Path.Combine(solutionRoot, "db-backups", "TicksiDb.mdf");
-        Directory.CreateDirectory(Path.GetDirectoryName(databaseFile)!);
-
-        return connectionString.Replace("{DbPath}", databaseFile);
     }
 }

@@ -486,7 +486,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
-API/appsettings.json
 API/tickets.db*
 
 # Uploaded files (auto-created at runtime)

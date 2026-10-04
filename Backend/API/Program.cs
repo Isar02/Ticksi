@@ -1,6 +1,7 @@
 using API;
 using API.Errors;
 using API.Options;
+using Microsoft.Extensions.Options;
 using Ticksi.Application;
 using Ticksi.Infrastructure;
 using Ticksi.Infrastructure.Data;
@@ -14,20 +15,10 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseApiErrorResponses();
+app.Services.GetRequiredService<IStartupValidator>().Validate();
+await app.Services.InitializeDatabaseAsync(app.Lifetime.ApplicationStopping);
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        await DbSeeder.SeedAsync(services.GetRequiredService<AppDbContext>(), app.Configuration);
-    }
-    catch (Exception ex)
-    {
-        services.GetRequiredService<ILogger<Program>>().LogError(ex, "An error occurred while seeding the database.");
-    }
-}
+app.UseApiErrorResponses();
 
 if (app.Environment.IsDevelopment())
 {
