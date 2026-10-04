@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Ticksi.Application.Common.Exceptions;
@@ -12,11 +10,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto
 {
     private readonly IAppDbContext _context;
     private readonly IJwtTokenService _tokenService;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public LoginCommandHandler(IAppDbContext context, IJwtTokenService tokenService)
+    public LoginCommandHandler(IAppDbContext context, IJwtTokenService tokenService, IPasswordHasher passwordHasher)
     {
         _context = context;
         _tokenService = tokenService;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
 
-        if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
+        if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new UnauthorizedException("Invalid email or password.");
 
         return new AuthResponseDto
@@ -35,11 +35,5 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto
             PublicId = user.PublicId.ToString(),
             FirstName = user.FirstName
         };
-    }
-
-    private static bool VerifyPassword(string password, string passwordHash)
-    {
-        var hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(password)));
-        return hash == passwordHash;
     }
 }

@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Ticksi.Application.Common.Exceptions;
@@ -13,11 +11,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
 {
     private readonly IAppDbContext _context;
     private readonly IJwtTokenService _tokenService;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public RegisterCommandHandler(IAppDbContext context, IJwtTokenService tokenService)
+    public RegisterCommandHandler(IAppDbContext context, IJwtTokenService tokenService, IPasswordHasher passwordHasher)
     {
         _context = context;
         _tokenService = tokenService;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -33,7 +33,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
-            PasswordHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(request.Password))),
+            PasswordHash = _passwordHasher.Hash(request.Password),
             Phone = request.Phone,
             RegistrationDate = DateTime.UtcNow,
             Role = defaultRole
