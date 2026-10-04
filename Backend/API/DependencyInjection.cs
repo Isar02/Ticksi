@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Ticksi.Application.Common;
 using Ticksi.Application.Interfaces;
 using Ticksi.Application.Options;
 
@@ -38,8 +39,11 @@ public static class DependencyInjection
             .Configure<IOptions<JwtOptions>>((bearer, jwtOptions) =>
             {
                 var jwt = jwtOptions.Value;
+                bearer.MapInboundClaims = false;
                 bearer.TokenValidationParameters = new TokenValidationParameters
                 {
+                    NameClaimType = AuthClaims.Name,
+                    RoleClaimType = AuthClaims.Role,
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,

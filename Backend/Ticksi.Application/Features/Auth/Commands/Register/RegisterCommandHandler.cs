@@ -9,6 +9,8 @@ namespace Ticksi.Application.Features.Auth.Commands.Register;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponseDto>
 {
+    private const string EmailTaken = "An account with this email already exists.";
+
     private readonly IAppDbContext _context;
     private readonly IJwtTokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
@@ -22,8 +24,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
 
     public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        if (await _context.AppUsers.AnyAsync(u => u.Email == request.Email, cancellationToken))
-            throw new ConflictException("An account with this email already exists.");
+        if (await EmailExistsAsync(request.Email, cancellationToken))
+            throw new ConflictException(EmailTaken);
 
         var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User", cancellationToken)
             ?? throw new InvalidOperationException("The User role has not been seeded.");
@@ -41,8 +43,23 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
 
         _context.AppUsers.Add(user);
         var response = AuthSession.Start(_context, _tokenService, user);
-        await _context.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // A parallel registration may have taken the email between the check and the save.
+            if (!await EmailExistsAsync(request.Email, cancellationToken))
+                throw;
+
+            throw new ConflictException(EmailTaken);
+        }
 
         return response;
     }
+
+    private Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken) =>
+        _context.AppUsers.AnyAsync(u => u.Email == email, cancellationToken);
 }
