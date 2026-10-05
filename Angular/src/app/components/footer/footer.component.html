@@ -1,40 +1,19 @@
 <footer class="footer">
-  <div class="footer-container">
-
-    <!-- Logo & branding -->
-    <div class="footer-brand">
-      <h3>Ticksi</h3>
-      <p>Your gateway to unforgettable events and experiences.</p>
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <a routerLink="/" class="footer__wordmark">Ticksi</a>
+      <p class="footer__tagline">Tickets for concerts, theatre, sport and everything in between.</p>
     </div>
 
-    <!-- Links -->
-    <div class="footer-links">
-      <div class="footer-column">
-        <span>Platform</span>
-        <a href="#">Browse events</a>
-        <a href="#">Organize event</a>
-        <a href="#">Pricing</a>
-      </div>
-
-      <div class="footer-column">
-        <span>Company</span>
-        <a href="#">About us</a>
-        <a href="#">Careers</a>
-        <a href="#">Contact</a>
-      </div>
-
-      <div class="footer-column">
-        <span>Legal</span>
-        <a href="#">Privacy policy</a>
-        <a href="#">Terms of service</a>
-        <a href="#">Cookies</a>
-      </div>
-    </div>
-
+    <nav class="footer__nav" aria-label="Footer">
+      <span class="footer__heading">Explore</span>
+      <a routerLink="/events" class="footer__link">Events</a>
+      <a routerLink="/categories" class="footer__link">Categories</a>
+    </nav>
   </div>
 
-  <div class="footer-bottom">
-    © 2025 Ticksi. All rights reserved.
+  <div class="footer__bottom">
+    <span>© {{ year }} Ticksi</span>
+    <span class="footer__admit">Admit one</span>
   </div>
 </footer>
-

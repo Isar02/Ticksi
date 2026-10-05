@@ -1,31 +1,30 @@
-<nav class="navbar" [class.scrolled]="isScrolled">
-  <div class="navbar-container">
-    <!-- Logo -->
-    <a routerLink="/" class="navbar-logo">
-      <img src="assets/images/Ticksi_no_slogan-removebg_5.png" alt="Ticksi" class="logo-image" />
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a routerLink="/" class="navbar__logo" aria-label="Ticksi home">
+      <img src="assets/images/Ticksi_no_slogan-removebg_5.png" alt="Ticksi" />
     </a>
 
-    <!-- Auth -->
-    <div class="navbar-auth">
+    <div class="navbar__links">
+      <a routerLink="/events" routerLinkActive="is-active" class="navbar__link">Events</a>
+      <a routerLink="/categories" routerLinkActive="is-active" class="navbar__link">Categories</a>
+      @if (canManage()) {
+        <span class="navbar__divider" aria-hidden="true"></span>
+        <a routerLink="/organizer/events" routerLinkActive="is-active" class="navbar__link">Your events</a>
+        <a routerLink="/admin/categories" routerLinkActive="is-active" class="navbar__link">Your categories</a>
+      }
+    </div>
 
-  @if (canManage()) {
-    <a routerLink="/admin/categories" class="nav-link">Your categories</a>
-    <a routerLink="/organizer/events" class="nav-link">Your events</a>
-  }
-  <a routerLink="/events" class="nav-link">Events</a>
-  <a routerLink="/categories" class="nav-link">Categories</a>
-
-
-  @if (authService.isAuthenticated()) {
-    <span class="user-name">{{ authService.currentUser()?.firstName }}</span>
-    <button class="btn-logout" (click)="logout()">Log out</button>
-  } @else {
-    <a routerLink="/auth/login" class="btn-login">Log in</a>
-    <a routerLink="/auth/register" class="btn-register">Register</a>
-  }
-
-</div>
-
+    <div class="navbar__account">
+      @if (user(); as user) {
+        <span class="navbar__user">
+          <span class="navbar__avatar" aria-hidden="true">{{ user.firstName.charAt(0) }}</span>
+          <span class="navbar__name">{{ user.firstName }}</span>
+        </span>
+        <button type="button" class="navbar__button" (click)="logout()">Log out</button>
+      } @else {
+        <a routerLink="/auth/login" class="navbar__button navbar__button--quiet">Log in</a>
+        <a routerLink="/auth/register" class="navbar__button navbar__button--brand">Register</a>
+      }
+    </div>
   </div>
 </nav>
-

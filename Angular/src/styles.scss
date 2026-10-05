@@ -1,6 +1,36 @@
 @use '@angular/material' as mat;
 @use './theme/theme-colors' as ticksi;
 
+:root {
+  --tk-ink: #2b2230;
+  --tk-ink-soft: #4a4150;
+  --tk-muted: #6f6577;
+  --tk-faint: #8b8292;
+  --tk-line: #ece6ef;
+  --tk-perforation: #d8c7e0;
+  --tk-page: #f6f2f7;
+  --tk-surface: #ffffff;
+  --tk-surface-sunk: #fbf8fc;
+  --tk-brand: #9e6caf;
+  --tk-brand-strong: #7e4f8f;
+  --tk-brand-soft: #f5eff8;
+  --tk-danger: #d03a47;
+  --tk-danger-strong: #b52f3b;
+  --tk-danger-soft: #fdf0f1;
+  --tk-success: #2e8b6a;
+  --tk-success-soft: #eaf6f1;
+
+  --tk-radius-sm: 10px;
+  --tk-radius-md: 14px;
+  --tk-radius-lg: 20px;
+  --tk-radius-pill: 999px;
+
+  --tk-shadow-card: 0 1px 2px rgba(43, 34, 48, 0.04), 0 12px 32px rgba(43, 34, 48, 0.06);
+  --tk-shadow-bar: 0 6px 24px rgba(43, 34, 48, 0.07);
+  --tk-drop-float: drop-shadow(0 12px 24px rgba(43, 34, 48, 0.14)) drop-shadow(0 2px 4px rgba(43, 34, 48, 0.08));
+  --tk-drop-overlay: drop-shadow(0 24px 48px rgba(43, 34, 48, 0.22)) drop-shadow(0 4px 10px rgba(43, 34, 48, 0.1));
+}
+
 html {
   overflow-y: scroll;
   height: 100%;
@@ -20,6 +50,8 @@ html {
 body {
   height: 100%;
   margin: 0;
+  background: var(--tk-page);
+  color: var(--tk-ink);
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 

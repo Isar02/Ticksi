@@ -1,71 +1,111 @@
-$primary-color: #9E6CAF;
-$text-dark: #333;
-$text-light: #666;
+$notch: 7px;
+$notch-gap: 22px;
 
-.footer {
-  background: linear-gradient(135deg, #f9f6fb, #ffffff);
-  border-top: 1px solid rgba(158,108,175,.15);
-  padding: 60px 20px 25px;
-  font-size: 14px;
+:host {
+  display: block;
+  margin-top: 24px;
 }
 
-.footer-container {
-  max-width: 1000px;
-  margin: 0 auto;
+// A row of punched holes along the top, like the tear line of a ticket stub.
+.footer {
+  padding: 52px 20px 28px;
+  background: var(--tk-ink);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 14px;
+  mask: radial-gradient(circle at #{$notch-gap * 0.5} 0, transparent $notch, #000 #{$notch + 0.5px}) 0 0 / #{$notch-gap} 100% repeat-x;
+}
+
+.footer__inner {
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.footer-brand {
-  max-width: 280px;
+.footer__brand {
+  max-width: 340px;
+}
 
-  h3 {
-    color: $primary-color;
-    margin-bottom: 10px;
+.footer__wordmark {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+
+  &::after {
+    content: '.';
+    color: var(--tk-brand);
   }
-
-  p {
-    color: $text-light;
-    line-height: 1.6;
-  }
 }
 
-.footer-links {
-  display: flex;
-  gap: 50px;
-  flex-wrap: wrap;
+.footer__tagline {
+  margin: 10px 0 0;
+  line-height: 1.6;
 }
 
-.footer-column {
+.footer__nav {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 140px;
+}
 
-  span {
-    font-weight: 600;
-    color: $text-dark;
-    margin-bottom: 6px;
-  }
+.footer__heading {
+  margin-bottom: 4px;
+  color: var(--tk-perforation);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
 
-  a {
-    color: $text-light;
-    text-decoration: none;
-    transition: color 0.2s ease;
+.footer__link {
+  width: fit-content;
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  transition: color 120ms ease;
 
-    &:hover {
-      color: $primary-color;
-    }
+  &:hover {
+    color: #fff;
   }
 }
 
-.footer-bottom {
-  margin-top: 40px;
+.footer__wordmark,
+.footer__link {
+  &:focus-visible {
+    outline: 2px solid var(--tk-brand);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+.footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 36px auto 0;
   padding-top: 20px;
-  border-top: 1px solid rgba(158,108,175,.15);
-  text-align: center;
-  color: $text-light;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
   font-size: 13px;
 }
 
+.footer__admit {
+  color: var(--tk-perforation);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 44px 16px 24px;
+  }
+
+  .footer__inner {
+    flex-direction: column;
+    gap: 28px;
+  }
+}

@@ -1,31 +1,24 @@
-import { Component, HostListener, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 import { MANAGER_ROLES } from '../../core/models/role';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent {
-  isScrolled = false;
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  readonly user = this.authService.currentUser;
   readonly canManage = computed(() => this.authService.hasAnyRole(MANAGER_ROLES));
-
-  constructor(public authService: AuthService, private router: Router) {}
-
-  @HostListener('window:scroll', [])
-  onWindowScroll() {
-    this.isScrolled = window.scrollY > 10;
-  }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
   }
 }
-
