@@ -2,6 +2,7 @@ namespace Ticksi.Application.Features.Events.Queries.GetEventFormOptions;
 
 public class EventFormOptionsDto
 {
+    public List<OptionDto> Categories { get; set; } = [];
     public List<VenueOptionDto> Venues { get; set; } = [];
     public List<OptionDto> EventTypes { get; set; } = [];
     public List<OptionDto> OrganizerCompanies { get; set; } = [];

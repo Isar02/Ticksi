@@ -1,0 +1,43 @@
+@mixin layout {
+  :host {
+    display: block;
+  }
+
+  .step-head {
+    margin-bottom: 24px;
+  }
+
+  .step-head__title {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .step-head__text {
+    margin: 6px 0 0;
+    color: var(--tk-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 16px;
+  }
+
+  .fields__wide {
+    grid-column: 1 / -1;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  @media (max-width: 599px) {
+    .fields {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}

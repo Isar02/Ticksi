@@ -1,0 +1,42 @@
+<ol class="track" role="tablist">
+  @for (step of steps; track step; let i = $index) {
+    <li
+      class="track__item"
+      [class.is-current]="selectedIndex === i"
+      [class.is-done]="isDone(step) && selectedIndex !== i"
+      [class.is-attention]="needsAttention(step) && selectedIndex !== i"
+    >
+      <button
+        type="button"
+        class="track__button"
+        role="tab"
+        [id]="_getStepLabelId(i)"
+        [attr.aria-selected]="selectedIndex === i"
+        [attr.aria-controls]="_getStepContentId(i)"
+        (click)="go(i)"
+      >
+        <span class="track__punch">
+          @if (needsAttention(step) && selectedIndex !== i) {
+            <mat-icon>priority_high</mat-icon>
+          } @else if (isDone(step) && selectedIndex !== i) {
+            <mat-icon>check</mat-icon>
+          } @else {
+            {{ i + 1 }}
+          }
+        </span>
+        <span class="track__label">{{ step.label }}</span>
+      </button>
+    </li>
+  }
+</ol>
+
+@if (selected; as step) {
+  <div
+    class="panel"
+    role="tabpanel"
+    [id]="_getStepContentId(selectedIndex)"
+    [attr.aria-labelledby]="_getStepLabelId(selectedIndex)"
+  >
+    <ng-container [ngTemplateOutlet]="step.content" />
+  </div>
+}

@@ -1,0 +1,59 @@
+@let event = summary();
+
+<header class="step-head">
+  <h2 class="step-head__title">Check before you save</h2>
+  <p class="step-head__text">This is how the event will be published. Change anything that is not right.</p>
+</header>
+
+<section class="block">
+  <header class="block__head">
+    <h3 class="block__title">Details</h3>
+    <button mat-button type="button" (click)="editStep.emit('details')"><mat-icon>edit</mat-icon>Edit</button>
+  </header>
+  <dl class="facts">
+    <div class="facts__wide"><dt>Name</dt><dd>{{ event.name }}</dd></div>
+    <div><dt>Category</dt><dd>{{ event.categoryName }}</dd></div>
+    <div><dt>Event type</dt><dd>{{ event.eventTypeName }}</dd></div>
+    <div><dt>Organizer company</dt><dd>{{ event.companyName }}</dd></div>
+    <div><dt>Contact</dt><dd>{{ event.contact }}</dd></div>
+    <div class="facts__wide"><dt>Description</dt><dd class="facts__text">{{ event.description }}</dd></div>
+  </dl>
+</section>
+
+<section class="block">
+  <header class="block__head">
+    <h3 class="block__title">Venue and date</h3>
+    <button mat-button type="button" (click)="editStep.emit('schedule')"><mat-icon>edit</mat-icon>Edit</button>
+  </header>
+  <dl class="facts">
+    <div><dt>Venue</dt><dd>{{ event.venue?.name }}, {{ event.venue?.city }}</dd></div>
+    <div><dt>Starts</dt><dd>{{ event.startsAt | date: 'd. M. y. · HH:mm' }}</dd></div>
+  </dl>
+</section>
+
+<section class="block">
+  <header class="block__head">
+    <h3 class="block__title">Tickets</h3>
+    <button mat-button type="button" (click)="editStep.emit('tickets')"><mat-icon>edit</mat-icon>Edit</button>
+  </header>
+  <table class="tickets">
+    <thead>
+      <tr><th scope="col">Type</th><th scope="col">Price</th><th scope="col">Quantity</th></tr>
+    </thead>
+    <tbody>
+      @for (ticket of event.tickets; track $index) {
+        <tr>
+          <td>{{ ticket.name }}</td>
+          <td>{{ ticket.price === 0 ? 'Free' : (ticket.price | currency) }}</td>
+          <td>{{ ticket.quantity | number }}</td>
+        </tr>
+      }
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row" colspan="2">Total of {{ event.venue?.capacity | number }} seats</th>
+        <td>{{ event.ticketTotal | number }}</td>
+      </tr>
+    </tfoot>
+  </table>
+</section>

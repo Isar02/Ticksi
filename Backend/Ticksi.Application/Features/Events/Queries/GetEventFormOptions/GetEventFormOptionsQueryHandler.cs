@@ -17,6 +17,12 @@ public class GetEventFormOptionsQueryHandler : IRequestHandler<GetEventFormOptio
     {
         return new EventFormOptionsDto
         {
+            Categories = await _context.EventCategories
+                .AsNoTracking()
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .Select(c => new OptionDto(c.PublicId, c.Name))
+                .ToListAsync(cancellationToken),
             Venues = await _context.Locations
                 .AsNoTracking()
                 .OrderBy(l => l.Name)

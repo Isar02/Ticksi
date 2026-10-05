@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { withoutErrorToast } from '../core/interceptors/error.interceptor';
-import { Event, EventFormOptions, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
+import { Event, EventForEdit, EventFormOptions, EventInput, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
 
 export interface PagedResult<T> {
   items: T[];
@@ -78,6 +78,19 @@ export class EventService {
 
   getFormOptions(): Observable<EventFormOptions> {
     return this.http.get<EventFormOptions>(`${this.apiUrl}/form-options`);
+  }
+
+  // The wizard shows load and save failures on the page and on its fields.
+  getEventForEdit(eventId: string): Observable<EventForEdit> {
+    return this.http.get<EventForEdit>(`${this.apiUrl}/${eventId}/edit`, { context: withoutErrorToast() });
+  }
+
+  createEvent(input: EventInput): Observable<Event> {
+    return this.http.post<Event>(this.apiUrl, input, { context: withoutErrorToast() });
+  }
+
+  updateEvent(eventId: string, input: EventInput): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${eventId}`, input, { context: withoutErrorToast() });
   }
 
   toAssetUrl(path: string): string {

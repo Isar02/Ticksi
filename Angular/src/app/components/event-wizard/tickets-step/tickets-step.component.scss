@@ -1,0 +1,121 @@
+@use '../wizard-step';
+
+@include wizard-step.layout;
+
+.rows {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 150px 150px 40px;
+  align-items: start;
+  column-gap: 12px;
+}
+
+.row__number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-top: 12px;
+  border: 1px dashed var(--tk-perforation);
+  border-radius: 50%;
+  color: var(--tk-brand-strong);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.row__remove {
+  margin-top: 8px;
+  color: var(--tk-muted);
+}
+
+.row__error {
+  grid-column: 2 / -1;
+  margin: 0;
+  color: var(--tk-danger);
+  font-size: 13px;
+}
+
+.add {
+  margin-top: 20px;
+}
+
+.capacity {
+  margin-top: 24px;
+  padding: 16px 18px;
+  border: 1px dashed var(--tk-perforation);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface-sunk);
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.capacity__numbers {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--tk-muted);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+
+  strong {
+    color: var(--tk-ink);
+    font-size: 18px;
+    font-weight: 500;
+  }
+}
+
+.capacity__meter {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: var(--tk-radius-pill);
+  background: var(--tk-line);
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--tk-brand);
+    transition: width 240ms ease;
+  }
+}
+
+.capacity.is-over {
+  border-color: var(--tk-danger);
+  background: var(--tk-danger-soft);
+
+  .capacity__meter span {
+    background: var(--tk-danger);
+  }
+}
+
+.list-error {
+  margin: 12px 0 0;
+  color: var(--tk-danger);
+  font-size: 14px;
+}
+
+@media (max-width: 719px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px;
+    row-gap: 12px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--tk-line);
+  }
+
+  .row__number {
+    display: none;
+  }
+
+  .row__name,
+  .row__error {
+    grid-column: 1 / -1;
+  }
+}

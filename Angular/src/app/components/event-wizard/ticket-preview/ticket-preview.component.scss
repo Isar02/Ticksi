@@ -1,0 +1,154 @@
+:host {
+  display: block;
+  filter: var(--tk-drop-float);
+}
+
+// Notches punched into both edges where the face meets the stub.
+.ticket {
+  --tear: 188px;
+  overflow: hidden;
+  border-radius: var(--tk-radius-lg);
+  background: var(--tk-surface);
+  -webkit-mask:
+    radial-gradient(circle 13px at 0 var(--tear), transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 13px at 100% var(--tear), transparent 98%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 13px at 0 var(--tear), transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 13px at 100% var(--tear), transparent 98%, #000) right / 51% 100% no-repeat;
+}
+
+.ticket__face {
+  height: var(--tear);
+  padding: 24px 26px;
+  background:
+    radial-gradient(120% 90% at 100% 0, rgba(255, 255, 255, 0.16), transparent 60%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 12px),
+    var(--tk-brand-strong);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket__kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.ticket__name {
+  display: -webkit-box;
+  margin: 12px 0 auto;
+  overflow: hidden;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+
+  &.is-empty {
+    opacity: 0.5;
+  }
+}
+
+.ticket__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 3px 10px;
+  border-radius: var(--tk-radius-pill);
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  font-weight: 500;
+
+  &.is-empty {
+    opacity: 0.6;
+  }
+}
+
+.tag--plain {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.ticket__stub {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 20px;
+  padding: 24px 26px 26px;
+  border-top: 2px dashed var(--tk-perforation);
+}
+
+.ticket__when {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-brand-soft);
+  color: var(--tk-brand-strong);
+  font-variant-numeric: tabular-nums;
+
+  &.is-empty {
+    opacity: 0.55;
+  }
+}
+
+.ticket__day {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.ticket__month {
+  margin-top: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.ticket__time {
+  margin-top: 6px;
+  color: var(--tk-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ticket__facts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+
+  dt {
+    color: var(--tk-faint);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    color: var(--tk-ink);
+    font-size: 14px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .is-empty {
+    color: var(--tk-faint);
+    font-weight: 400;
+  }
+}
+
+.ticket__of {
+  margin-left: 4px;
+  color: var(--tk-muted);
+  font-weight: 400;
+}

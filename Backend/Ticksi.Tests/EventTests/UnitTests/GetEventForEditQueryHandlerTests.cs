@@ -25,6 +25,24 @@ public class GetEventForEditQueryHandlerTests : EventHandlerTestBase
     }
 
     [Fact]
+    public async Task Handle_InactiveCategory_StillReturnsItsName()
+    {
+        var organizer = await AddUserAsync(Role.Names.Organizer);
+        var references = await AddReferencesAsync();
+        var item = await AddEventAsync(organizer, references);
+        await using (var context = Database.CreateContext())
+        {
+            var category = await context.EventCategories.SingleAsync(c => c.PublicId == references.CategoryId);
+            category.IsActive = false;
+            await context.SaveChangesAsync();
+        }
+
+        var dto = await QueryAsync(organizer, item.PublicId);
+
+        Assert.Equal((references.CategoryId, "Music"), (dto.CategoryId, dto.CategoryName));
+    }
+
+    [Fact]
     public async Task Handle_OtherOrganizersEvent_ThrowsForbidden()
     {
         var owner = await AddUserAsync(Role.Names.Organizer);
