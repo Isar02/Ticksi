@@ -1,4 +1,4 @@
-namespace Ticksi.Application.Features.Reports.Documents;
+namespace Ticksi.Application.Features.Reports.Models;
 
 public record EventsByCategoryReportRow(
     string Name,

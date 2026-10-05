@@ -55,8 +55,9 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-// The confirmation dialog draws its own ticket shape and shadow.
-.cdk-overlay-pane.confirm-dialog-panel .mat-mdc-dialog-surface {
+// Ticket-shaped dialogs draw their own shape and shadow.
+.cdk-overlay-pane.confirm-dialog-panel .mat-mdc-dialog-surface,
+.cdk-overlay-pane.report-dialog-panel .mat-mdc-dialog-surface {
   background: transparent;
   box-shadow: none;
   overflow: visible;

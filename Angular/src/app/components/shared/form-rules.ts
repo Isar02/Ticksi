@@ -41,3 +41,9 @@ export function applyServerErrors(form: FormGroup, fieldErrors: Readonly<Record<
 
   return unplaced;
 }
+
+// For a group with dateFrom and dateTo as a date input gives them (yyyy-MM-dd), so text order is date order.
+export function endDateNotBeforeStart(group: AbstractControl): ValidationErrors | null {
+  const { dateFrom, dateTo } = group.value as { dateFrom?: string; dateTo?: string };
+  return dateFrom && dateTo && dateTo < dateFrom ? { dateRange: true } : null;
+}

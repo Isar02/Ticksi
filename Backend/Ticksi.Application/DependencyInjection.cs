@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using QuestPDF.Infrastructure;
 using Ticksi.Application.Common.Behaviors;
 
 namespace Ticksi.Application;
@@ -18,8 +17,6 @@ public static class DependencyInjection
         });
 
         services.AddValidatorsFromAssembly(assembly);
-
-        QuestPDF.Settings.License = LicenseType.Community;
 
         return services;
     }

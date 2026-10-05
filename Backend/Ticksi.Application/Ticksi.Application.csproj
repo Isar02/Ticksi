@@ -10,7 +10,6 @@
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
     <PackageReference Include="MediatR" Version="12.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
-    <PackageReference Include="QuestPDF" Version="2024.12.2" />
   </ItemGroup>
 
   <PropertyGroup>

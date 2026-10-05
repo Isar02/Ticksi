@@ -63,11 +63,10 @@
               type="button"
               class="action-btn"
               (click)="downloadReport(category)"
-              [disabled]="isDownloading(category.publicId)"
               title="Download PDF report of events in this category"
             >
-              <span class="material-icons" aria-hidden="true">{{ isDownloading(category.publicId) ? 'hourglass_empty' : 'file_download' }}</span>
-              {{ isDownloading(category.publicId) ? 'Downloading…' : 'Download PDF' }}
+              <span class="material-icons" aria-hidden="true">file_download</span>
+              Download PDF
             </button>
 
             <div class="actions-end">

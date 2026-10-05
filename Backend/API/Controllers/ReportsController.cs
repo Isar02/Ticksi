@@ -20,9 +20,16 @@ public class ReportsController : ControllerBase
     [HttpGet("events-by-category/{categoryPublicId:guid}")]
     public async Task<IActionResult> GetEventsByCategoryReport(
         Guid categoryPublicId,
+        [FromQuery] DateOnly? dateFrom,
+        [FromQuery] DateOnly? dateTo,
         CancellationToken cancellationToken)
     {
-        var query = new GetEventsByCategoryReportQuery { CategoryPublicId = categoryPublicId };
+        var query = new GetEventsByCategoryReportQuery
+        {
+            CategoryPublicId = categoryPublicId,
+            DateFrom = dateFrom,
+            DateTo = dateTo
+        };
         var pdfBytes = await _mediator.Send(query, cancellationToken);
 
         return File(pdfBytes, "application/pdf", $"events-report-{categoryPublicId}.pdf");
