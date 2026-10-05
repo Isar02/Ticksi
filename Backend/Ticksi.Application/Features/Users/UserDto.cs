@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.Users;
@@ -14,7 +15,7 @@ public class UserDto
     public bool IsActive { get; set; }
     public DateTime RegistrationDate { get; set; }
 
-    public static UserDto From(AppUser user) => new()
+    public static readonly Expression<Func<AppUser, UserDto>> Projection = user => new UserDto
     {
         PublicId = user.PublicId,
         FirstName = user.FirstName,
@@ -26,4 +27,8 @@ public class UserDto
         IsActive = user.IsActive,
         RegistrationDate = user.RegistrationDate
     };
+
+    private static readonly Func<AppUser, UserDto> FromUser = Projection.Compile();
+
+    public static UserDto From(AppUser user) => FromUser(user);
 }

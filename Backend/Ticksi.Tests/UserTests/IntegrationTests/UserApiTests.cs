@@ -2,8 +2,10 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Ticksi.Application.Common;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Users;
+using Ticksi.Application.Features.Users.Queries.GetRoles;
 using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.UserTests.IntegrationTests;
@@ -27,6 +29,8 @@ public class UserApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFac
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = await response.Content.ReadFromJsonAsync<UserDto>();
         Assert.Equal(Role.Names.Organizer, created!.RoleName);
+        var loaded = await SendAsync(HttpMethod.Get, response.Headers.Location!.PathAndQuery, admin.AccessToken);
+        Assert.Equal(request.Email, (await loaded.Content.ReadFromJsonAsync<UserDto>())!.Email);
         var login = await _client.PostAsJsonAsync("/api/auth/login", new { request.Email, Password });
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
     }
@@ -129,6 +133,75 @@ public class UserApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFac
         Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
     }
 
+    [Fact]
+    public async Task List_AsAdmin_AppliesTheFiltersSortAndPaging()
+    {
+        var admin = await SignInAsync(Role.Names.Admin);
+        var marker = Guid.NewGuid().ToString("N");
+        await CreateAsync(admin, NewUser() with { Email = $"a.{marker}@ticksi.com" });
+        await CreateAsync(admin, NewUser() with { Email = $"b.{marker}@ticksi.com", RoleId = UserRoleId, IsActive = false });
+        await CreateAsync(admin, NewUser() with { Email = $"c.{marker}@ticksi.com", RoleId = UserRoleId });
+
+        var all = await ListAsync(admin, $"search={marker}&sortBy=email&sortDescending=true&pageSize=2");
+        var organizers = await ListAsync(admin, $"search={marker}&roleId={OrganizerRoleId}");
+        var inactive = await ListAsync(admin, $"search={marker}&isActive=false");
+        var yesterday = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd");
+        var tomorrow = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd");
+        var registeredRecently = await ListAsync(admin, $"search={marker}&registeredFrom={yesterday}&registeredTo={tomorrow}");
+        var registeredLater = await ListAsync(admin, $"search={marker}&registeredFrom={tomorrow}");
+
+        Assert.Equal([$"c.{marker}@ticksi.com", $"b.{marker}@ticksi.com"], all.Items.Select(u => u.Email));
+        Assert.Equal((3, 2), (all.TotalCount, all.TotalPages));
+        Assert.Equal([$"a.{marker}@ticksi.com"], organizers.Items.Select(u => u.Email));
+        Assert.Equal([$"b.{marker}@ticksi.com"], inactive.Items.Select(u => u.Email));
+        Assert.Equal((3, 0), (registeredRecently.TotalCount, registeredLater.TotalCount));
+    }
+
+    [Fact]
+    public async Task List_InvalidQuery_Returns400WithFieldErrors()
+    {
+        var admin = await SignInAsync(Role.Names.Admin);
+
+        var response = await SendAsync(HttpMethod.Get,
+            "/api/users?sortBy=phone&pageSize=500&registeredFrom=2026-09-02&registeredTo=2026-09-01", admin.AccessToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorBody>();
+        Assert.Equal(["pageSize", "registeredTo", "sortBy"], error!.Errors!.Keys.Order());
+    }
+
+    [Theory]
+    [InlineData("/api/users")]
+    [InlineData("/api/users/roles")]
+    [InlineData("/api/users/8d0c3f52-6b1e-4f4a-9c35-1f2e7a9b0c99")]
+    public async Task Reads_AsOrganizerOrAnonymous_Return403And401(string url)
+    {
+        var organizer = await SignInAsync(Role.Names.Organizer);
+
+        var forbidden = await SendAsync(HttpMethod.Get, url, organizer.AccessToken);
+        var anonymous = await _client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetById_ReturnsTheAccountOr404_AndRolesListsEveryRole()
+    {
+        var admin = await SignInAsync(Role.Names.Admin);
+        var user = await SignInAsync(Role.Names.User);
+
+        var found = await SendAsync(HttpMethod.Get, $"/api/users/{user.PublicId}", admin.AccessToken);
+        var missing = await SendAsync(HttpMethod.Get, $"/api/users/{Guid.NewGuid()}", admin.AccessToken);
+        var roles = await SendAsync(HttpMethod.Get, "/api/users/roles", admin.AccessToken);
+
+        var dto = await found.Content.ReadFromJsonAsync<UserDto>();
+        Assert.Equal((user.Email, UserRoleId, true), (dto!.Email, dto.RoleId, dto.IsActive));
+        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+        var roleNames = (await roles.Content.ReadFromJsonAsync<List<RoleDto>>())!.Select(r => r.Name);
+        Assert.Equal([Role.Names.Admin, Role.Names.Organizer, Role.Names.User], roleNames);
+    }
+
     private static UserRequest NewUser() =>
         new("Amar", "Hadzic", $"amar.{Guid.NewGuid():N}@ticksi.com", "+387 62 555 444", OrganizerRoleId, true, Password);
 
@@ -150,6 +223,19 @@ public class UserApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFac
         var login = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password });
         login.EnsureSuccessStatusCode();
         return (await login.Content.ReadFromJsonAsync<AuthResponseDto>())!;
+    }
+
+    private async Task CreateAsync(AuthResponseDto admin, UserRequest request)
+    {
+        var response = await SendAsync(HttpMethod.Post, "/api/users", admin.AccessToken, request);
+        response.EnsureSuccessStatusCode();
+    }
+
+    private async Task<PagedResult<UserDto>> ListAsync(AuthResponseDto admin, string query)
+    {
+        var response = await SendAsync(HttpMethod.Get, $"/api/users?{query}", admin.AccessToken);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PagedResult<UserDto>>())!;
     }
 
     private Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, string token, object? body = null)
