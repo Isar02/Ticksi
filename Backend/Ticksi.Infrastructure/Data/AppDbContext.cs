@@ -29,6 +29,23 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
         Database.BeginTransactionAsync(cancellationToken);
 
+    public virtual async Task<IDbContextTransaction> BeginUserAdministrationAsync(CancellationToken cancellationToken = default)
+    {
+        var transaction = await Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            // Every admin-changing request takes the same database lock before checking its caller.
+            await Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT [Id] FROM [Roles] WITH (UPDLOCK, HOLDLOCK) WHERE [Name] = {Role.Names.Admin}", cancellationToken);
+            return transaction;
+        }
+        catch
+        {
+            await transaction.DisposeAsync();
+            throw;
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

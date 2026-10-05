@@ -121,6 +121,19 @@ public class RefreshTokenCommandHandlerTests : AuthHandlerTestBase
         Assert.All(tokens, t => Assert.NotNull(t.RevokedAtUtc));
     }
 
+    [Fact]
+    public async Task Handle_DeactivatedAccount_ThrowsUnauthorizedAndIssuesNoToken()
+    {
+        var user = await AddUserAsync();
+        var token = await AddRefreshTokenAsync(user);
+        await DeactivateAsync(user);
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() => RefreshAsync(token));
+
+        Assert.Null((await RefreshTokenAsync(token)).RevokedAtUtc);
+        Assert.Single(await RefreshTokensOfAsync(user));
+    }
+
     private async Task<AuthResponseDto> RefreshAsync(string refreshToken, params IInterceptor[] interceptors)
     {
         await using var context = Database.CreateContext(interceptors);
