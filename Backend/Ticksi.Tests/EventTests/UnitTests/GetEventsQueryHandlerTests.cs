@@ -21,6 +21,20 @@ public class GetEventsQueryHandlerTests : EventHandlerTestBase
     }
 
     [Fact]
+    public async Task Handle_Venue_ReturnsOnlyEventsAtThatVenue()
+    {
+        var organizer = await AddUserAsync(Role.Names.Organizer);
+        var references = await AddReferencesAsync();
+        var mostar = await AddVenueAsync("Mostar");
+        await AddEventAsync(organizer, references, name: "Zetra Jazz");
+        await AddEventAsync(organizer, references with { LocationId = mostar }, name: "Mostar Jazz");
+
+        var page = await HandleAsync(new GetEventsQuery { LocationId = references.LocationId });
+
+        Assert.Equal(["Zetra Jazz"], page.Items.Select(e => e.Name));
+    }
+
+    [Fact]
     public async Task Handle_DateRange_IncludesEveryEventOnItsFirstAndLastDay()
     {
         var organizer = await AddUserAsync(Role.Names.Organizer);

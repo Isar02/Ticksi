@@ -1,0 +1,59 @@
+@let item = event();
+
+<article class="card" [class.card--sold-out]="item.lowestPrice !== null && item.availableTickets === 0">
+  <div class="card__poster">
+    @if (posterUrl(); as url) {
+      <img [src]="url" alt="" loading="lazy" decoding="async" />
+    } @else {
+      <div class="card__placeholder" aria-hidden="true">
+        <mat-icon>confirmation_number</mat-icon>
+      </div>
+    }
+
+    <span class="card__category">{{ item.eventCategoryName }}</span>
+
+    @if (favorite() !== null) {
+      <button
+        type="button"
+        class="card__favorite"
+        [class.is-on]="favorite()"
+        [disabled]="favoriteBusy()"
+        [attr.aria-pressed]="favorite()"
+        [attr.aria-label]="(favorite() ? 'Remove from favorites: ' : 'Add to favorites: ') + item.name"
+        [matTooltip]="favorite() ? 'Remove from favorites' : 'Add to favorites'"
+        (click)="favoriteToggled.emit()"
+      >
+        <mat-icon>{{ favorite() ? 'favorite' : 'favorite_border' }}</mat-icon>
+      </button>
+    }
+  </div>
+
+  <div class="card__tear" aria-hidden="true"></div>
+
+  <div class="card__body">
+    <time class="card__when" [attr.datetime]="item.date">
+      <span class="card__day">{{ item.date | date: 'd.' }}</span>
+      <span class="card__month">{{ item.date | date: 'M. y.' }}</span>
+      <span class="card__time">{{ item.date | date: 'HH:mm' }}</span>
+    </time>
+
+    <div class="card__info">
+      <h3 class="card__name">
+        <a class="card__link" [routerLink]="['/event', item.publicId]">{{ item.name }}</a>
+      </h3>
+      <p class="card__venue"><mat-icon>place</mat-icon><span>{{ item.locationName }}</span></p>
+
+      <p class="card__price">
+        @if (item.lowestPrice === null) {
+          <span class="card__muted">No tickets yet</span>
+        } @else if (item.availableTickets === 0) {
+          <span class="card__sold-out">Sold out</span>
+        } @else if (item.lowestPrice === 0) {
+          Free
+        } @else {
+          <span class="card__muted">From</span> {{ item.lowestPrice | currency }}
+        }
+      </p>
+    </div>
+  </div>
+</article>

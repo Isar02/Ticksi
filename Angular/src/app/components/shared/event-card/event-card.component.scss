@@ -1,0 +1,278 @@
+:host {
+  display: block;
+}
+
+.card {
+  --notch: 11px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--tk-radius-lg);
+  background: var(--tk-surface);
+  box-shadow: var(--tk-shadow-card);
+  overflow: hidden;
+  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 220ms;
+
+  &:hover,
+  &:focus-within {
+    transform: translateY(-4px);
+    box-shadow: 0 1px 2px rgba(43, 34, 48, 0.05), 0 20px 40px rgba(43, 34, 48, 0.12);
+
+    img {
+      transform: scale(1.04);
+    }
+  }
+}
+
+.card__poster {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--tk-brand-soft);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(43, 34, 48, 0.32), transparent 38%);
+    pointer-events: none;
+  }
+}
+
+.card__placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 12px), var(--tk-brand-strong);
+  color: rgba(255, 255, 255, 0.55);
+
+  mat-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 56px;
+  }
+}
+
+.card__category {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 1;
+  padding: 4px 11px;
+  border-radius: var(--tk-radius-pill);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--tk-brand-strong);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.card__favorite {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--tk-ink-soft);
+  cursor: pointer;
+  transition: transform 160ms, color 160ms;
+
+  &:hover:not(:disabled) {
+    transform: scale(1.08);
+    color: var(--tk-danger);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tk-brand);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+  }
+
+  &.is-on {
+    color: var(--tk-danger);
+  }
+}
+
+// Notches punched into both edges where the poster meets the stub.
+.card__tear {
+  position: relative;
+  height: 0;
+  border-top: 2px dashed var(--tk-perforation);
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--notch) * -1 - 1px);
+    width: calc(var(--notch) * 2);
+    height: calc(var(--notch) * 2);
+    border-radius: 50%;
+    background: var(--tk-page);
+  }
+
+  &::before {
+    left: calc(var(--notch) * -1);
+  }
+
+  &::after {
+    right: calc(var(--notch) * -1);
+  }
+}
+
+.card__body {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 16px;
+  flex: 1;
+  padding: 18px 20px 20px;
+}
+
+.card__when {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: start;
+  padding: 9px 0 10px;
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-brand-soft);
+  color: var(--tk-brand-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.card__day {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.card__month {
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.card__time {
+  margin-top: 6px;
+  color: var(--tk-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.card__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card__name {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+// The title link covers the whole card, so the card opens the event while the heart keeps its own click.
+.card__link {
+  color: inherit;
+  text-decoration: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      border-radius: var(--tk-radius-lg);
+      outline: 2px solid var(--tk-brand);
+      outline-offset: -2px;
+    }
+  }
+}
+
+.card__venue {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 0 0;
+  overflow: hidden;
+  color: var(--tk-muted);
+  font-size: 13px;
+
+  span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  mat-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.card__price {
+  margin: auto 0 0;
+  padding-top: 14px;
+  color: var(--tk-ink);
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.card__muted {
+  color: var(--tk-faint);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.card__sold-out {
+  padding: 3px 10px;
+  border-radius: var(--tk-radius-pill);
+  background: var(--tk-danger-soft);
+  color: var(--tk-danger-strong);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.card--sold-out img {
+  filter: grayscale(0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card img {
+    transform: none !important;
+    transition: none;
+  }
+}

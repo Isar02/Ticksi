@@ -1,0 +1,81 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+.panel__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 20px 24px;
+  border-radius: var(--tk-radius-lg);
+  background: var(--tk-surface);
+  box-shadow: var(--tk-shadow-card);
+
+  @include mat.form-field-overrides((
+    container-height: 44px,
+    container-vertical-padding: 10px
+  ));
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  padding-bottom: 14px;
+  border-bottom: 2px dashed var(--tk-perforation);
+}
+
+.panel__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.panel__group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: 8px;
+    padding: 0;
+    color: var(--tk-faint);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+}
+
+.panel__dates,
+.panel__pair {
+  display: grid;
+  gap: 10px;
+}
+
+.panel__pair {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.panel__error,
+.panel__hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.panel__error {
+  color: var(--tk-danger-strong);
+}
+
+.panel__hint {
+  color: var(--tk-faint);
+}

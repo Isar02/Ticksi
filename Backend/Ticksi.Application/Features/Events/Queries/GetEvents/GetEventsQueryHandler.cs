@@ -29,6 +29,9 @@ public class GetEventsQueryHandler : IRequestHandler<GetEventsQuery, PagedResult
         if (request.CategoryId.HasValue)
             events = events.Where(e => e.EventCategory!.PublicId == request.CategoryId.Value);
 
+        if (request.LocationId.HasValue)
+            events = events.Where(e => e.Location!.PublicId == request.LocationId.Value);
+
         if (!string.IsNullOrWhiteSpace(request.City))
         {
             var city = request.City.Trim();

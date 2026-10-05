@@ -3,7 +3,7 @@ import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { withoutErrorToast } from '../core/interceptors/error.interceptor';
-import { Event, EventForEdit, EventFormOptions, EventInput, EventPoster, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
+import { CatalogueFilters, CatalogueQuery, Event, EventForEdit, EventFormOptions, EventInput, EventPoster, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
 
 export interface PagedResult<T> {
   items: T[];
@@ -13,45 +13,22 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
-export interface GetEventsParams {
-  search?: string;
-  categoryId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  sortBy?: string;
-  sortDescending?: boolean;
-  page?: number;
-  pageSize?: number;
-}
-
 @Injectable({ providedIn: 'root' })
 export class EventService {
   private apiUrl = `${environment.apiUrl}/events`;
 
   constructor(private http: HttpClient) {}
 
-  getEvents(params: GetEventsParams = {}): Observable<PagedResult<Event>> {
-    let httpParams = new HttpParams();
+  // The catalogue shows load failures on the page.
+  getEvents(query: CatalogueQuery, page: number, pageSize: number): Observable<PagedResult<Event>> {
+    const [sortBy, direction] = query.sort.split('-');
+    const params = toParams({ ...query, sort: undefined, sortBy, sortDescending: direction === 'desc', page, pageSize });
 
-    if (params.search) httpParams = httpParams.set('search', params.search);
-    if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
+    return this.http.get<PagedResult<Event>>(this.apiUrl, { params, context: withoutErrorToast() });
+  }
 
-    if (params.dateFrom) httpParams = httpParams.set('dateFrom', params.dateFrom);
-    if (params.dateTo) httpParams = httpParams.set('dateTo', params.dateTo);
-
-    if (params.minPrice !== undefined) httpParams = httpParams.set('minPrice', params.minPrice.toString());
-    if (params.maxPrice !== undefined) httpParams = httpParams.set('maxPrice', params.maxPrice.toString());
-
-    if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
-    if (params.sortDescending !== undefined)
-      httpParams = httpParams.set('sortDescending', params.sortDescending.toString());
-
-    if (params.page !== undefined) httpParams = httpParams.set('page', params.page.toString());
-    if (params.pageSize !== undefined) httpParams = httpParams.set('pageSize', params.pageSize.toString());
-
-    return this.http.get<PagedResult<Event>>(this.apiUrl, { params: httpParams });
+  getCatalogueFilters(): Observable<CatalogueFilters> {
+    return this.http.get<CatalogueFilters>(`${this.apiUrl}/catalogue-filters`);
   }
 
   getEventById(eventId: string): Observable<Event> {
@@ -64,12 +41,7 @@ export class EventService {
 
   // The organizer screen shows load and delete failures itself.
   getManagedEvents(query: ManagedEventsQuery): Observable<PagedResult<ManagedEvent>> {
-    let params = new HttpParams();
-    for (const [key, value] of Object.entries(query)) {
-      if (value !== undefined && value !== '') params = params.set(key, String(value));
-    }
-
-    return this.http.get<PagedResult<ManagedEvent>>(`${this.apiUrl}/managed`, { params, context: withoutErrorToast() });
+    return this.http.get<PagedResult<ManagedEvent>>(`${this.apiUrl}/managed`, { params: toParams(query), context: withoutErrorToast() });
   }
 
   deleteEvent(eventId: string): Observable<void> {
@@ -111,4 +83,12 @@ export class EventService {
     const base = environment.apiUrl.replace(/\/api\/?$/i, '');
     return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
   }
+}
+
+function toParams(query: object): HttpParams {
+  let params = new HttpParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== '') params = params.set(key, String(value));
+  }
+  return params;
 }
