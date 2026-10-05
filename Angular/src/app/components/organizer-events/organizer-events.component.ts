@@ -24,7 +24,8 @@ import { AuthService } from '../../services/auth.service';
 import { CategoryService } from '../../services/category.service';
 import { EventService, PagedResult } from '../../services/event.service';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
-import { PAGE_SIZES, readManagedEventsQuery, toManagedEventsParams } from './managed-events-url';
+import { PAGE_SIZES } from '../shared/list-params';
+import { readManagedEventsQuery, toManagedEventsParams } from './managed-events-url';
 
 type Outcome = { page: PagedResult<ManagedEvent> } | { error: string };
 type FilterValues = Pick<ManagedEventsQuery, 'name' | 'categoryId' | 'locationId' | 'dateFrom' | 'dateTo' | 'period'>;

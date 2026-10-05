@@ -1,0 +1,240 @@
+<section class="page">
+  <header class="head">
+    <div class="head__text">
+      <p class="head__eyebrow">Administration</p>
+      <h1 class="head__title">
+        Users
+        @if (result(); as page) {
+          <span class="head__count">{{ page.totalCount | number }}</span>
+        }
+      </h1>
+      <p class="head__lede">Every account on Ticksi: what it may do and whether it can sign in.</p>
+    </div>
+  </header>
+
+  <form class="filters" [formGroup]="filters" (submit)="$event.preventDefault()" aria-label="Filter users">
+    <mat-form-field class="filters__search" appearance="outline" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <mat-label>Name or email</mat-label>
+      <input matInput formControlName="search" maxlength="256" autocomplete="off" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Role</mat-label>
+      <mat-select formControlName="roleId" [panelWidth]="null">
+        <mat-select-trigger>{{ roleName(filters.controls.roleId.value) }}</mat-select-trigger>
+        <mat-option value="">All roles</mat-option>
+        @for (role of roleOptions(); track role.publicId) {
+          <mat-option [value]="role.publicId">{{ role.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Registered from</mat-label>
+      <input matInput type="date" formControlName="registeredFrom" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Registered to</mat-label>
+      <input matInput type="date" formControlName="registeredTo" [min]="filters.controls.registeredFrom.value" />
+    </mat-form-field>
+
+    <mat-button-toggle-group
+      class="filters__status"
+      formControlName="status"
+      hideSingleSelectionIndicator
+      aria-label="Account status"
+    >
+      <mat-button-toggle value="">All</mat-button-toggle>
+      <mat-button-toggle value="active">Active</mat-button-toggle>
+      <mat-button-toggle value="inactive">Inactive</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    @if (hasFilters()) {
+      <button mat-button type="button" class="filters__clear" (click)="clearFilters()">
+        <mat-icon>close</mat-icon>
+        Clear filters
+      </button>
+    }
+
+    @if (filters.hasError('dateRange')) {
+      <p class="filters__error" role="alert">The end date is before the start date.</p>
+    }
+  </form>
+
+  <div class="board" [class.board--busy]="loading() && result()" [attr.aria-busy]="loading()">
+    @if (loading() && result()) {
+      <mat-progress-bar class="board__progress" mode="indeterminate" />
+    }
+
+    @if (error(); as message) {
+      <div class="state state--error" role="alert">
+        <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+        <h2 class="state__title">Users could not be loaded</h2>
+        <p class="state__text">{{ message }}</p>
+        <button mat-stroked-button type="button" (click)="retry()">
+          <mat-icon>refresh</mat-icon>
+          Try again
+        </button>
+      </div>
+    } @else {
+      @if (result(); as page) {
+        @if (page.totalCount === 0) {
+          <div class="state">
+            <span class="state__icon"><mat-icon>person_search</mat-icon></span>
+            <h2 class="state__title">No users match these filters</h2>
+            <p class="state__text">Try another name, role or registration date.</p>
+            @if (hasFilters()) {
+              <button mat-stroked-button type="button" (click)="clearFilters()">Clear filters</button>
+            }
+          </div>
+        } @else {
+          <div class="board__scroll">
+            <table
+              mat-table
+              class="users"
+              [dataSource]="page.items"
+              matSort
+              [matSortActive]="query().sortBy ?? 'name'"
+              [matSortDirection]="query().sortDescending ? 'desc' : 'asc'"
+              matSortDisableClear
+              (matSortChange)="sortChanged($event)"
+            >
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+                <td mat-cell *matCellDef="let user">
+                  <span class="person">
+                    <span class="person__avatar" aria-hidden="true">{{ initials(user) }}</span>
+                    <span class="person__name">{{ user.firstName }} {{ user.lastName }}</span>
+                    @if (isSelf(user)) {
+                      <span class="person__self">You</span>
+                    }
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+                <td mat-cell *matCellDef="let user">
+                  <span class="contact">
+                    <span class="contact__email">{{ user.email }}</span>
+                    <span class="contact__phone">{{ user.phone }}</span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="role">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Role</th>
+                <td mat-cell *matCellDef="let user">
+                  @if (isSelf(user)) {
+                    <span class="role" [attr.data-role]="user.roleName" matTooltip="You cannot change your own role">
+                      {{ user.roleName }}
+                    </span>
+                  } @else {
+                    <button
+                      type="button"
+                      class="role role--button"
+                      [attr.data-role]="user.roleName"
+                      [matMenuTriggerFor]="roleMenu"
+                      [matMenuTriggerData]="{ user }"
+                      [disabled]="actionsDisabled(user) || roleOptions().length === 0"
+                      [attr.aria-label]="'Change the role of ' + user.firstName + ' ' + user.lastName + ', now ' + user.roleName"
+                    >
+                      {{ user.roleName }}
+                      <mat-icon class="role__caret" aria-hidden="true">expand_more</mat-icon>
+                    </button>
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="registered">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Registered</th>
+                <td mat-cell *matCellDef="let user" class="users__date">{{ user.registrationDate | date: 'd. M. y.' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let user">
+                  <span
+                    class="status"
+                    [matTooltip]="isSelf(user) ? 'You cannot deactivate your own account' : ''"
+                  >
+                    <mat-slide-toggle
+                      [checked]="user.isActive"
+                      [disabled]="actionsDisabled(user)"
+                      hideIcon
+                      [aria-label]="'Account of ' + user.firstName + ' ' + user.lastName + ' can sign in'"
+                      (change)="toggleActive(user, $event)"
+                    >
+                      <span class="status__label">{{ user.isActive ? 'Active' : 'Inactive' }}</span>
+                    </mat-slide-toggle>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Actions</span></th>
+                <td mat-cell *matCellDef="let user" class="users__actions">
+                  <span [matTooltip]="isSelf(user) ? 'You cannot delete your own account' : 'Delete'">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="action action--delete"
+                      [attr.aria-label]="'Delete ' + user.firstName + ' ' + user.lastName"
+                      [disabled]="actionsDisabled(user)"
+                      (click)="delete(user)"
+                    >
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </span>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="columns"></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: columns"
+                [class.is-inactive]="!row.isActive"
+                [class.is-self]="isSelf(row)"
+              ></tr>
+            </table>
+          </div>
+
+          <mat-paginator
+            class="board__paginator"
+            [length]="page.totalCount"
+            [pageIndex]="page.page - 1"
+            [pageSize]="page.pageSize"
+            [pageSizeOptions]="pageSizes"
+            (page)="pageChanged($event)"
+            aria-label="Choose a page of users"
+          />
+        }
+      } @else {
+        <div class="skeleton" aria-label="Loading users">
+          @for (row of skeletonRows; track row) {
+            <div class="skeleton__row">
+              <span class="skeleton__bar skeleton__bar--wide"></span>
+              <span class="skeleton__bar"></span>
+              <span class="skeleton__bar"></span>
+              <span class="skeleton__bar skeleton__bar--short"></span>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <mat-menu #roleMenu="matMenu" class="role-menu" xPosition="before">
+    <ng-template matMenuContent let-user="user">
+      <p class="role-menu__title">Change role</p>
+      @for (role of roleOptions(); track role.publicId) {
+        <button mat-menu-item type="button" [disabled]="actionsDisabled(user) || role.publicId === user.roleId" (click)="changeRole(user, role)">
+          <mat-icon>{{ role.publicId === user.roleId ? 'check' : 'badge' }}</mat-icon>
+          {{ role.name }}
+        </button>
+      }
+    </ng-template>
+  </mat-menu>
+</section>
