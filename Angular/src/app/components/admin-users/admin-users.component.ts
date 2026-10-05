@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,7 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { EMPTY, Observable, Subject, catchError, combineLatest, debounceTime, filter, map, of, startWith, switchMap, tap } from 'rxjs';
 import { ApiError } from '../../core/models/api-error';
 import { ToastService } from '../../core/services/toast.service';
-import { RoleOption, UserAccount, UserSort, UsersQuery } from '../../models/user.model';
+import { ROLE_DESCRIPTIONS, RoleOption, UserAccount, UserSort, UsersQuery } from '../../models/user.model';
 import { AuthService } from '../../services/auth.service';
 import { PagedResult } from '../../services/event.service';
 import { UserService } from '../../services/user.service';
@@ -30,12 +30,6 @@ import { readUsersQuery, toUsersParams } from './users-url';
 type Outcome = { page: PagedResult<UserAccount> } | { error: string };
 type FilterValues = Pick<UsersQuery, 'search' | 'roleId' | 'status' | 'registeredFrom' | 'registeredTo'>;
 
-const ROLE_REACH: Record<string, string> = {
-  Admin: 'They will be able to manage every account, event and category.',
-  Organizer: 'They will be able to create events and manage their own.',
-  User: 'They will keep browsing and buying tickets, without managing anything.'
-};
-
 @Component({
   selector: 'app-admin-users',
   standalone: true,
@@ -43,6 +37,7 @@ const ROLE_REACH: Record<string, string> = {
     DatePipe,
     DecimalPipe,
     ReactiveFormsModule,
+    RouterLink,
     MatButtonModule,
     MatButtonToggleModule,
     MatFormFieldModule,
@@ -177,7 +172,7 @@ export class AdminUsersComponent {
     this.confirmDialog
       .confirm({
         title: `Make ${name} ${withArticle(role.name)}?`,
-        message: ROLE_REACH[role.name] ?? `Their role changes from ${user.roleName} to ${role.name}.`,
+        message: ROLE_DESCRIPTIONS[role.name] ?? `Their role changes from ${user.roleName} to ${role.name}.`,
         confirmText: `Make ${role.name}`
       })
       .pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef))

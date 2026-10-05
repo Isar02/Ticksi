@@ -10,6 +10,11 @@
       </h1>
       <p class="head__lede">Every account on Ticksi: what it may do and whether it can sign in.</p>
     </div>
+
+    <a mat-flat-button class="head__action" routerLink="/admin/users/new">
+      <mat-icon>person_add</mat-icon>
+      New user
+    </a>
   </header>
 
   <form class="filters" [formGroup]="filters" (submit)="$event.preventDefault()" aria-label="Filter users">
@@ -176,6 +181,15 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Actions</span></th>
                 <td mat-cell *matCellDef="let user" class="users__actions">
+                  <a
+                    mat-icon-button
+                    class="action action--edit"
+                    [routerLink]="['/admin/users', user.publicId, 'edit']"
+                    matTooltip="Edit"
+                    [attr.aria-label]="'Edit ' + user.firstName + ' ' + user.lastName"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </a>
                   <span [matTooltip]="isSelf(user) ? 'You cannot delete your own account' : 'Delete'">
                     <button
                       mat-icon-button

@@ -1,0 +1,157 @@
+<section class="sheet">
+  <header class="head">
+    <div>
+      <p class="head__eyebrow">{{ userId ? 'Edit account' : 'New account' }}</p>
+      <h1 class="head__title">{{ title() }}</h1>
+    </div>
+    <a mat-button routerLink="/admin/users" class="head__back">
+      <mat-icon>arrow_back</mat-icon>
+      Users
+    </a>
+  </header>
+
+  @if (data(); as ready) {
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="section" role="group" aria-labelledby="person-title">
+        <div class="section__label">
+          <h2 id="person-title" class="section__title">Person</h2>
+          <p class="section__hint">The name shown in the users list and on tickets.</p>
+        </div>
+        <div class="section__fields section__fields--pair">
+          <mat-form-field appearance="outline">
+            <mat-label>First name</mat-label>
+            <input matInput formControlName="firstName" [maxlength]="limits.name" autocomplete="off" />
+            <mat-error>{{ errorText(form.controls.firstName, 'First name') }}</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Last name</mat-label>
+            <input matInput formControlName="lastName" [maxlength]="limits.name" autocomplete="off" />
+            <mat-error>{{ errorText(form.controls.lastName, 'Last name') }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="section" role="group" aria-labelledby="contact-title">
+        <div class="section__label">
+          <h2 id="contact-title" class="section__title">Contact</h2>
+          <p class="section__hint">The email is used to sign in and must not belong to another account.</p>
+        </div>
+        <div class="section__fields section__fields--pair">
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <mat-icon matPrefix>alternate_email</mat-icon>
+            <input matInput type="email" formControlName="email" [maxlength]="limits.email" autocomplete="off" />
+            <mat-error>{{ errorText(form.controls.email, 'Email') }}</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Phone</mat-label>
+            <mat-icon matPrefix>call</mat-icon>
+            <input matInput type="tel" formControlName="phone" [maxlength]="limits.phone" placeholder="+387 61 123 456" />
+            <mat-error>{{ errorText(form.controls.phone, 'Phone') }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="section" role="group" aria-labelledby="access-title">
+        <div class="section__label">
+          <h2 id="access-title" class="section__title">Access</h2>
+          <p class="section__hint">
+            @if (isSelf) {
+              You cannot change your own role or deactivate your own account.
+            } @else {
+              What the account may do, and whether it can sign in.
+            }
+          </p>
+        </div>
+        <div class="section__fields">
+          <div class="roles" role="radiogroup" aria-label="Role">
+            @for (role of ready.roles; track role.publicId) {
+              <label class="role-card" [class.role-card--chosen]="form.controls.roleId.value === role.publicId">
+                <input class="role-card__input" type="radio" formControlName="roleId" [value]="role.publicId" />
+                <span class="role-card__head">
+                  <span class="role-card__name">{{ role.name }}</span>
+                  <mat-icon class="role-card__check" aria-hidden="true">check_circle</mat-icon>
+                </span>
+                <span class="role-card__text">{{ descriptions[role.name] ?? '' }}</span>
+              </label>
+            }
+          </div>
+          @if (form.controls.roleId.touched && form.controls.roleId.invalid) {
+            <p class="field-error" role="alert">{{ errorText(form.controls.roleId, 'Role') }}</p>
+          }
+
+          <mat-slide-toggle class="active" formControlName="isActive" hideIcon>
+            <span class="active__label">
+              {{ form.controls.isActive.value ? 'Active: can sign in' : 'Inactive: cannot sign in' }}
+            </span>
+          </mat-slide-toggle>
+        </div>
+      </div>
+
+      @if (!userId) {
+        <div class="section" role="group" aria-labelledby="password-title">
+          <div class="section__label">
+            <h2 id="password-title" class="section__title">Password</h2>
+            <p class="section__hint">A starting password to hand over; the person can sign in with it right away.</p>
+          </div>
+          <div class="section__fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Starting password</mat-label>
+              <mat-icon matPrefix>key</mat-icon>
+              <input
+                matInput
+                [type]="passwordHidden() ? 'password' : 'text'"
+                formControlName="password"
+                autocomplete="new-password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                [attr.aria-label]="passwordHidden() ? 'Show password' : 'Hide password'"
+                [attr.aria-pressed]="!passwordHidden()"
+                (click)="passwordHidden.set(!passwordHidden())"
+              >
+                <mat-icon>{{ passwordHidden() ? 'visibility' : 'visibility_off' }}</mat-icon>
+              </button>
+              <mat-hint>At least {{ limits.passwordMin }} characters.</mat-hint>
+              <mat-error>{{ errorText(form.controls.password, 'Password') }}</mat-error>
+            </mat-form-field>
+
+            @if (strength(); as meter) {
+              <div class="meter" [attr.data-level]="meter.level" aria-live="polite">
+                <span class="meter__track" aria-hidden="true">
+                  <span class="meter__fill" [style.width.%]="meter.percent"></span>
+                </span>
+                <span class="meter__label">Strength: {{ meter.label }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <footer class="nav">
+        <a mat-button routerLink="/admin/users">Cancel</a>
+        <button mat-flat-button type="submit" [disabled]="saving()">
+          <mat-icon>{{ saving() ? 'hourglass_top' : 'check' }}</mat-icon>
+          {{ saving() ? 'Saving…' : userId ? 'Save changes' : 'Create account' }}
+        </button>
+      </footer>
+    </form>
+  } @else if (loadError()) {
+    <div class="state" role="alert">
+      <span class="state__icon"><mat-icon>error_outline</mat-icon></span>
+      <h2 class="state__title">{{ userId ? 'This account could not be opened' : 'The form could not be loaded' }}</h2>
+      <p class="state__text">{{ loadError() }}</p>
+      <div class="state__actions">
+        <button mat-flat-button type="button" (click)="retry()">Try again</button>
+        <a mat-button routerLink="/admin/users">Back to users</a>
+      </div>
+    </div>
+  } @else {
+    <div class="loading" aria-live="polite">
+      <mat-progress-bar mode="indeterminate" />
+      <p>{{ userId ? 'Loading the account…' : 'Getting the form ready…' }}</p>
+    </div>
+  }
+</section>
