@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Ticksi.Application.Interfaces;
 using Ticksi.Domain.Entities;
 using Ticksi.Infrastructure.Data.Seeders;
@@ -24,6 +25,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+
+    public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
+        Database.BeginTransactionAsync(cancellationToken);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

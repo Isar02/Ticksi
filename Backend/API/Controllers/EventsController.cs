@@ -1,10 +1,15 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ticksi.Application.Common;
 using Ticksi.Application.DTOs;
+using Ticksi.Application.Features.Events.Commands.CreateEvent;
+using Ticksi.Application.Features.Events.Commands.DeleteEvent;
+using Ticksi.Application.Features.Events.Commands.UpdateEvent;
 using Ticksi.Application.Features.Events.Queries.GetEventImages;
 using Ticksi.Application.Features.Events.Queries.GetEvents;
 using Ticksi.Application.Features.Events.Queries.GetEventById;
+using Ticksi.Domain.Entities;
 
 namespace API.Controllers
 {
@@ -12,6 +17,8 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class EventsController : ControllerBase
     {
+        private const string EventManagers = $"{Role.Names.Admin},{Role.Names.Organizer}";
+
         private readonly IMediator _mediator;
 
         public EventsController(IMediator mediator)
@@ -52,6 +59,39 @@ namespace API.Controllers
         {
             var dto = await _mediator.Send(new GetEventByIdQuery(eventId), cancellationToken);
             return Ok(dto);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = EventManagers)]
+        [ProducesResponseType(typeof(EventReadDto), StatusCodes.Status201Created)]
+        public async Task<ActionResult<EventReadDto>> Create(
+            CreateEventCommand command,
+            CancellationToken cancellationToken)
+        {
+            var dto = await _mediator.Send(command, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { eventId = dto.PublicId }, dto);
+        }
+
+        [HttpPut("{eventId:guid}")]
+        [Authorize(Roles = EventManagers)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> Update(
+            Guid eventId,
+            UpdateEventCommand command,
+            CancellationToken cancellationToken)
+        {
+            command.PublicId = eventId;
+            await _mediator.Send(command, cancellationToken);
+            return NoContent();
+        }
+
+        [HttpDelete("{eventId:guid}")]
+        [Authorize(Roles = EventManagers)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> Delete(Guid eventId, CancellationToken cancellationToken)
+        {
+            await _mediator.Send(new DeleteEventCommand { PublicId = eventId }, cancellationToken);
+            return NoContent();
         }
     }
 }

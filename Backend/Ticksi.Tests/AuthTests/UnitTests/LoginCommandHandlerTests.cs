@@ -6,7 +6,6 @@ using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Auth.Commands.Login;
 using Ticksi.Application.Interfaces;
-using Ticksi.Infrastructure.Data.Seeders;
 
 namespace Ticksi.Tests.AuthTests.UnitTests;
 
@@ -21,7 +20,7 @@ public class LoginCommandHandlerTests : AuthHandlerTestBase
 
         var claims = new JwtSecurityTokenHandler().ReadJwtToken(response.AccessToken).Claims.ToList();
         Assert.Equal(user.PublicId.ToString(), claims.Single(c => c.Type == AuthClaims.PublicId).Value);
-        Assert.Equal(StaticDataSeeder.RoleNames.User, claims.Single(c => c.Type == AuthClaims.Role).Value);
+        Assert.Equal(Role.Names.User, claims.Single(c => c.Type == AuthClaims.Role).Value);
 
         var storedToken = Assert.Single(await RefreshTokensOfAsync(user));
         Assert.Equal(TokenService.HashRefreshToken(response.RefreshToken), storedToken.TokenHash);

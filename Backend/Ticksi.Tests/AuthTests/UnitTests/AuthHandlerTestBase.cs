@@ -3,7 +3,6 @@ using Microsoft.Extensions.Time.Testing;
 using Ticksi.Application.Interfaces;
 using Ticksi.Application.Options;
 using Ticksi.Domain.Enums;
-using Ticksi.Infrastructure.Data.Seeders;
 using Ticksi.Infrastructure.Security;
 using Ticksi.Tests.Common;
 
@@ -37,7 +36,7 @@ public abstract class AuthHandlerTestBase
     protected async Task<AppUser> AddUserAsync(string email = "ana@ticksi.com")
     {
         await using var context = Database.CreateContext();
-        var role = await context.Roles.SingleAsync(r => r.Name == StaticDataSeeder.RoleNames.User);
+        var role = await context.Roles.SingleAsync(r => r.Name == Role.Names.User);
 
         var user = new AppUser
         {

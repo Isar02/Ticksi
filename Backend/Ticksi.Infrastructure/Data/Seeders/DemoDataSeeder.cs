@@ -5,7 +5,6 @@ using Ticksi.Application.Interfaces;
 using Ticksi.Application.Options;
 using Ticksi.Domain.Entities;
 using Ticksi.Infrastructure.Options;
-using RoleNames = Ticksi.Infrastructure.Data.Seeders.StaticDataSeeder.RoleNames;
 
 namespace Ticksi.Infrastructure.Data.Seeders;
 
@@ -55,9 +54,9 @@ public sealed class DemoDataSeeder(
 
         AppUser[] demoUsers =
         [
-            User("Amar", "Hodžić", "admin@ticksi.com", "+38761100001", RoleNames.Admin),
-            User("Lejla", "Begić", OrganizerEmail, "+38761100002", RoleNames.Organizer),
-            User("Emir", "Kovačević", "user@ticksi.com", "+38761100003", RoleNames.User)
+            User("Amar", "Hodžić", "admin@ticksi.com", "+38761100001", Role.Names.Admin),
+            User("Lejla", "Begić", OrganizerEmail, "+38761100002", Role.Names.Organizer),
+            User("Emir", "Kovačević", "user@ticksi.com", "+38761100003", Role.Names.User)
         ];
 
         var emails = demoUsers.Select(u => u.Email).ToList();

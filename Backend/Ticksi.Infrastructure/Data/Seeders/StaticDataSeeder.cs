@@ -5,13 +5,6 @@ namespace Ticksi.Infrastructure.Data.Seeders;
 
 public static class StaticDataSeeder
 {
-    public static class RoleNames
-    {
-        public const string Admin = "Admin";
-        public const string User = "User";
-        public const string Organizer = "Organizer";
-    }
-
     public static void Seed(ModelBuilder modelBuilder)
     {
         SeedRoles(modelBuilder);
@@ -20,9 +13,9 @@ public static class StaticDataSeeder
 
     private static void SeedRoles(ModelBuilder modelBuilder) =>
         modelBuilder.Entity<Role>().HasData(
-            new Role { Id = 1, PublicId = Guid.Parse("8d0c3f52-6b1e-4f4a-9c35-1f2e7a9b0c01"), Name = RoleNames.Admin },
-            new Role { Id = 2, PublicId = Guid.Parse("8d0c3f52-6b1e-4f4a-9c35-1f2e7a9b0c02"), Name = RoleNames.User },
-            new Role { Id = 3, PublicId = Guid.Parse("8d0c3f52-6b1e-4f4a-9c35-1f2e7a9b0c03"), Name = RoleNames.Organizer });
+            new Role { Id = 1, PublicId = Guid.Parse("8d0c3f52-6b1e-4f4a-9c35-1f2e7a9b0c01"), Name = Role.Names.Admin },
+            new Role { Id = 2, PublicId = Guid.Parse("8d0c3f52-6b1e-4f4a-9c35-1f2e7a9b0c02"), Name = Role.Names.User },
+            new Role { Id = 3, PublicId = Guid.Parse("8d0c3f52-6b1e-4f4a-9c35-1f2e7a9b0c03"), Name = Role.Names.Organizer });
 
     private static void SeedEventTypes(ModelBuilder modelBuilder) =>
         modelBuilder.Entity<EventType>().HasData(
