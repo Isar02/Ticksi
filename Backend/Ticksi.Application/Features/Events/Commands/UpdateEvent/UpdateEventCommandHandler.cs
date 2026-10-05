@@ -25,7 +25,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand>
             .FirstOrDefaultAsync(e => e.PublicId == request.PublicId, cancellationToken)
             ?? throw new NotFoundException("Event not found.");
 
-        editor.EnsureCanManage(item);
+        editor.EnsureCanManage(item.AppUserId);
 
         try
         {

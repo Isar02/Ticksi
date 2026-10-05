@@ -45,15 +45,20 @@ public abstract class EventHandlerTestBase
         return new References(category.PublicId, eventType.PublicId, venue.PublicId, company.PublicId);
     }
 
-    protected async Task<Event> AddEventAsync(AppUser owner, References references, int reserved = 0)
+    protected async Task<Event> AddEventAsync(
+        AppUser owner,
+        References references,
+        int reserved = 0,
+        string name = "Summer Concert",
+        DateTime? date = null)
     {
         await using var context = Database.CreateContext();
 
         var item = new Event
         {
-            Name = "Summer Concert",
+            Name = name,
             Description = "Open air.",
-            Date = NextYear,
+            Date = date ?? NextYear,
             Contact = "events@ticksi.com",
             AppUserId = owner.Id,
             EventCategoryId = await IdOfAsync(context.EventCategories, references.CategoryId),
@@ -72,7 +77,11 @@ public abstract class EventHandlerTestBase
         return item;
     }
 
-    protected async Task AddOrderAsync(AppUser buyer, Guid ticketTypePublicId, int quantity)
+    protected async Task AddOrderAsync(
+        AppUser buyer,
+        Guid ticketTypePublicId,
+        int quantity,
+        OrderStatus status = OrderStatus.Paid)
     {
         await using var context = Database.CreateContext();
         var ticketType = await context.TicketTypes.SingleAsync(t => t.PublicId == ticketTypePublicId);
@@ -80,7 +89,7 @@ public abstract class EventHandlerTestBase
         context.Orders.Add(new Order
         {
             AppUserId = buyer.Id,
-            Status = OrderStatus.Paid,
+            Status = status,
             TotalAmount = ticketType.Price * quantity,
             Items = [new OrderItem { TicketTypeId = ticketType.Id, Quantity = quantity, UnitPrice = ticketType.Price }]
         });

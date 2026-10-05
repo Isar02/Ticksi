@@ -26,7 +26,7 @@ public class DeleteEventCommandHandler : IRequestHandler<DeleteEventCommand>
             .FirstOrDefaultAsync(e => e.PublicId == request.PublicId, cancellationToken)
             ?? throw new NotFoundException("Event not found.");
 
-        editor.EnsureCanManage(item);
+        editor.EnsureCanManage(item.AppUserId);
 
         if (await HasOrdersAsync(item.Id, cancellationToken))
             throw new ConflictException(EventHasOrders);
