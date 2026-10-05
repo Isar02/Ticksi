@@ -1,131 +1,166 @@
-<div class="events-page">
-  <header class="events-header">
-    <h1>Discover all <span>Events</span></h1>
-    <p>
-      Explore the latest and most popular events across... all categories. Your next adventure is just one click away!
-    </p>
-  </header>
+@let q = query();
 
-  <div class="events-controls">
-    <div class="search-area">
-      <div class="search-wrapper">
-        <input
-          type="text"
-          placeholder="Search events..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearchInput(searchTerm)"
-          (focus)="onSearchFocus()"
-          (blur)="onSearchBlur()"
-          autocomplete="off"
-        />
+<section class="catalogue">
+  <app-catalogue-search class="hero" [term]="q.search" (termChanged)="searchFor($event)" (suggestionPicked)="pickSuggestion($event)" />
 
-        <button class="clear-btn" *ngIf="searchTerm" (click)="clearSearch()" type="button">
-          ✕
-        </button>
+  <div class="layout">
+    <app-filter-panel
+      class="panel"
+      id="catalogue-filters"
+      role="region"
+      aria-label="Filters"
+      [class.panel--open]="panelOpen()"
+      [form]="filters"
+      [options]="options()"
+      [filterCount]="filterCount()"
+      (cleared)="clearAll()"
+    />
 
-        <!-- dropdown -->
-        <div class="suggestions" *ngIf="showSuggestions">
-          <div class="suggestion-item loading" *ngIf="isSuggestLoading">
-            Loading...
-          </div>
-
-          <ng-container *ngIf="!isSuggestLoading">
-
-            <!-- Events -->
-            <div class="suggestion-group" *ngIf="eventSuggestions.length">
-              <div class="group-title">Events</div>
-              <button
-                type="button"
-                class="suggestion-item"
-                *ngFor="let s of eventSuggestions"
-                (mousedown)="$event.preventDefault(); pickSuggestion(s)"
-                (click)="pickSuggestion(s)"
-              >
-                <span class="label">{{ s.label }}</span>
-                <span class="badge">event</span>
-              </button>
-            </div>
-
-            <!-- Categories -->
-            <div class="suggestion-group" *ngIf="categorySuggestions.length">
-              <div class="group-title">Categories</div>
-              <button
-                type="button"
-                class="suggestion-item"
-                *ngFor="let s of categorySuggestions"
-                (mousedown)="$event.preventDefault(); pickSuggestion(s)"
-                (click)="pickSuggestion(s)"
-              >
-                <span class="label">{{ s.label }}</span>
-                <span class="badge">category</span>
-              </button>
-            </div>
-
-            <!-- Locations -->
-            <div class="suggestion-group" *ngIf="locationSuggestions.length">
-              <div class="group-title">Locations</div>
-              <button
-                type="button"
-                class="suggestion-item"
-                *ngFor="let s of locationSuggestions"
-                (mousedown)="$event.preventDefault(); pickSuggestion(s)"
-                (click)="pickSuggestion(s)"
-              >
-                <span class="label">{{ s.label }}</span>
-                <span class="badge">location</span>
-              </button>
-            </div>
-
-          </ng-container>
-        </div>
-      </div>
-    </div>
-
-    <div class="filters">
-      <select class="filter-select" [(ngModel)]="selectedSort" (change)="onSortChange()">
-        <option value="date-desc">Date (Newest First)</option>
-        <option value="date-asc">Date (Oldest First)</option>
-        <option value="price-asc">Price (Low to High)</option>
-        <option value="price-desc">Price (High to Low)</option>
-        <option value="name-asc">Name (A-Z)</option>
-        <option value="name-desc">Name (Z-A)</option>
-      </select>
-    </div>
-  </div>
-
-  <main class="events-grid">
-    <div class="event-card" *ngFor="let event of events">
-      <div class="event-card-image">
-        <img
-          
-        />
+    <div class="results">
+      <div class="toolbar">
+        <p class="toolbar__count" aria-live="polite">
+          @if (total() !== null) {
+            <strong>{{ total() | number }}</strong> {{ total() === 1 ? 'event' : 'events' }}
+          } @else {
+            Loading events…
+          }
+        </p>
 
         <button
-          class="favorite-btn"
-          *ngIf="authService.isAuthenticated()"
-          (click)="toggleFavorite(event.publicId)"
-          [class.favorited]="isFavorite(event.publicId)"
+          mat-stroked-button
           type="button"
+          class="toolbar__filters"
+          aria-controls="catalogue-filters"
+          [attr.aria-expanded]="panelOpen()"
+          (click)="panelOpen.set(!panelOpen())"
         >
-          <span class="heart-icon">{{ isFavorite(event.publicId) ? '♥' : '♡' }}</span>
+          <mat-icon>tune</mat-icon>
+          Filters
+          @if (filterCount() > 0) {
+            <span class="toolbar__badge">{{ filterCount() }}</span>
+          }
         </button>
+
+        <mat-form-field class="toolbar__sort" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Sort by</mat-label>
+          <mat-select [formControl]="sortControl" [panelWidth]="null">
+            @for (sort of sorts; track sort.value) {
+              <mat-option [value]="sort.value">{{ sort.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
       </div>
 
-      <div class="event-card-content">
-        <h3 class="event-title">{{ event.name }}</h3>
-        <p class="event-date">{{ event.date | date: 'shortDate' }}</p>
-        <p class="event-price" *ngIf="event.lowestPrice !== null">From {{ event.lowestPrice | currency }}</p>
+      @if (filterCount() > 0) {
+        <mat-chip-set class="chips" aria-label="Active filters">
+          @if (q.search) {
+            <mat-chip (removed)="remove('search')">
+              “{{ q.search }}”
+              <button matChipRemove aria-label="Remove the search"><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+          @if (q.categoryId) {
+            <mat-chip (removed)="remove('categoryId')">
+              {{ categoryName() }}
+              <button matChipRemove aria-label="Remove the category filter"><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+          @if (q.city) {
+            <mat-chip (removed)="remove('city')">
+              {{ q.city }}
+              <button matChipRemove aria-label="Remove the city filter"><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+          @if (q.locationId) {
+            <mat-chip (removed)="remove('locationId')">
+              {{ venueName() }}
+              <button matChipRemove aria-label="Remove the venue filter"><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+          @if (q.dateFrom || q.dateTo) {
+            <mat-chip (removed)="remove('dateFrom', 'dateTo')">
+              @if (q.dateFrom && q.dateTo) {
+                {{ q.dateFrom | date: 'd. M. y.' }} – {{ q.dateTo | date: 'd. M. y.' }}
+              } @else if (q.dateFrom) {
+                From {{ q.dateFrom | date: 'd. M. y.' }}
+              } @else {
+                Until {{ q.dateTo | date: 'd. M. y.' }}
+              }
+              <button matChipRemove aria-label="Remove the date filter"><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+          @if (q.minPrice !== undefined || q.maxPrice !== undefined) {
+            <mat-chip (removed)="remove('minPrice', 'maxPrice')">
+              @if (q.minPrice !== undefined && q.maxPrice !== undefined) {
+                {{ q.minPrice | currency }} – {{ q.maxPrice | currency }}
+              } @else if (q.minPrice !== undefined) {
+                From {{ q.minPrice | currency }}
+              } @else {
+                Up to {{ q.maxPrice | currency }}
+              }
+              <button matChipRemove aria-label="Remove the price filter"><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+          <button mat-button type="button" class="chips__clear" (click)="clearAll()">Clear all</button>
+        </mat-chip-set>
+      }
 
-        <a [routerLink]="['/event', event.publicId]" class="btn-secondary view-details-btn">
-          View Details
-        </a>
-      </div>
+      @if (items().length === 0 && error(); as message) {
+        <div class="state state--error" role="alert">
+          <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+          <h2 class="state__title">The events could not be loaded</h2>
+          <p class="state__text">{{ message }}</p>
+          <button mat-stroked-button type="button" (click)="loadMore()">
+            <mat-icon>refresh</mat-icon>
+            Try again
+          </button>
+        </div>
+      } @else if (total() === 0) {
+        <div class="state">
+          <span class="state__icon"><mat-icon>{{ filterCount() > 0 ? 'filter_alt_off' : 'confirmation_number' }}</mat-icon></span>
+          @if (filterCount() > 0) {
+            <h2 class="state__title">No events match these filters</h2>
+            <p class="state__text">Try another city, a wider date range or a higher price.</p>
+            <button mat-stroked-button type="button" (click)="clearAll()">Clear all filters</button>
+          } @else {
+            <h2 class="state__title">No events yet</h2>
+            <p class="state__text">New events show up here as soon as organizers publish them.</p>
+          }
+        </div>
+      } @else {
+        <div class="grid" [attr.aria-busy]="loading()">
+          @for (event of items(); track event.publicId; let index = $index) {
+            <app-event-card
+              class="grid__item"
+              [style.--delay]="(index % pageSize) * 40 + 'ms'"
+              [event]="event"
+              [favorite]="signedIn() ? favoriteIds().has(event.publicId) : null"
+              [favoriteBusy]="pendingFavorites().has(event.publicId)"
+              (favoriteToggled)="toggleFavorite(event)"
+            />
+          }
+          @if (loading()) {
+            @for (skeleton of skeletons; track skeleton) {
+              <div class="skeleton" aria-hidden="true">
+                <div class="skeleton__poster"></div>
+                <div class="skeleton__line"></div>
+                <div class="skeleton__line skeleton__line--short"></div>
+              </div>
+            }
+          }
+        </div>
+
+        @if (items().length > 0 && error(); as message) {
+          <div class="more-error" role="alert">
+            <span>{{ message }}</span>
+            <button mat-button type="button" (click)="loadMore()">Try again</button>
+          </div>
+        } @else if (items().length > 0 && !hasMore() && !loading()) {
+          <p class="end">That's every event{{ filterCount() > 0 ? ' for these filters' : '' }}.</p>
+        }
+      }
+
+      <div #sentinel class="sentinel" aria-hidden="true"></div>
     </div>
-  </main>
-
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
-
-  <div class="empty-state" *ngIf="events.length === 0 && !isLoading">
-    <p>No events available at the moment.</p>
   </div>
-</div>
+</section>

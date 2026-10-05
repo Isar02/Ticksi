@@ -14,6 +14,26 @@ export interface Event {
   organizerCompanyName: string;
 }
 
+export const CATALOGUE_SORTS = ['date-desc', 'date-asc', 'price-asc', 'price-desc', 'name-asc', 'name-desc'] as const;
+export type CatalogueSort = (typeof CATALOGUE_SORTS)[number];
+
+export interface CatalogueQuery {
+  search?: string;
+  categoryId?: string;
+  locationId?: string;
+  city?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sort: CatalogueSort;
+}
+
+export interface CatalogueFilters {
+  categories: NamedOption[];
+  cities: string[];
+}
+
 export interface ManagedEvent {
   publicId: string;
   name: string;

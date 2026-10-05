@@ -1,279 +1,322 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-
-import { Subject, of } from 'rxjs';
 import {
-  debounceTime,
-  distinctUntilChanged,
-  switchMap,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import {
+  EMPTY,
+  Observable,
+  Subject,
   catchError,
-  tap,
+  debounceTime,
+  defer,
+  exhaustMap,
+  filter,
   finalize,
-} from 'rxjs/operators';
-
+  map,
+  of,
+  startWith,
+  switchMap,
+  tap
+} from 'rxjs';
+import { ApiError } from '../../core/models/api-error';
+import { ToastService } from '../../core/services/toast.service';
+import { CatalogueFilters, CatalogueQuery, CatalogueSort, Event } from '../../models/event.model';
 import { AuthService } from '../../services/auth.service';
 import { EventService } from '../../services/event.service';
 import { FavoriteService } from '../../services/favorite.service';
-import { SearchService, SearchSuggestionDto } from '../../services/search.service';
+import { SearchSuggestionDto } from '../../services/search.service';
+import { EventCardComponent } from '../shared/event-card/event-card.component';
+import { CatalogueSearchComponent } from './catalogue-search/catalogue-search.component';
+import { catalogueFilterForm } from './catalogue-filter-form';
+import { FilterPanelComponent } from './filter-panel/filter-panel.component';
+import {
+  CatalogueFilterKey,
+  activeFilterCount,
+  readCatalogueQuery,
+  toCatalogueParams,
+  withoutFilters
+} from './catalogue-query';
 
-import { Event } from '../../models/event.model';
-import { ApiError } from '../../core/models/api-error';
-import { ToastService } from '../../core/services/toast.service';
-import { LoadingSpinnerComponent } from '../shared/loading-spinner/loading-spinner.component';
+const PAGE_SIZE = 12;
+
+type FilterValues = Pick<CatalogueQuery, 'categoryId' | 'city' | 'dateFrom' | 'dateTo' | 'minPrice' | 'maxPrice'>;
 
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LoadingSpinnerComponent],
+  imports: [
+    CurrencyPipe,
+    DatePipe,
+    DecimalPipe,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatSelectModule,
+    CatalogueSearchComponent,
+    EventCardComponent,
+    FilterPanelComponent
+  ],
   templateUrl: './events.component.html',
   styleUrl: './events.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EventsComponent implements OnInit {
-  events: Event[] = [];
-  currentPage = 1;
-  totalPages = 1;
-  isLoading = false;
-  hasMore = true;
+export class EventsComponent {
+  private readonly events = inject(EventService);
+  private readonly favorites = inject(FavoriteService);
+  private readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly more$ = new Subject<void>();
+  private readonly query$ = this.route.queryParamMap.pipe(map(readCatalogueQuery));
+  private readonly sentinel = viewChild.required<ElementRef<HTMLElement>>('sentinel');
+  private sentinelObserver?: IntersectionObserver;
+  private sentinelVisible = false;
 
-  selectedSort = 'date-desc';
+  protected readonly pageSize = PAGE_SIZE;
+  protected readonly skeletons = Array.from({ length: 6 }, (_, index) => index);
+  protected readonly sorts: { value: CatalogueSort; label: string }[] = [
+    { value: 'date-desc', label: 'Date, latest first' },
+    { value: 'date-asc', label: 'Date, soonest first' },
+    { value: 'price-asc', label: 'Price, low to high' },
+    { value: 'price-desc', label: 'Price, high to low' },
+    { value: 'name-asc', label: 'Name, A to Z' },
+    { value: 'name-desc', label: 'Name, Z to A' }
+  ];
 
-  favoriteIds: Set<string> = new Set();
+  protected readonly query = toSignal(this.query$, { requireSync: true });
+  protected readonly items = signal<Event[]>([]);
+  protected readonly total = signal<number | null>(null);
+  protected readonly hasMore = signal(false);
+  protected readonly loading = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly options = signal<CatalogueFilters>({ categories: [], cities: [] });
+  protected readonly panelOpen = signal(false);
+  protected readonly signedIn = computed(() => this.auth.currentUser() !== null);
+  protected readonly favoriteIds = signal<ReadonlySet<string>>(new Set());
+  protected readonly pendingFavorites = signal<ReadonlySet<string>>(new Set());
+  private readonly venueNames = signal<ReadonlyMap<string, string>>(new Map());
 
-  // ✅ Unified search input
-  searchTerm = '';
+  protected readonly filterCount = computed(() => activeFilterCount(this.query()));
+  protected readonly categoryName = computed(() => {
+    const id = this.query().categoryId;
+    return this.options().categories.find(category => category.publicId === id)?.name ?? 'Selected category';
+  });
+  protected readonly venueName = computed(() =>
+    this.venueNames().get(this.query().locationId ?? '') ?? this.items()[0]?.locationName ?? 'Selected venue'
+  );
+  protected readonly sortControl = new FormControl<CatalogueSort>(this.query().sort, { nonNullable: true });
+  protected readonly filters = catalogueFilterForm();
 
-  // ✅ Suggestions dropdown (unified: event + category + location)
-  suggestions: SearchSuggestionDto[] = [];
-  showSuggestions = false;
-  isSuggestLoading = false;
+  constructor() {
+    this.query$.pipe(takeUntilDestroyed()).subscribe(query => this.showInForm(query));
 
-  // ✅ Selected filters (set via clicking suggestions)
-  selectedCategoryId?: string; // Guid string
-  selectedLocationLabel?: string;
+    this.query$
+      .pipe(
+        switchMap(query => this.pagesOf(query)),
+        takeUntilDestroyed()
+      )
+      .subscribe();
 
-  private searchChanged$ = new Subject<string>();
-
-  constructor(
-    private eventService: EventService,
-    private favoriteService: FavoriteService,
-    public authService: AuthService,
-    private searchService: SearchService,
-    private toast: ToastService
-  ) {}
-
-  ngOnInit(): void {
-    this.loadEvents();
-    this.loadFavorites();
-
-    // ✅ Suggestion stream (unified)
-    this.searchChanged$
+    this.filters.valueChanges
       .pipe(
         debounceTime(300),
-        distinctUntilChanged(),
-        tap((term) => {
-          const t = (term || '').trim();
+        filter(() => this.filters.valid),
+        takeUntilDestroyed()
+      )
+      .subscribe(() => this.applyFilters());
 
-          // Typing a new term drops filters picked from suggestions, since one input drives the search.
-          if (t.length > 0) {
-            this.selectedCategoryId = undefined;
-            this.selectedLocationLabel = undefined;
-          }
+    this.sortControl.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(sort => this.navigate({ ...this.query(), sort }));
 
-          this.resetAndReloadEvents();
+    toObservable(this.auth.currentUser)
+      .pipe(
+        switchMap(user =>
+          user ? this.favorites.getUserFavorites().pipe(catchError(() => of<string[]>([]))) : of<string[]>([])
+        ),
+        takeUntilDestroyed()
+      )
+      .subscribe(ids => this.favoriteIds.set(new Set(ids)));
 
-          if (t.length < 2) {
-            this.suggestions = [];
-            this.showSuggestions = false;
-            this.isSuggestLoading = false;
-          }
-        }),
-        switchMap((term) => {
-          const t = (term || '').trim();
-          if (t.length < 2) return of([] as SearchSuggestionDto[]);
+    this.events
+      .getCatalogueFilters()
+      .pipe(takeUntilDestroyed())
+      .subscribe({ next: options => this.options.set(options), error: () => {} });
 
-          this.isSuggestLoading = true;
+    afterNextRender(() => this.watchSentinel());
+    this.destroyRef.onDestroy(() => this.sentinelObserver?.disconnect());
+  }
 
-          return this.searchService.getSuggestions(t, 10).pipe(
-            catchError(() => of([] as SearchSuggestionDto[])),
-            finalize(() => (this.isSuggestLoading = false))
+  protected loadMore(): void {
+    this.more$.next();
+  }
+
+  protected searchFor(term: string): void {
+    this.navigate({ ...this.query(), search: term || undefined }, true);
+  }
+
+  protected pickSuggestion(suggestion: SearchSuggestionDto): void {
+    const query = { ...this.query(), search: undefined };
+
+    if (suggestion.type === 'category') {
+      this.navigate({ ...query, categoryId: suggestion.publicId });
+    } else if (suggestion.type === 'location') {
+      this.venueNames.update(names => new Map(names).set(suggestion.publicId, suggestion.label));
+      this.navigate({ ...query, locationId: suggestion.publicId });
+    } else {
+      this.navigate({ ...query, search: suggestion.label });
+    }
+  }
+
+  protected remove(...keys: CatalogueFilterKey[]): void {
+    this.navigate(withoutFilters(this.query(), ...keys));
+  }
+
+  protected clearAll(): void {
+    this.navigate({ sort: this.query().sort });
+  }
+
+  protected toggleFavorite(event: Event): void {
+    const id = event.publicId;
+    if (this.pendingFavorites().has(id)) return;
+
+    const isFavorite = this.favoriteIds().has(id);
+    const request = isFavorite ? this.favorites.removeFavorite(id) : this.favorites.addFavorite(id);
+    this.pendingFavorites.update(ids => new Set(ids).add(id));
+
+    request
+      .pipe(
+        finalize(() => this.pendingFavorites.update(ids => without(ids, id))),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => this.favoriteIds.update(ids => (isFavorite ? without(ids, id) : new Set(ids).add(id))),
+        error: (error: unknown) => this.toast.error(messageOf(error))
+      });
+  }
+
+  // Each new query starts an empty list; switchMap drops the responses of the previous one.
+  private pagesOf(query: CatalogueQuery): Observable<unknown> {
+    return defer(() => {
+      let loadedPage = 0;
+      this.items.set([]);
+      this.total.set(null);
+      this.hasMore.set(false);
+      this.error.set(null);
+
+      return this.more$.pipe(
+        startWith(undefined),
+        filter(() => loadedPage === 0 || this.hasMore()),
+        exhaustMap(() => {
+          this.loading.set(true);
+          this.error.set(null);
+
+          return this.events.getEvents(query, loadedPage + 1, this.pageSize).pipe(
+            tap(page => {
+              loadedPage = page.page;
+              this.items.update(items => [...items, ...page.items]);
+              this.total.set(page.totalCount);
+              this.hasMore.set(page.page < page.totalPages);
+              setTimeout(() => this.recheckSentinel());
+            }),
+            catchError((error: unknown) => {
+              this.error.set(messageOf(error));
+              return EMPTY;
+            }),
+            finalize(() => this.loading.set(false))
           );
         })
-      )
-      .subscribe((list) => {
-        this.suggestions = list || [];
-        this.showSuggestions = this.suggestions.length > 0;
-      });
+      );
+    });
   }
 
-  // -------------------------
-  // Suggestions helpers (for grouped display)
-  // -------------------------
-  get eventSuggestions(): SearchSuggestionDto[] {
-    return (this.suggestions || []).filter((x) => x.type === 'event');
+  private watchSentinel(): void {
+    this.sentinelObserver = new IntersectionObserver(
+      ([entry]) => {
+        this.sentinelVisible = entry.isIntersecting;
+        if (this.sentinelVisible && this.hasMore() && !this.loading() && !this.error()) this.more$.next();
+      },
+      { rootMargin: '0px 0px 600px 0px' }
+    );
+    this.sentinelObserver.observe(this.sentinel().nativeElement);
   }
 
-  get categorySuggestions(): SearchSuggestionDto[] {
-    return (this.suggestions || []).filter((x) => x.type === 'category');
+  // A short page can leave the sentinel in view, which the observer does not report again.
+  private recheckSentinel(): void {
+    const element = this.sentinel().nativeElement;
+    this.sentinelObserver?.unobserve(element);
+    this.sentinelObserver?.observe(element);
   }
 
-  get locationSuggestions(): SearchSuggestionDto[] {
-    return (this.suggestions || []).filter((x) => x.type === 'location');
-  }
+  private applyFilters(): void {
+    const filters = this.formFilters();
+    const query = this.query();
 
-  // -------------------------
-  // Search handlers (existing UI stays)
-  // -------------------------
-  onSearchInput(value: string): void {
-    this.searchTerm = value;
-    this.searchChanged$.next(value);
-  }
-
-  onSearchFocus(): void {
-    if (this.suggestions.length > 0) this.showSuggestions = true;
-  }
-
-  // The delay lets a click on a suggestion land before the dropdown closes.
-  onSearchBlur(): void {
-    setTimeout(() => (this.showSuggestions = false), 150);
-  }
-
-  pickSuggestion(s: SearchSuggestionDto): void {
-    this.showSuggestions = false;
-    this.suggestions = [];
-
-    if (s.type === 'category') {
-      this.selectedCategoryId = s.publicId;
-      this.selectedLocationLabel = undefined;
-      this.searchTerm = s.label;
-    } else if (s.type === 'location') {
-      this.selectedLocationLabel = s.label;
-      this.selectedCategoryId = undefined;
-      this.searchTerm = s.label;
-    } else {
-      // event
-      this.searchTerm = s.label;
-      this.selectedCategoryId = undefined;
-      this.selectedLocationLabel = undefined;
+    if ((Object.keys(filters) as (keyof FilterValues)[]).every(key => filters[key] === query[key])) {
+      return;
     }
 
-    this.resetAndReloadEvents();
+    this.navigate({ ...query, ...filters }, true);
   }
 
-  clearSearch(): void {
-    this.searchTerm = '';
-    this.suggestions = [];
-    this.showSuggestions = false;
-    this.selectedCategoryId = undefined;
-    this.selectedLocationLabel = undefined;
-    this.resetAndReloadEvents();
+  private formFilters(): FilterValues {
+    const value = this.filters.getRawValue();
+    return {
+      categoryId: value.categoryId || undefined,
+      city: value.city || undefined,
+      dateFrom: value.dateFrom || undefined,
+      dateTo: value.dateTo || undefined,
+      minPrice: value.minPrice ?? undefined,
+      maxPrice: value.maxPrice ?? undefined
+    };
   }
 
-  // -------------------------
-  // Events loading
-  // -------------------------
-  private parseSortParams(): { sortBy: string; sortDescending: boolean } {
-    const [sortBy, direction] = this.selectedSort.split('-');
-    return { sortBy, sortDescending: direction === 'desc' };
+  private showInForm(query: CatalogueQuery): void {
+    this.filters.setValue(
+      {
+        categoryId: query.categoryId ?? '',
+        city: query.city ?? '',
+        dateFrom: query.dateFrom ?? '',
+        dateTo: query.dateTo ?? '',
+        minPrice: query.minPrice ?? null,
+        maxPrice: query.maxPrice ?? null
+      },
+      { emitEvent: false }
+    );
+    this.sortControl.setValue(query.sort, { emitEvent: false });
   }
 
-  onSortChange(): void {
-    this.resetAndReloadEvents();
+  private navigate(query: CatalogueQuery, replaceUrl = false): void {
+    this.router.navigate([], { relativeTo: this.route, queryParams: toCatalogueParams(query), replaceUrl });
   }
+}
 
-  private buildEffectiveSearch(): string | undefined {
-    const base = (this.searchTerm || '').trim();
-    const loc = (this.selectedLocationLabel || '').trim();
+function without(ids: ReadonlySet<string>, id: string): Set<string> {
+  const next = new Set(ids);
+  next.delete(id);
+  return next;
+}
 
-    if (!base && !loc) return undefined;
-    if (base && !loc) return base;
-    if (!base && loc) return loc;
-
-    if (base.toLowerCase().includes(loc.toLowerCase())) return base;
-
-    return `${base} ${loc}`.trim();
-  }
-
-  loadEvents(): void {
-    if (this.isLoading || !this.hasMore) return;
-
-    this.isLoading = true;
-    const { sortBy, sortDescending } = this.parseSortParams();
-
-    this.eventService
-      .getEvents({
-        page: this.currentPage,
-        pageSize: 10,
-        sortBy,
-        sortDescending,
-        search: this.buildEffectiveSearch(),
-        categoryId: this.selectedCategoryId,
-      })
-      .subscribe({
-        next: (response: any) => {
-          this.events = [...this.events, ...(response.items || [])];
-          this.totalPages = response.totalPages ?? 1;
-          this.currentPage++;
-          this.hasMore = this.currentPage <= this.totalPages;
-          this.isLoading = false;
-        },
-        error: () => (this.isLoading = false),
-      });
-  }
-
-  resetAndReloadEvents(): void {
-    this.events = [];
-    this.currentPage = 1;
-    this.hasMore = true;
-    this.totalPages = 1;
-    this.loadEvents();
-  }
-
-  // -------------------------
-  // Favorites
-  // -------------------------
-  loadFavorites(): void {
-    if (!this.authService.isAuthenticated()) return;
-
-    this.favoriteService
-      .getUserFavorites()
-      .pipe(catchError(() => of([] as string[])))
-      .subscribe((favoriteIds) => (this.favoriteIds = new Set(favoriteIds)));
-  }
-
-  isFavorite(eventId: string): boolean {
-    return this.favoriteIds.has(eventId);
-  }
-
-  toggleFavorite(eventId: string): void {
-    if (!this.authService.isAuthenticated()) return;
-
-    const isFavorited = this.isFavorite(eventId);
-
-    if (isFavorited) {
-      this.favoriteService.removeFavorite(eventId).subscribe({
-        next: () => this.favoriteIds.delete(eventId),
-        error: (error: ApiError) => this.toast.error(error.message),
-      });
-    } else {
-      this.favoriteService.addFavorite(eventId).subscribe({
-        next: () => this.favoriteIds.add(eventId),
-        error: (error: ApiError) => this.toast.error(error.message),
-      });
-    }
-  }
-
-  // -------------------------
-  // Infinite scroll
-  // -------------------------
-  @HostListener('window:scroll', [])
-  onScroll(): void {
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const scrollThreshold = document.body.offsetHeight - 300;
-
-    if (scrollPosition >= scrollThreshold) {
-      this.loadEvents();
-    }
-  }
+function messageOf(error: unknown): string {
+  return error instanceof ApiError ? error.message : 'Something went wrong. Please try again.';
 }

@@ -1,0 +1,75 @@
+@let filters = form();
+
+<form class="panel__form" [formGroup]="filters" (submit)="$event.preventDefault()">
+  <div class="panel__head">
+    <h2 class="panel__title">Filters</h2>
+    @if (filterCount() > 0) {
+      <button mat-button type="button" class="panel__clear" (click)="cleared.emit()">Clear all</button>
+    }
+  </div>
+
+  <fieldset class="panel__group">
+    <legend>What</legend>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Category</mat-label>
+      <mat-select formControlName="categoryId" [panelWidth]="null">
+        <mat-option value="">All categories</mat-option>
+        @for (category of options().categories; track category.publicId) {
+          <mat-option [value]="category.publicId">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </fieldset>
+
+  <fieldset class="panel__group">
+    <legend>Where</legend>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>City</mat-label>
+      <mat-select formControlName="city" [panelWidth]="null">
+        <mat-option value="">All cities</mat-option>
+        @for (city of options().cities; track city) {
+          <mat-option [value]="city">{{ city }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </fieldset>
+
+  <fieldset class="panel__group">
+    <legend>When</legend>
+    <div class="panel__dates">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>From</mat-label>
+        <input matInput type="date" formControlName="dateFrom" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>To</mat-label>
+        <input matInput type="date" formControlName="dateTo" [min]="filters.controls.dateFrom.value" />
+      </mat-form-field>
+    </div>
+    @if (filters.hasError('dateRange')) {
+      <p class="panel__error" role="alert">The end date is before the start date.</p>
+    }
+  </fieldset>
+
+  <fieldset class="panel__group">
+    <legend>Price</legend>
+    <div class="panel__pair">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Min</mat-label>
+        <input matInput type="number" min="0" step="1" inputmode="decimal" formControlName="minPrice" />
+        <span matTextSuffix>KM</span>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Max</mat-label>
+        <input matInput type="number" min="0" step="1" inputmode="decimal" formControlName="maxPrice" />
+        <span matTextSuffix>KM</span>
+      </mat-form-field>
+    </div>
+    @if (filters.controls.minPrice.hasError('min') || filters.controls.maxPrice.hasError('min')) {
+      <p class="panel__error" role="alert">Prices cannot be negative.</p>
+    } @else if (filters.hasError('priceRange')) {
+      <p class="panel__error" role="alert">The maximum is below the minimum.</p>
+    }
+    <p class="panel__hint">Compared with the cheapest ticket of each event.</p>
+  </fieldset>
+</form>

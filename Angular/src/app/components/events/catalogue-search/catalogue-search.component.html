@@ -1,0 +1,35 @@
+<p class="eyebrow">Catalogue</p>
+<h1 class="title">Find your next night out</h1>
+<p class="lede">Concerts, theatre, sport and more. Narrow it down by city, date or price.</p>
+
+<mat-form-field class="search" appearance="outline" subscriptSizing="dynamic">
+  <mat-icon matPrefix>search</mat-icon>
+  <input
+    matInput
+    type="text"
+    enterkeyhint="search"
+    placeholder="Search events or venues"
+    aria-label="Search events, categories or venues"
+    [formControl]="control"
+    [matAutocomplete]="suggestionList"
+    [maxlength]="maxLength"
+    autocomplete="off"
+  />
+  @if (term()) {
+    <button matSuffix mat-icon-button type="button" aria-label="Clear search" (click)="clear()">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+  <mat-autocomplete #suggestionList="matAutocomplete" [displayWith]="label" (optionSelected)="pick($event)">
+    @for (group of groups(); track group.label) {
+      <mat-optgroup [label]="group.label">
+        @for (suggestion of group.items; track suggestion.type + suggestion.publicId) {
+          <mat-option [value]="suggestion">
+            <mat-icon>{{ icons[suggestion.type] }}</mat-icon>
+            {{ suggestion.label }}
+          </mat-option>
+        }
+      </mat-optgroup>
+    }
+  </mat-autocomplete>
+</mat-form-field>
