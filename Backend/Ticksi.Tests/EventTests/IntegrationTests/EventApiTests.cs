@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Ticksi.Application.DTOs;
+using Ticksi.Domain.Enums;
 using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.EventTests.IntegrationTests;
@@ -157,6 +158,114 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
         Assert.Equal(ids["Standard"], after["Regular"]);
     }
 
+    [Fact]
+    public async Task GetManaged_AsOrganizer_ListsOwnEventsSortedByPaidTickets()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var other = await SignInAsync(Role.Names.Organizer);
+        var tag = Guid.NewGuid().ToString("N")[..8];
+        var request = await NewEventAsync();
+        var quiet = await CreateAsync(token, request with { Name = $"Quiet {tag}" });
+        var popular = await CreateAsync(token, request with { Name = $"Popular {tag}" });
+        await CreateAsync(other, request with { Name = $"Foreign {tag}" });
+        await AddOrderAsync(popular.PublicId, 5, OrderStatus.Paid);
+        await AddOrderAsync(quiet.PublicId, 9, OrderStatus.Pending);
+
+        var response = await SendAsync(HttpMethod.Get, $"/api/events/managed?name={tag}&sortBy=sold&sortDescending=true", token);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var page = await response.Content.ReadFromJsonAsync<PageBody<ManagedEventBody>>();
+        Assert.Equal(2, page!.TotalCount);
+        Assert.Equal([($"Popular {tag}", 5), ($"Quiet {tag}", 0)], page.Items.Select(e => (e.Name, e.TicketsSold)));
+        Assert.All(page.Items, e => Assert.Equal(("Zetra", 400), (e.VenueName, e.TicketsTotal)));
+    }
+
+    [Fact]
+    public async Task GetManaged_AsUserOrWithoutToken_IsRefused()
+    {
+        var token = await SignInAsync(Role.Names.User);
+
+        var asUser = await SendAsync(HttpMethod.Get, "/api/events/managed", token);
+        var anonymous = await _client.GetAsync("/api/events/managed");
+
+        Assert.Equal(HttpStatusCode.Forbidden, asUser.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetManaged_InvalidQuery_Returns400WithFieldErrors()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+
+        var response = await SendAsync(HttpMethod.Get, "/api/events/managed?sortBy=price&period=soon&pageSize=500", token);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorBody>();
+        Assert.Equal(["pageSize", "period", "sortBy"], error!.Errors!.Keys.Order());
+    }
+
+    [Fact]
+    public async Task GetManaged_LatestPossibleEndDate_Returns200()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var created = await CreateAsync(token, await NewEventAsync());
+
+        var response = await SendAsync(HttpMethod.Get, "/api/events/managed?dateFrom=0001-01-01&dateTo=9999-12-31", token);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var page = await response.Content.ReadFromJsonAsync<PageBody<ManagedEventBody>>();
+        Assert.Equal(created.Name, Assert.Single(page!.Items).Name);
+    }
+
+    [Fact]
+    public async Task GetForEdit_OwnEventOnly()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var other = await SignInAsync(Role.Names.Organizer);
+        var request = await NewEventAsync();
+        var created = await CreateAsync(token, request);
+
+        var own = await SendAsync(HttpMethod.Get, $"/api/events/{created.PublicId}/edit", token);
+        var foreign = await SendAsync(HttpMethod.Get, $"/api/events/{created.PublicId}/edit", other);
+
+        Assert.Equal(HttpStatusCode.OK, own.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);
+        var body = await own.Content.ReadFromJsonAsync<EventRequest>();
+        Assert.Equal(request.LocationId, body!.LocationId);
+        Assert.Equal(["Standard", "VIP"], body.TicketTypes.Select(t => t.Name));
+    }
+
+    [Fact]
+    public async Task GetFormOptions_AsOrganizer_ListsVenuesTypesAndCompanies()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var request = await NewEventAsync();
+
+        var options = await (await SendAsync(HttpMethod.Get, "/api/events/form-options", token))
+            .Content.ReadFromJsonAsync<FormOptionsBody>();
+
+        Assert.Contains(options!.Venues, v => v.PublicId == request.LocationId && v.Capacity == 500);
+        Assert.Contains(options.EventTypes, t => t.PublicId == ConcertTypeId);
+        Assert.Contains(options.OrganizerCompanies, c => c.PublicId == request.OrganizerCompanyId);
+    }
+
+    private async Task AddOrderAsync(Guid eventPublicId, int quantity, OrderStatus status)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var ticketType = await context.TicketTypes.FirstAsync(t => t.Event!.PublicId == eventPublicId);
+        var buyer = await context.AppUsers.FirstAsync();
+
+        context.Orders.Add(new Order
+        {
+            AppUserId = buyer.Id,
+            Status = status,
+            TotalAmount = ticketType.Price * quantity,
+            Items = [new OrderItem { TicketTypeId = ticketType.Id, Quantity = quantity, UnitPrice = ticketType.Price }]
+        });
+        await context.SaveChangesAsync();
+    }
+
     private async Task<string> SignInAsync(string role)
     {
         var email = $"organizer.{Guid.NewGuid():N}@ticksi.com";
@@ -231,6 +340,14 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
         List<TicketTypeRequest> TicketTypes);
 
     private sealed record TicketTypeRequest(string Name, decimal Price, int Quantity, Guid? PublicId = null);
+
+    private sealed record PageBody<T>(List<T> Items, int TotalCount);
+
+    private sealed record ManagedEventBody(string Name, string VenueName, int TicketsSold, int TicketsTotal);
+
+    private sealed record OptionBody(Guid PublicId, string Name, int Capacity);
+
+    private sealed record FormOptionsBody(List<OptionBody> Venues, List<OptionBody> EventTypes, List<OptionBody> OrganizerCompanies);
 
     private sealed record ErrorBody(string Code, string Message, string TraceId, Dictionary<string, string[]>? Errors);
 }

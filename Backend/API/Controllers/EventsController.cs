@@ -6,9 +6,12 @@ using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Events.Commands.CreateEvent;
 using Ticksi.Application.Features.Events.Commands.DeleteEvent;
 using Ticksi.Application.Features.Events.Commands.UpdateEvent;
+using Ticksi.Application.Features.Events.Queries.GetEventById;
+using Ticksi.Application.Features.Events.Queries.GetEventForEdit;
+using Ticksi.Application.Features.Events.Queries.GetEventFormOptions;
 using Ticksi.Application.Features.Events.Queries.GetEventImages;
 using Ticksi.Application.Features.Events.Queries.GetEvents;
-using Ticksi.Application.Features.Events.Queries.GetEventById;
+using Ticksi.Application.Features.Events.Queries.GetManagedEvents;
 using Ticksi.Domain.Entities;
 
 namespace API.Controllers
@@ -59,6 +62,31 @@ namespace API.Controllers
         {
             var dto = await _mediator.Send(new GetEventByIdQuery(eventId), cancellationToken);
             return Ok(dto);
+        }
+
+        [HttpGet("managed")]
+        [Authorize(Roles = EventManagers)]
+        public async Task<ActionResult<PagedResult<ManagedEventDto>>> GetManaged(
+            [FromQuery] GetManagedEventsQuery query,
+            CancellationToken cancellationToken)
+        {
+            return Ok(await _mediator.Send(query, cancellationToken));
+        }
+
+        [HttpGet("{eventId:guid}/edit")]
+        [Authorize(Roles = EventManagers)]
+        [ProducesResponseType(typeof(EventForEditDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<EventForEditDto>> GetForEdit(Guid eventId, CancellationToken cancellationToken)
+        {
+            return Ok(await _mediator.Send(new GetEventForEditQuery(eventId), cancellationToken));
+        }
+
+        [HttpGet("form-options")]
+        [Authorize(Roles = EventManagers)]
+        public async Task<ActionResult<EventFormOptionsDto>> GetFormOptions(CancellationToken cancellationToken)
+        {
+            return Ok(await _mediator.Send(new GetEventFormOptionsQuery(), cancellationToken));
         }
 
         [HttpPost]

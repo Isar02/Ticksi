@@ -4,7 +4,7 @@ using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Interfaces;
 using Ticksi.Domain.Entities;
 
-namespace Ticksi.Application.Features.Events.Commands;
+namespace Ticksi.Application.Features.Events;
 
 internal sealed record EventEditor(int UserId, bool IsAdmin)
 {
@@ -30,9 +30,12 @@ internal sealed record EventEditor(int UserId, bool IsAdmin)
         };
     }
 
-    public void EnsureCanManage(Event item)
+    public IQueryable<Event> Manageable(IQueryable<Event> events) =>
+        IsAdmin ? events : events.Where(e => e.AppUserId == UserId);
+
+    public void EnsureCanManage(int ownerId)
     {
-        if (!IsAdmin && item.AppUserId != UserId)
+        if (!IsAdmin && ownerId != UserId)
             throw new ForbiddenException("You can only manage your own events.");
     }
 }
