@@ -57,3 +57,18 @@
     </tfoot>
   </table>
 </section>
+
+<section class="block">
+  <header class="block__head">
+    <h3 class="block__title">Poster</h3>
+    <button mat-button type="button" (click)="editStep.emit('poster')"><mat-icon>edit</mat-icon>Edit</button>
+  </header>
+  @if (poster(); as image) {
+    <figure class="poster">
+      <img class="poster__image" [src]="image" alt="Event poster" />
+      <figcaption class="poster__caption">{{ posterName() ? posterName() + ' · uploads after saving' : 'Current poster' }}</figcaption>
+    </figure>
+  } @else {
+    <p class="poster__none">No poster. You can add one now or later.</p>
+  }
+</section>

@@ -1,0 +1,61 @@
+@let file = control().value;
+
+<div
+  class="drop"
+  [class.is-dragging]="dragging()"
+  [class.is-disabled]="control().disabled"
+  (dragenter)="dragEnter($event)"
+  (dragover)="dragOver($event)"
+  (dragleave)="dragLeave()"
+  (drop)="drop($event)"
+>
+  @if (image(); as src) {
+    <div class="chosen">
+      <figure class="frame">
+        <img class="frame__image" [src]="src" [alt]="file ? 'New poster preview' : 'Current poster'" />
+        <span class="frame__stamp" [class.is-new]="file">{{ file ? 'New poster' : 'Current poster' }}</span>
+      </figure>
+
+      <div class="chosen__info">
+        @if (file) {
+          <p class="chosen__name">{{ file.name }}</p>
+          <p class="chosen__meta">{{ fileSize(file.size) }} · {{ file.type.replace('image/', '').toUpperCase() }}</p>
+          <p class="chosen__note">Not uploaded yet.</p>
+        } @else {
+          <p class="chosen__name">This poster is on the event now.</p>
+          <p class="chosen__note">Drop an image here or choose one to replace it.</p>
+        }
+
+        <div class="chosen__actions">
+          <button mat-stroked-button type="button" [disabled]="control().disabled" (click)="choose()">
+            <mat-icon>image</mat-icon>
+            {{ file ? 'Choose another' : 'Replace poster' }}
+          </button>
+          @if (file) {
+            <button mat-button type="button" [disabled]="control().disabled" (click)="clear()">
+              {{ hasCurrent() ? 'Keep current poster' : 'Remove' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  } @else {
+    <button type="button" class="empty" [disabled]="control().disabled" (click)="choose()">
+      <span class="empty__punch"><mat-icon>add_photo_alternate</mat-icon></span>
+      <span class="empty__title">Drop the poster here</span>
+      <span class="empty__text">or <span class="empty__link">choose an image</span> from your computer</span>
+      <span class="empty__rules">JPG, PNG, GIF or WEBP · up to {{ maxSize }}</span>
+    </button>
+  }
+
+  <div class="release" aria-hidden="true">
+    <mat-icon>file_download</mat-icon>
+    <span>Drop to use this image</span>
+  </div>
+</div>
+
+@if (problem(); as message) {
+  <p class="problem" role="alert"><mat-icon>error_outline</mat-icon>{{ message }}</p>
+}
+
+<input #picker type="file" class="picker" [accept]="accept" tabindex="-1" aria-hidden="true" (change)="picked($event)" />

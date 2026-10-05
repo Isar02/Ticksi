@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CdkStepperModule } from '@angular/cdk/stepper';
+import { HttpEventType } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldDefaultOptions } from '@angular/material/form-field';
@@ -14,6 +15,8 @@ import { EventService } from '../../services/event.service';
 import { DetailsStepComponent } from './details-step/details-step.component';
 import { summarize } from './event-summary';
 import { WIZARD_STEPS, WizardStep, applyServerErrors, createEventWizardForm, fillFromEvent, recheckDate, toEventInput } from './event-wizard-form';
+import { PosterStepComponent } from './poster-step/poster-step.component';
+import { PosterUpload, PosterUploadComponent } from './poster-upload/poster-upload.component';
 import { ReviewStepComponent } from './review-step/review-step.component';
 import { ScheduleStepComponent } from './schedule-step/schedule-step.component';
 import { TicketPreviewComponent } from './ticket-preview/ticket-preview.component';
@@ -39,6 +42,8 @@ type LoadOutcome = { data: WizardData } | { error: string } | null;
     DetailsStepComponent,
     ScheduleStepComponent,
     TicketsStepComponent,
+    PosterStepComponent,
+    PosterUploadComponent,
     ReviewStepComponent,
     TicketPreviewComponent,
     WizardStepperComponent
@@ -65,6 +70,8 @@ export class EventWizardComponent {
   protected readonly reviewStep = WIZARD_STEPS.length;
   protected readonly loaded = signal<LoadOutcome>(null);
   protected readonly saving = signal(false);
+  protected readonly upload = signal<PosterUpload | null>(null);
+  protected readonly posterPreview = signal<string | null>(null);
 
   protected readonly data = computed(() => {
     const outcome = this.loaded();
@@ -81,6 +88,14 @@ export class EventWizardComponent {
   );
 
   private readonly formChanges = toSignal(this.form.valueChanges);
+  private readonly posterFile = toSignal(this.form.controls.poster.valueChanges, { initialValue: null });
+
+  protected readonly currentPoster = computed(() => {
+    const posterUrl = this.data()?.event?.posterUrl;
+    return posterUrl ? this.events.toAssetUrl(posterUrl) : null;
+  });
+
+  protected readonly shownPoster = computed(() => this.posterPreview() ?? this.currentPoster());
 
   protected readonly summary = computed(() => {
     this.formChanges();
@@ -96,6 +111,18 @@ export class EventWizardComponent {
         takeUntilDestroyed()
       )
       .subscribe(outcome => this.show(outcome));
+
+    effect(onCleanup => {
+      const file = this.posterFile();
+      if (!file) {
+        this.posterPreview.set(null);
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      this.posterPreview.set(url);
+      onCleanup(() => URL.revokeObjectURL(url));
+    });
   }
 
   protected retry(): void {
@@ -122,16 +149,22 @@ export class EventWizardComponent {
     }
 
     const input = toEventInput(this.form);
-    const request: Observable<unknown> = this.eventId
-      ? this.events.updateEvent(this.eventId, input)
-      : this.events.createEvent(input);
+    const savedMessage = this.eventId ? `Changes to "${input.name}" were saved.` : `"${input.name}" was created.`;
+    const request: Observable<string> = this.eventId
+      ? this.events.updateEvent(this.eventId, input).pipe(map(() => this.eventId!))
+      : this.events.createEvent(input).pipe(map(created => created.publicId));
 
     this.saving.set(true);
     this.form.disable();
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.toast.success(this.eventId ? `Changes to "${input.name}" were saved.` : `"${input.name}" was created.`);
-        this.router.navigateByUrl('/organizer/events');
+      next: eventId => {
+        if (!this.form.controls.poster.value) {
+          this.finish(savedMessage);
+          return;
+        }
+
+        this.upload.set({ eventId, eventName: input.name, savedMessage, progress: 0, error: null });
+        this.uploadPoster();
       },
       error: (error: unknown) => {
         this.saving.set(false);
@@ -139,6 +172,46 @@ export class EventWizardComponent {
         this.showSaveError(error);
       }
     });
+  }
+
+  // The event is saved by now, so a failed upload is retried on its own and never saves the event twice.
+  protected uploadPoster(): void {
+    const upload = this.upload();
+    const file = this.form.controls.poster.value;
+    if (!upload || !file) return;
+
+    this.upload.set({ ...upload, progress: 0, error: null });
+    this.form.controls.poster.disable();
+    this.events
+      .uploadPoster(upload.eventId, file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: event => {
+          if (event.type === HttpEventType.UploadProgress && event.total) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            this.upload.update(current => current && { ...current, progress });
+          } else if (event.type === HttpEventType.Response) {
+            this.finish(upload.savedMessage);
+          }
+        },
+        error: (error: unknown) => {
+          this.upload.update(current => current && { ...current, error: uploadErrorOf(error) });
+          this.form.controls.poster.enable();
+        }
+      });
+  }
+
+  protected skipPoster(): void {
+    const upload = this.upload();
+    if (!upload) return;
+
+    this.toast.info(`"${upload.eventName}" is saved without the new poster.`);
+    this.router.navigateByUrl('/organizer/events');
+  }
+
+  private finish(message: string): void {
+    this.toast.success(message);
+    this.router.navigateByUrl('/organizer/events');
   }
 
   private load(): Observable<LoadOutcome> {
@@ -180,6 +253,10 @@ export class EventWizardComponent {
 function withCategoryOf(options: EventFormOptions, event: EventForEdit | null): EventFormOptions {
   if (!event || options.categories.some(category => category.publicId === event.categoryId)) return options;
   return { ...options, categories: [{ publicId: event.categoryId, name: event.categoryName }, ...options.categories] };
+}
+
+function uploadErrorOf(error: unknown): string {
+  return (error instanceof ApiError && Object.values(error.fieldErrors)[0]?.[0]) || messageOf(error);
 }
 
 function messageOf(error: unknown): string {

@@ -1,0 +1,34 @@
+@let upload = state();
+
+<p class="saved"><mat-icon>check_circle</mat-icon>"{{ upload.eventName }}" is saved</p>
+
+@if (upload.error; as error) {
+  <h2 class="title">The poster did not upload</h2>
+  <p class="error" role="alert">{{ error }}</p>
+  <p class="text">Try again, pick another image, or go on without it and add it later.</p>
+
+  <app-poster-drop [control]="control()" [image]="image()" [hasCurrent]="hasCurrent()" />
+
+  <div class="actions">
+    <button mat-button type="button" (click)="skip.emit()">Continue without it</button>
+    <button mat-flat-button type="button" [disabled]="!control().value" (click)="retry.emit()">
+      <mat-icon>refresh</mat-icon>
+      Try again
+    </button>
+  </div>
+} @else {
+  <h2 class="title">Uploading the poster</h2>
+  <p class="text">Keep this page open until it finishes.</p>
+
+  <figure class="reveal" [style.--progress]="upload.progress + '%'">
+    @if (image(); as src) {
+      <img class="reveal__base" [src]="src" alt="" />
+      <img class="reveal__color" [src]="src" alt="Poster being uploaded" />
+    }
+  </figure>
+
+  <div class="meter">
+    <mat-progress-bar mode="determinate" [value]="upload.progress" aria-label="Poster upload progress" />
+    <span class="meter__value">{{ upload.progress }}%</span>
+  </div>
+}

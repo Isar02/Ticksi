@@ -3,7 +3,7 @@ import { EventForEdit, EventInput, TicketTypeForEdit } from '../../models/event.
 
 export const EVENT_LIMITS = { name: 200, description: 4000, contact: 200, ticketName: 100 } as const;
 
-export const WIZARD_STEPS = ['details', 'schedule', 'tickets'] as const;
+export const WIZARD_STEPS = ['details', 'schedule', 'tickets', 'poster'] as const;
 export type WizardStep = (typeof WIZARD_STEPS)[number];
 
 export type TicketTypeForm = FormGroup<{
@@ -37,7 +37,8 @@ export function createEventWizardForm(capacityOf: (locationId: string) => number
     }),
     tickets: new FormArray<TicketTypeForm>([createTicketTypeForm()], {
       validators: [Validators.required, uniqueTicketNames, withinVenueCapacity(capacityOf)]
-    })
+    }),
+    poster: new FormControl<File | null>(null)
   });
 
   const { schedule, tickets } = form.controls;

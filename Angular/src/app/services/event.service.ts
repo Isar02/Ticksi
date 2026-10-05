@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { withoutErrorToast } from '../core/interceptors/error.interceptor';
-import { Event, EventForEdit, EventFormOptions, EventInput, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
+import { Event, EventForEdit, EventFormOptions, EventInput, EventPoster, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
 
 export interface PagedResult<T> {
   items: T[];
@@ -91,6 +91,17 @@ export class EventService {
 
   updateEvent(eventId: string, input: EventInput): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${eventId}`, input, { context: withoutErrorToast() });
+  }
+
+  uploadPoster(eventId: string, file: File): Observable<HttpEvent<EventPoster>> {
+    const body = new FormData();
+    body.append('file', file);
+
+    return this.http.put<EventPoster>(`${this.apiUrl}/${eventId}/poster`, body, {
+      reportProgress: true,
+      observe: 'events',
+      context: withoutErrorToast()
+    });
   }
 
   toAssetUrl(path: string): string {
