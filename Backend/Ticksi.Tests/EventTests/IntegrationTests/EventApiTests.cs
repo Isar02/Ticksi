@@ -249,6 +249,100 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
         Assert.Contains(options.OrganizerCompanies, c => c.PublicId == request.OrganizerCompanyId);
     }
 
+    [Fact]
+    public async Task Poster_UploadReplaceAndDelete_KeepOnlyTheCurrentFileOnDisk()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var created = await CreateAsync(token, await NewEventAsync());
+
+        var first = await UploadPosterAsync(token, created.PublicId, "poster.png", TestImages.Png);
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        var firstUrl = (await first.Content.ReadFromJsonAsync<PosterBody>())!.PosterUrl;
+
+        var read = await _client.GetFromJsonAsync<EventReadDto>($"/api/events/{created.PublicId}");
+        Assert.Equal(firstUrl, read!.PosterUrl);
+        Assert.Equal(TestImages.Png, await _client.GetByteArrayAsync(firstUrl));
+
+        var second = await UploadPosterAsync(token, created.PublicId, "poster.jpg", TestImages.Jpeg);
+        var secondUrl = (await second.Content.ReadFromJsonAsync<PosterBody>())!.PosterUrl;
+        Assert.False(File.Exists(PathOnDisk(firstUrl)));
+        Assert.True(File.Exists(PathOnDisk(secondUrl)));
+
+        await SendAsync(HttpMethod.Delete, $"/api/events/{created.PublicId}", token);
+        Assert.False(File.Exists(PathOnDisk(secondUrl)));
+    }
+
+    [Fact]
+    public async Task Poster_ParallelReplacements_LeaveOnlyTheSavedPosterOnDisk()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var created = await CreateAsync(token, await NewEventAsync());
+        var first = await UploadPosterAsync(token, created.PublicId, "poster.png", TestImages.Png);
+        var firstUrl = (await first.Content.ReadFromJsonAsync<PosterBody>())!.PosterUrl;
+        var before = PostersOnDisk();
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 6)
+            .Select(_ => UploadPosterAsync(token, created.PublicId, "poster.png", TestImages.Png)));
+
+        Assert.All(responses, r => Assert.Contains(r.StatusCode, new[] { HttpStatusCode.OK, HttpStatusCode.Conflict }));
+        var saved = await _client.GetFromJsonAsync<EventReadDto>($"/api/events/{created.PublicId}");
+        var expected = before.Except([PathOnDisk(firstUrl)]).Append(PathOnDisk(saved!.PosterUrl!));
+        Assert.Equal(expected.Order(), PostersOnDisk().Order());
+    }
+
+    [Fact]
+    public async Task Poster_OtherOrganizersEvent_Returns403()
+    {
+        var owner = await SignInAsync(Role.Names.Organizer);
+        var other = await SignInAsync(Role.Names.Organizer);
+        var created = await CreateAsync(owner, await NewEventAsync());
+
+        var response = await UploadPosterAsync(other, created.PublicId, "poster.png", TestImages.Png);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Poster_TextFileNamedAsImage_Returns400OnTheFile()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var created = await CreateAsync(token, await NewEventAsync());
+
+        var response = await UploadPosterAsync(token, created.PublicId, "poster.png", TestImages.Text);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorBody>();
+        Assert.Equal(["file"], error!.Errors!.Keys);
+    }
+
+    [Fact]
+    public async Task Poster_WithoutFile_Returns400OnTheFile()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var created = await CreateAsync(token, await NewEventAsync());
+
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/events/{created.PublicId}/poster")
+        {
+            Content = new MultipartFormDataContent { { new StringContent("Winter Gala"), "name" } }
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var response = await _client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorBody>();
+        Assert.Equal(["file"], error!.Errors!.Keys);
+    }
+
+    [Fact]
+    public async Task Poster_WithoutToken_Returns401()
+    {
+        using var content = PosterContent("poster.png", TestImages.Png);
+
+        var response = await _client.PutAsync($"/api/events/{Guid.NewGuid()}/poster", content);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     private async Task AddOrderAsync(Guid eventPublicId, int quantity, OrderStatus status)
     {
         await using var scope = factory.Services.CreateAsyncScope();
@@ -328,6 +422,24 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
         return _client.SendAsync(request);
     }
 
+    private Task<HttpResponseMessage> UploadPosterAsync(string token, Guid eventPublicId, string fileName, byte[] content)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/events/{eventPublicId}/poster")
+        {
+            Content = PosterContent(fileName, content)
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return _client.SendAsync(request);
+    }
+
+    private static MultipartFormDataContent PosterContent(string fileName, byte[] content) =>
+        new() { { new ByteArrayContent(content), "file", fileName } };
+
+    private string PathOnDisk(string url) => Path.GetFullPath(Path.Combine(factory.WebRoot, url.TrimStart('/')));
+
+    private string[] PostersOnDisk() =>
+        Directory.GetFiles(Path.Combine(factory.WebRoot, "images", "events")).Select(Path.GetFullPath).ToArray();
+
     private sealed record EventRequest(
         string Name,
         string Description,
@@ -348,6 +460,8 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
     private sealed record OptionBody(Guid PublicId, string Name, int Capacity);
 
     private sealed record FormOptionsBody(List<OptionBody> Venues, List<OptionBody> EventTypes, List<OptionBody> OrganizerCompanies);
+
+    private sealed record PosterBody(string PosterUrl);
 
     private sealed record ErrorBody(string Code, string Message, string TraceId, Dictionary<string, string[]>? Errors);
 }

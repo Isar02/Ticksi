@@ -8,6 +8,7 @@ namespace Ticksi.Tests.EventTests.UnitTests;
 public abstract class EventHandlerTestBase
 {
     protected readonly InMemoryDatabase Database = new();
+    protected readonly FakeFileStorage Files = new();
 
     protected static readonly DateTime NextYear = new(2027, 6, 1, 20, 0, 0, DateTimeKind.Utc);
 
@@ -50,7 +51,8 @@ public abstract class EventHandlerTestBase
         References references,
         int reserved = 0,
         string name = "Summer Concert",
-        DateTime? date = null)
+        DateTime? date = null,
+        string? posterUrl = null)
     {
         await using var context = Database.CreateContext();
 
@@ -60,6 +62,7 @@ public abstract class EventHandlerTestBase
             Description = "Open air.",
             Date = date ?? NextYear,
             Contact = "events@ticksi.com",
+            PosterUrl = posterUrl,
             AppUserId = owner.Id,
             EventCategoryId = await IdOfAsync(context.EventCategories, references.CategoryId),
             EventTypeId = await IdOfAsync(context.EventTypes, references.EventTypeId),

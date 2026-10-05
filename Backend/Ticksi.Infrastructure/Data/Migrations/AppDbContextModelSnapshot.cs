@@ -183,6 +183,7 @@ namespace Ticksi.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("PosterUrl")
+                        .IsConcurrencyToken()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 

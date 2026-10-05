@@ -6,6 +6,7 @@ using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Events.Commands.CreateEvent;
 using Ticksi.Application.Features.Events.Commands.DeleteEvent;
 using Ticksi.Application.Features.Events.Commands.UpdateEvent;
+using Ticksi.Application.Features.Events.Commands.UploadEventPoster;
 using Ticksi.Application.Features.Events.Queries.GetEventById;
 using Ticksi.Application.Features.Events.Queries.GetEventForEdit;
 using Ticksi.Application.Features.Events.Queries.GetEventFormOptions;
@@ -111,6 +112,18 @@ namespace API.Controllers
             command.PublicId = eventId;
             await _mediator.Send(command, cancellationToken);
             return NoContent();
+        }
+
+        [HttpPut("{eventId:guid}/poster")]
+        [Authorize(Roles = EventManagers)]
+        [ProducesResponseType(typeof(EventPosterDto), StatusCodes.Status200OK)]
+        public async Task<ActionResult<EventPosterDto>> UploadPoster(
+            Guid eventId,
+            IFormFile? file,
+            CancellationToken cancellationToken)
+        {
+            var command = new UploadEventPosterCommand { PublicId = eventId, File = file };
+            return Ok(await _mediator.Send(command, cancellationToken));
         }
 
         [HttpDelete("{eventId:guid}")]

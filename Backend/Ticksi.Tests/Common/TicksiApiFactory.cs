@@ -11,9 +11,14 @@ public sealed class TicksiApiFactory : WebApplicationFactory<Program>, IAsyncLif
 
     private readonly string _connectionString = IsolatedConnectionString();
 
+    // Uploaded files go to a folder of their own instead of the API's wwwroot.
+    public string WebRoot { get; } = Directory.CreateDirectory(
+        Path.Combine(Path.GetTempPath(), $"ticksi-tests-{Guid.NewGuid():N}")).FullName;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("IntegrationTests");
+        builder.UseWebRoot(WebRoot);
         builder.ConfigureAppConfiguration(config => config
             .AddJsonFile(SettingsPath, optional: false)
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -31,6 +36,8 @@ public sealed class TicksiApiFactory : WebApplicationFactory<Program>, IAsyncLif
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(_connectionString).Options;
         await using var context = new AppDbContext(options);
         await context.Database.EnsureDeletedAsync();
+
+        Directory.Delete(WebRoot, recursive: true);
     }
 
     Task IAsyncLifetime.DisposeAsync() => DisposeAsync().AsTask();
