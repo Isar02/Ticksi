@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Ticksi.Application.DTOs;
+using Ticksi.Application.Features.Auth.Queries.CheckEmailAvailability;
 using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.AuthTests.IntegrationTests;
@@ -48,18 +49,18 @@ public class AuthApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFac
     }
 
     [Fact]
-    public async Task Register_EmailTaken_Returns409()
+    public async Task Register_EmailTaken_Returns400OnEmail()
     {
         var request = NewUser();
         await RegisterAsync(request);
 
         var response = await _client.PostAsJsonAsync("/api/auth/register", request with { FirstName = "Other" });
 
-        await AssertErrorAsync(response, HttpStatusCode.Conflict, "conflict");
+        await AssertEmailTakenAsync(response);
     }
 
     [Fact]
-    public async Task Register_SameEmailInParallel_OneSucceedsAndTheRestReturn409()
+    public async Task Register_SameEmailInParallel_OneSucceedsAndTheRestReturn400OnEmail()
     {
         var request = NewUser();
 
@@ -68,7 +69,31 @@ public class AuthApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFac
 
         Assert.Single(responses, r => r.StatusCode == HttpStatusCode.OK);
         foreach (var rejected in responses.Where(r => r.StatusCode != HttpStatusCode.OK))
-            await AssertErrorAsync(rejected, HttpStatusCode.Conflict, "conflict");
+            await AssertEmailTakenAsync(rejected);
+    }
+
+    [Fact]
+    public async Task EmailAvailability_FreeAndTakenEmail_AnswersWithoutSignIn()
+    {
+        var request = NewUser();
+
+        Assert.True(await IsEmailAvailableAsync(request.Email));
+
+        await RegisterAsync(request);
+
+        Assert.False(await IsEmailAvailableAsync($"  {request.Email} "));
+    }
+
+    [Theory]
+    [InlineData("?email=not-an-email", "Invalid email format.")]
+    [InlineData("?email=", "Email is required.")]
+    [InlineData("", "Email is required.")]
+    public async Task EmailAvailability_InvalidOrMissingEmail_Returns400OnEmail(string query, string message)
+    {
+        var response = await _client.GetAsync($"/api/auth/email-availability{query}");
+
+        var error = await AssertErrorAsync(response, HttpStatusCode.BadRequest, "validation_failed");
+        Assert.Equal([message], error.Errors!["email"]);
     }
 
     [Fact]
@@ -143,6 +168,19 @@ public class AuthApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFac
         var response = await _client.PostAsJsonAsync("/api/auth/register", request);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<AuthResponseDto>())!;
+    }
+
+    private async Task<bool> IsEmailAvailableAsync(string email)
+    {
+        var response = await _client.GetAsync($"/api/auth/email-availability?email={Uri.EscapeDataString(email)}");
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<EmailAvailabilityDto>())!.Available;
+    }
+
+    private static async Task AssertEmailTakenAsync(HttpResponseMessage response)
+    {
+        var error = await AssertErrorAsync(response, HttpStatusCode.BadRequest, "validation_failed");
+        Assert.Equal(["An account with this email already exists."], error.Errors!["email"]);
     }
 
     private Task<HttpResponseMessage> RefreshAsync(string refreshToken) =>

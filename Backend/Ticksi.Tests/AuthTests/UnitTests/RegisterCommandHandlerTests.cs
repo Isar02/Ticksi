@@ -1,4 +1,4 @@
-using Ticksi.Application.Common.Exceptions;
+using FluentValidation;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Auth.Commands.Register;
 using Ticksi.Application.Interfaces;
@@ -24,11 +24,15 @@ public class RegisterCommandHandlerTests : AuthHandlerTestBase
     }
 
     [Fact]
-    public async Task Handle_EmailTaken_ThrowsConflictAndAddsNoUser()
+    public async Task Handle_EmailTaken_FailsOnEmailAndAddsNoUser()
     {
         var existing = await AddUserAsync();
 
-        await Assert.ThrowsAsync<ConflictException>(() => RegisterAsync(existing.Email));
+        var error = await Assert.ThrowsAsync<ValidationException>(() => RegisterAsync(existing.Email));
+
+        var failure = Assert.Single(error.Errors);
+        Assert.Equal(nameof(RegisterCommand.Email), failure.PropertyName);
+        Assert.Equal("An account with this email already exists.", failure.ErrorMessage);
 
         await using var context = Database.CreateContext();
         Assert.Equal(1, await context.AppUsers.CountAsync());

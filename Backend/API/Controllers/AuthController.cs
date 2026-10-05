@@ -5,6 +5,7 @@ using Ticksi.Application.Features.Auth.Commands.Login;
 using Ticksi.Application.Features.Auth.Commands.Logout;
 using Ticksi.Application.Features.Auth.Commands.Refresh;
 using Ticksi.Application.Features.Auth.Commands.Register;
+using Ticksi.Application.Features.Auth.Queries.CheckEmailAvailability;
 
 namespace API.Controllers;
 
@@ -25,6 +26,14 @@ public class AuthController : ControllerBase
         CancellationToken cancellationToken)
     {
         return Ok(await _mediator.Send(command, cancellationToken));
+    }
+
+    [HttpGet("email-availability")]
+    public async Task<ActionResult<EmailAvailabilityDto>> CheckEmailAvailability(
+        [FromQuery] string? email,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _mediator.Send(new CheckEmailAvailabilityQuery(email), cancellationToken));
     }
 
     [HttpPost("login")]
