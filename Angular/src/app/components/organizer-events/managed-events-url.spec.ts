@@ -69,6 +69,11 @@ describe('managed events address', () => {
     expect([impossible.dateFrom, impossible.dateTo]).toEqual([undefined, '2026-12-01']);
   });
 
+  it('ignores page numbers outside the API integer range', () => {
+    expect(readManagedEventsQuery(convertToParamMap({ page: '2147483648' })).page).toBe(1);
+    expect(readManagedEventsQuery(convertToParamMap({ page: '2147483647' })).page).toBe(2147483647);
+  });
+
   it('leaves defaults out of the address and survives a round trip', () => {
     const params = toManagedEventsParams({ name: 'jazz', sortBy: 'venue', sortDescending: true, page: 2, pageSize: 10 });
 
