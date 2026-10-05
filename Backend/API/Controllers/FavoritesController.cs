@@ -1,8 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Favorites.Commands.AddFavorite;
 using Ticksi.Application.Features.Favorites.Commands.RemoveFavorite;
+using Ticksi.Application.Features.Favorites.Queries.GetFavoriteEvents;
 using Ticksi.Application.Features.Favorites.Queries.GetUserFavorites;
 
 namespace API.Controllers;
@@ -23,6 +25,12 @@ public class FavoritesController : ControllerBase
     public async Task<ActionResult<List<Guid>>> GetUserFavorites(CancellationToken cancellationToken)
     {
         return Ok(await _mediator.Send(new GetUserFavoritesQuery(), cancellationToken));
+    }
+
+    [HttpGet("events")]
+    public async Task<ActionResult<List<EventReadDto>>> GetFavoriteEvents(CancellationToken cancellationToken)
+    {
+        return Ok(await _mediator.Send(new GetFavoriteEventsQuery(), cancellationToken));
     }
 
     [HttpPost("{eventPublicId:guid}")]

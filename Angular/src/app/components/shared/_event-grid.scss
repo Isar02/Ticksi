@@ -1,0 +1,117 @@
+// Card grid with loading skeletons and empty or error states, shared by the catalogue and the favorites page.
+@mixin styles {
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+  }
+
+  .grid__item {
+    animation: rise 380ms var(--delay, 0ms) cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 22px;
+    border-radius: var(--tk-radius-lg);
+    background: var(--tk-surface);
+    box-shadow: var(--tk-shadow-card);
+    overflow: hidden;
+  }
+
+  .skeleton__poster,
+  .skeleton__line {
+    background: linear-gradient(90deg, var(--tk-line) 25%, var(--tk-surface-sunk) 50%, var(--tk-line) 75%) 0 0 / 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  .skeleton__poster {
+    aspect-ratio: 4 / 3;
+    margin-bottom: 8px;
+  }
+
+  .skeleton__line {
+    height: 14px;
+    margin: 0 20px;
+    border-radius: var(--tk-radius-pill);
+
+    &--short {
+      width: 45%;
+    }
+  }
+
+  .state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    padding: 64px 24px 72px;
+    border-radius: var(--tk-radius-lg);
+    background: var(--tk-surface);
+    box-shadow: var(--tk-shadow-card);
+    text-align: center;
+  }
+
+  .state__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: var(--tk-brand-soft);
+    color: var(--tk-brand);
+
+    .state--error & {
+      background: var(--tk-danger-soft);
+      color: var(--tk-danger);
+    }
+  }
+
+  .state__title {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 500;
+  }
+
+  .state__text {
+    max-width: 360px;
+    margin: 8px 0 22px;
+    color: var(--tk-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid__item {
+      animation: none;
+    }
+
+    .skeleton__poster,
+    .skeleton__line {
+      animation-duration: 0s;
+    }
+  }
+}
