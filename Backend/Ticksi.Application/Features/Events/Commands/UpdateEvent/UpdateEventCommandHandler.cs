@@ -33,7 +33,7 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand>
         }
         catch (DbUpdateConcurrencyException)
         {
-            // A purchase reserved tickets, or the event was deleted, between loading and saving.
+            // A purchase reserved tickets, the poster changed or the event was deleted between loading and saving.
             throw new ConflictException("The event changed while you were editing it. Reload it and try again.");
         }
     }

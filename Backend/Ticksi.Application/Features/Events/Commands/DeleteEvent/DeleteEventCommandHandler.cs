@@ -11,11 +11,13 @@ public class DeleteEventCommandHandler : IRequestHandler<DeleteEventCommand>
 
     private readonly IAppDbContext _context;
     private readonly ICurrentUser _currentUser;
+    private readonly IFileStorageService _files;
 
-    public DeleteEventCommandHandler(IAppDbContext context, ICurrentUser currentUser)
+    public DeleteEventCommandHandler(IAppDbContext context, ICurrentUser currentUser, IFileStorageService files)
     {
         _context = context;
         _currentUser = currentUser;
+        _files = files;
     }
 
     public async Task Handle(DeleteEventCommand request, CancellationToken cancellationToken)
@@ -37,6 +39,10 @@ public class DeleteEventCommandHandler : IRequestHandler<DeleteEventCommand>
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("The event changed while you were deleting it. Reload it and try again.");
+        }
         catch (DbUpdateException)
         {
             // An order may have been placed between the check and the delete.
@@ -45,6 +51,8 @@ public class DeleteEventCommandHandler : IRequestHandler<DeleteEventCommand>
 
             throw new ConflictException(EventHasOrders);
         }
+
+        await EventPosterFiles.RemoveIfUnusedAsync(_context, _files, item.PosterUrl);
     }
 
     private Task<bool> HasOrdersAsync(int eventId, CancellationToken cancellationToken) =>

@@ -22,8 +22,10 @@ public class EventConfiguration : BaseEntityConfiguration<Event>
             .IsRequired()
             .HasMaxLength(Event.Constraints.ContactMaxLength);
 
+        // Two poster changes at once: the second save fails, so each replaced file is removed only once.
         builder.Property(e => e.PosterUrl)
-            .HasMaxLength(Event.Constraints.PosterUrlMaxLength);
+            .HasMaxLength(Event.Constraints.PosterUrlMaxLength)
+            .IsConcurrencyToken();
 
         builder.HasIndex(e => e.Date);
 
