@@ -1,0 +1,9 @@
+@use '../wizard-step';
+
+@include wizard-step.layout;
+
+textarea {
+  min-height: 132px;
+  resize: vertical;
+  line-height: 1.5;
+}

@@ -1,0 +1,14 @@
+@use '../wizard-step';
+
+@include wizard-step.layout;
+
+.venue-option {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.venue-option__meta {
+  color: var(--tk-muted);
+  font-size: 12px;
+}

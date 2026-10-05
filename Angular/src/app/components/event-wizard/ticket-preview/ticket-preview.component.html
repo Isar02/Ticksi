@@ -1,0 +1,44 @@
+@let event = summary();
+
+<article class="ticket" aria-label="Ticket preview">
+  <div class="ticket__face">
+    <p class="ticket__kicker">Admit one · preview</p>
+    <h3 class="ticket__name" [class.is-empty]="!event.name">{{ event.name || 'Your event name' }}</h3>
+    <div class="ticket__tags">
+      <span class="tag" [class.is-empty]="!event.categoryName">{{ event.categoryName ?? 'Category' }}</span>
+      @if (event.eventTypeName) {
+        <span class="tag tag--plain">{{ event.eventTypeName }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="ticket__stub">
+    <div class="ticket__when" [class.is-empty]="!event.startsAt">
+      @if (event.startsAt; as startsAt) {
+        <span class="ticket__day">{{ startsAt | date: 'd.' }}</span>
+        <span class="ticket__month">{{ startsAt | date: 'M. y.' }}</span>
+        <span class="ticket__time">{{ startsAt | date: 'HH:mm' }}</span>
+      } @else {
+        <span class="ticket__day">--</span>
+        <span class="ticket__month">Date</span>
+      }
+    </div>
+
+    <dl class="ticket__facts">
+      <div>
+        <dt>Venue</dt>
+        <dd [class.is-empty]="!event.venue">{{ event.venue ? event.venue.name + ', ' + event.venue.city : 'Not picked yet' }}</dd>
+      </div>
+      <div>
+        <dt>From</dt>
+        <dd [class.is-empty]="event.lowestPrice === null">
+          {{ event.lowestPrice === null ? '—' : event.lowestPrice === 0 ? 'Free' : (event.lowestPrice | currency) }}
+        </dd>
+      </div>
+      <div>
+        <dt>Tickets</dt>
+        <dd>{{ event.ticketTotal | number }}@if (event.venue) {<span class="ticket__of">/ {{ event.venue.capacity | number }}</span>}</dd>
+      </div>
+    </dl>
+  </div>
+</article>

@@ -31,4 +31,23 @@ public class GetEventFormOptionsQueryHandlerTests
         Assert.NotEmpty(options.EventTypes);
         Assert.Equal(options.EventTypes.Select(t => t.Name).Order(StringComparer.Ordinal), options.EventTypes.Select(t => t.Name));
     }
+
+    [Fact]
+    public async Task Handle_ReturnsEveryActiveCategoryByName()
+    {
+        await using (var context = _database.CreateContext())
+        {
+            context.AddRange(Enumerable.Range(1, 60).Select(i => new EventCategory { Name = $"Category {i:D2}" }));
+            context.Add(new EventCategory { Name = "Archived", IsActive = false });
+            await context.SaveChangesAsync();
+        }
+
+        await using var queryContext = _database.CreateContext();
+        var options = await new GetEventFormOptionsQueryHandler(queryContext)
+            .Handle(new GetEventFormOptionsQuery(), CancellationToken.None);
+
+        Assert.Equal(
+            Enumerable.Range(1, 60).Select(i => $"Category {i:D2}"),
+            options.Categories.Select(c => c.Name));
+    }
 }

@@ -54,8 +54,43 @@ export interface VenueOption extends NamedOption {
 }
 
 export interface EventFormOptions {
+  categories: NamedOption[];
   venues: VenueOption[];
   eventTypes: NamedOption[];
   organizerCompanies: NamedOption[];
 }
 
+
+export interface TicketTypeInput {
+  publicId: string | null;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface EventInput {
+  name: string;
+  description: string;
+  date: string;
+  contact: string;
+  categoryId: string;
+  eventTypeId: string;
+  locationId: string;
+  organizerCompanyId: string;
+  ticketTypes: TicketTypeInput[];
+}
+
+export interface TicketTypeForEdit {
+  publicId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  quantityReserved: number;
+}
+
+export interface EventForEdit extends Omit<EventInput, 'ticketTypes'> {
+  publicId: string;
+  categoryName: string;
+  posterUrl: string | null;
+  ticketTypes: TicketTypeForEdit[];
+}

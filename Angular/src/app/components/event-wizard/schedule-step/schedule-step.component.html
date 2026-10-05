@@ -1,0 +1,37 @@
+<header class="step-head">
+  <h2 class="step-head__title">Where and when?</h2>
+  <p class="step-head__text">The venue's capacity is the most tickets the event can offer.</p>
+</header>
+
+<div class="fields" [formGroup]="group()">
+  <mat-form-field class="fields__wide">
+    <mat-label>Venue</mat-label>
+    <mat-select formControlName="locationId">
+      <mat-select-trigger>{{ selectedVenue()?.name }}</mat-select-trigger>
+      @for (venue of venues(); track venue.publicId) {
+        <mat-option [value]="venue.publicId">
+          <span class="venue-option">
+            <span>{{ venue.name }}</span>
+            <span class="venue-option__meta">{{ venue.city }} · {{ venue.capacity | number }} seats</span>
+          </span>
+        </mat-option>
+      }
+    </mat-select>
+    @if (selectedVenue(); as venue) {
+      <mat-hint>{{ venue.city }} · holds {{ venue.capacity | number }} people</mat-hint>
+    }
+    <mat-error>{{ errorText(group().controls.locationId, 'Venue') }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Date</mat-label>
+    <input matInput type="date" formControlName="date" [min]="today" />
+    <mat-error>{{ errorText(group().controls.date, 'Date') }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Start time</mat-label>
+    <input matInput type="time" formControlName="time" />
+    <mat-error>{{ errorText(group().controls.time, 'Start time') }}</mat-error>
+  </mat-form-field>
+</div>

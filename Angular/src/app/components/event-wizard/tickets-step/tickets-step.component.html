@@ -1,0 +1,93 @@
+<header class="step-head">
+  <h2 class="step-head__title">Tickets and prices</h2>
+  <p class="step-head__text">Offer one or more ticket types. A price of 0 makes a ticket free.</p>
+</header>
+
+<ol class="rows">
+  @for (ticket of tickets().controls; track ticket; let i = $index) {
+    <li class="row" [formGroup]="ticket">
+      <span class="row__number" aria-hidden="true">{{ i + 1 }}</span>
+
+      <mat-form-field class="row__name">
+        <mat-label>Ticket type</mat-label>
+        <input
+          matInput
+          formControlName="name"
+          [maxlength]="limits.ticketName"
+          [errorStateMatcher]="nameMatcher(ticket)"
+          autocomplete="off"
+        />
+        <mat-error>
+          @if (ticket.controls.name.invalid) {
+            {{ errorText(ticket.controls.name, 'Name') }}
+          } @else {
+            Another ticket type has this name.
+          }
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="row__price">
+        <mat-label>Price</mat-label>
+        <input matInput type="number" formControlName="price" min="0" step="0.01" />
+        <span matTextSuffix>KM</span>
+        <mat-error>{{ errorText(ticket.controls.price, 'Price') }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="row__quantity">
+        <mat-label>Quantity</mat-label>
+        <input matInput type="number" formControlName="quantity" [min]="ticket.controls.reserved.value || 1" step="1" />
+        @if (ticket.controls.reserved.value > 0) {
+          <mat-hint>{{ ticket.controls.reserved.value | number }} sold or reserved</mat-hint>
+        }
+        <mat-error>
+          @if (ticket.controls.quantity.hasError('min') && ticket.controls.reserved.value > 0) {
+            {{ ticket.controls.reserved.value | number }} are already sold or reserved.
+          } @else {
+            {{ errorText(ticket.controls.quantity, 'Quantity') }}
+          }
+        </mat-error>
+      </mat-form-field>
+
+      <button
+        mat-icon-button
+        type="button"
+        class="row__remove"
+        [disabled]="tickets().disabled || tickets().length === 1 || ticket.controls.reserved.value > 0"
+        [matTooltip]="ticket.controls.reserved.value > 0 ? 'Sold or reserved tickets keep this type' : 'Remove ticket type'"
+        [attr.aria-label]="'Remove ticket type ' + (i + 1)"
+        (click)="remove(i)"
+      >
+        <mat-icon>delete_outline</mat-icon>
+      </button>
+
+      @if (ticket.errors?.['server']; as message) {
+        <p class="row__error" role="alert">{{ message }}</p>
+      }
+    </li>
+  }
+</ol>
+
+<button mat-stroked-button type="button" class="add" [disabled]="tickets().disabled" (click)="add()">
+  <mat-icon>add</mat-icon>
+  Add ticket type
+</button>
+
+<section class="capacity" [class.is-over]="tickets().hasError('capacity')" aria-label="Tickets against venue capacity">
+  <div class="capacity__numbers">
+    <span><strong>{{ total() | number }}</strong> tickets</span>
+    @if (capacity(); as seats) {
+      <span>of {{ seats | number }} seats</span>
+    } @else {
+      <span>Pick a venue to see its capacity</span>
+    }
+  </div>
+  <div class="capacity__meter"><span [style.width.%]="share()"></span></div>
+</section>
+
+@if (tickets().errors?.['server']; as message) {
+  <p class="list-error" role="alert">{{ message }}</p>
+} @else if (tickets().hasError('capacity')) {
+  <p class="list-error" role="alert">The venue holds {{ capacity() | number }} people, so the quantities cannot add up to more.</p>
+} @else if (tickets().hasError('required')) {
+  <p class="list-error" role="alert">Add at least one ticket type.</p>
+}

@@ -9,6 +9,7 @@ public class EventForEditDto
     public string Contact { get; set; } = string.Empty;
     public string? PosterUrl { get; set; }
     public Guid CategoryId { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
     public Guid EventTypeId { get; set; }
     public Guid LocationId { get; set; }
     public Guid OrganizerCompanyId { get; set; }

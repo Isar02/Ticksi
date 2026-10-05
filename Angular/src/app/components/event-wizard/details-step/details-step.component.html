@@ -1,0 +1,57 @@
+<header class="step-head">
+  <h2 class="step-head__title">What is the event?</h2>
+  <p class="step-head__text">The name and description appear on the event page and on every ticket.</p>
+</header>
+
+<div class="fields" [formGroup]="group()">
+  <mat-form-field class="fields__wide">
+    <mat-label>Event name</mat-label>
+    <input matInput formControlName="name" [maxlength]="limits.name" autocomplete="off" />
+    <mat-hint align="end">{{ group().controls.name.value.length }} / {{ limits.name }}</mat-hint>
+    <mat-error>{{ errorText(group().controls.name, 'Name') }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Category</mat-label>
+    <mat-select formControlName="categoryId">
+      @for (category of categories(); track category.publicId) {
+        <mat-option [value]="category.publicId">{{ category.name }}</mat-option>
+      }
+    </mat-select>
+    <mat-error>{{ errorText(group().controls.categoryId, 'Category') }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Event type</mat-label>
+    <mat-select formControlName="eventTypeId">
+      @for (type of eventTypes(); track type.publicId) {
+        <mat-option [value]="type.publicId">{{ type.name }}</mat-option>
+      }
+    </mat-select>
+    <mat-error>{{ errorText(group().controls.eventTypeId, 'Event type') }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Organizer company</mat-label>
+    <mat-select formControlName="organizerCompanyId">
+      @for (company of companies(); track company.publicId) {
+        <mat-option [value]="company.publicId">{{ company.name }}</mat-option>
+      }
+    </mat-select>
+    <mat-error>{{ errorText(group().controls.organizerCompanyId, 'Organizer company') }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Contact</mat-label>
+    <input matInput formControlName="contact" [maxlength]="limits.contact" autocomplete="off" />
+    <mat-hint>An email or phone number for questions.</mat-hint>
+    <mat-error>{{ errorText(group().controls.contact, 'Contact') }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field class="fields__wide">
+    <mat-label>Description</mat-label>
+    <textarea matInput formControlName="description" rows="6" [maxlength]="limits.description"></textarea>
+    <mat-hint align="end">{{ group().controls.description.value.length }} / {{ limits.description }}</mat-hint>
+    <mat-error>{{ errorText(group().controls.description, 'Description') }}</mat-error>
+  </mat-form-field>
+</div>

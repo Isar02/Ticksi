@@ -1,0 +1,89 @@
+<div class="wizard" [class.wizard--single]="!summary()">
+  <section class="sheet">
+    <header class="head">
+      <div>
+        <p class="head__eyebrow">{{ eventId ? 'Edit event' : 'New event' }}</p>
+        <h1 class="head__title">{{ eventId ? 'Update your event' : 'Create an event' }}</h1>
+      </div>
+      <a mat-button routerLink="/organizer/events" class="head__back">
+        <mat-icon>arrow_back</mat-icon>
+        Your events
+      </a>
+    </header>
+
+    @if (data(); as ready) {
+      <app-wizard-stepper #stepper (leaving)="recheckDate()">
+        <cdk-step label="Details" [stepControl]="form.controls.details">
+          <app-details-step
+            [group]="form.controls.details"
+            [categories]="ready.options.categories"
+            [eventTypes]="ready.options.eventTypes"
+            [companies]="ready.options.organizerCompanies"
+          />
+        </cdk-step>
+
+        <cdk-step label="Venue & date" [stepControl]="form.controls.schedule">
+          <app-schedule-step
+            [group]="form.controls.schedule"
+            [venues]="ready.options.venues"
+            [selectedVenue]="summary()?.venue ?? null"
+          />
+        </cdk-step>
+
+        <cdk-step label="Tickets" [stepControl]="form.controls.tickets">
+          <app-tickets-step [tickets]="form.controls.tickets" [capacity]="summary()?.venue?.capacity ?? null" />
+        </cdk-step>
+
+        <cdk-step label="Review">
+          @if (summary(); as eventSummary) {
+            <app-review-step [summary]="eventSummary" (editStep)="goTo($event)" />
+          }
+        </cdk-step>
+      </app-wizard-stepper>
+
+      <footer class="nav">
+        @if (stepper.selectedIndex > 0) {
+          <button mat-button type="button" [disabled]="saving()" (click)="stepper.previous()">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+          </button>
+        }
+
+        <span class="nav__step">Step {{ stepper.selectedIndex + 1 }} of {{ reviewStep + 1 }}</span>
+
+        @if (stepper.selectedIndex < reviewStep) {
+          <button mat-flat-button type="button" (click)="stepper.next()">
+            Next
+            <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+          </button>
+        } @else {
+          <button mat-flat-button type="button" [disabled]="saving()" (click)="save()">
+            <mat-icon>{{ saving() ? 'hourglass_top' : 'check' }}</mat-icon>
+            {{ saving() ? 'Saving…' : eventId ? 'Save changes' : 'Create event' }}
+          </button>
+        }
+      </footer>
+    } @else if (loadError()) {
+      <div class="state" role="alert">
+        <span class="state__icon"><mat-icon>error_outline</mat-icon></span>
+        <h2 class="state__title">{{ eventId ? 'This event could not be opened' : 'The form could not be loaded' }}</h2>
+        <p class="state__text">{{ loadError() }}</p>
+        <div class="state__actions">
+          <button mat-flat-button type="button" (click)="retry()">Try again</button>
+          <a mat-button routerLink="/organizer/events">Back to your events</a>
+        </div>
+      </div>
+    } @else {
+      <div class="loading" aria-live="polite">
+        <mat-progress-bar mode="indeterminate" />
+        <p>{{ eventId ? 'Loading the event…' : 'Getting the form ready…' }}</p>
+      </div>
+    }
+  </section>
+
+  @if (summary(); as eventSummary) {
+    <aside class="aside">
+      <app-ticket-preview [summary]="eventSummary" />
+    </aside>
+  }
+</div>

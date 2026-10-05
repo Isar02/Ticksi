@@ -1,0 +1,142 @@
+:host {
+  display: block;
+}
+
+.track {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.track__item {
+  position: relative;
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 21px;
+    left: calc(50% + 26px);
+    right: calc(-50% + 26px);
+    border-top: 2px dashed var(--tk-perforation);
+    transition: border-color 200ms ease;
+  }
+
+  &.is-done:not(:last-child)::after {
+    border-top-style: solid;
+    border-color: var(--tk-brand);
+  }
+}
+
+.track__button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--tk-faint);
+  font: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+
+    .track__punch {
+      box-shadow: 0 0 0 3px var(--tk-surface), 0 0 0 5px var(--tk-brand);
+    }
+  }
+}
+
+.track__punch {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px dashed var(--tk-perforation);
+  border-radius: 50%;
+  background: var(--tk-surface);
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, transform 200ms ease;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+}
+
+.track__label {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.is-current {
+  .track__button {
+    color: var(--tk-ink);
+    cursor: default;
+  }
+
+  .track__punch {
+    border: 0;
+    background: var(--tk-brand);
+    color: #fff;
+    transform: scale(1.06);
+    box-shadow: 0 6px 16px rgba(126, 79, 143, 0.32);
+  }
+}
+
+.is-done .track__punch {
+  border-style: solid;
+  border-color: var(--tk-brand);
+  background: var(--tk-brand-soft);
+  color: var(--tk-brand-strong);
+}
+
+.is-done .track__button {
+  color: var(--tk-ink-soft);
+}
+
+.is-attention {
+  .track__button {
+    color: var(--tk-danger);
+  }
+
+  .track__punch {
+    border-style: solid;
+    border-color: var(--tk-danger);
+    background: var(--tk-danger-soft);
+  }
+}
+
+.panel {
+  padding-top: 32px;
+  animation: step-in 260ms ease-out;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (max-width: 599px) {
+  .track__label {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}

@@ -1,0 +1,155 @@
+:host {
+  display: block;
+  padding: 32px 20px 56px;
+  color: var(--tk-ink);
+}
+
+.wizard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.wizard--single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 860px;
+}
+
+.sheet {
+  padding: 36px 40px 28px;
+  background: var(--tk-surface);
+  border-radius: var(--tk-radius-lg);
+  box-shadow: var(--tk-shadow-card);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.head__eyebrow {
+  margin: 0 0 6px;
+  color: var(--tk-brand);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.head__title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.head__back {
+  flex-shrink: 0;
+}
+
+.loading {
+  padding: 48px 0 24px;
+  color: var(--tk-muted);
+  text-align: center;
+
+  p {
+    margin: 16px 0 0;
+  }
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px 24px;
+  text-align: center;
+}
+
+.state__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px dashed var(--tk-perforation);
+  border-radius: 50%;
+  background: var(--tk-danger-soft);
+  color: var(--tk-danger);
+}
+
+.state__title {
+  margin: 16px 0 6px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.state__text {
+  max-width: 420px;
+  margin: 0;
+  color: var(--tk-muted);
+}
+
+.state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--tk-perforation);
+}
+
+.nav__step {
+  margin-left: auto;
+  color: var(--tk-faint);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.aside {
+  position: sticky;
+  top: 112px;
+  padding-top: 12px;
+}
+
+@media (max-width: 1023px) {
+  .wizard {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 860px;
+  }
+
+  .aside {
+    display: none;
+  }
+}
+
+@media (max-width: 599px) {
+  :host {
+    padding: 16px 12px 40px;
+  }
+
+  .sheet {
+    padding: 24px 18px 20px;
+  }
+
+  .head__title {
+    font-size: 26px;
+  }
+
+  .head__back {
+    display: none;
+  }
+}
