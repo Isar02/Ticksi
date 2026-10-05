@@ -1,0 +1,61 @@
+@let list = events();
+
+<section class="favorites">
+  <header class="head">
+    <p class="head__eyebrow"><mat-icon>favorite</mat-icon>Saved for later</p>
+    <h1 class="head__title">
+      My favorites
+      @if (list && list.length > 0) {
+        <span class="head__count">{{ list.length | number }}</span>
+      }
+    </h1>
+    <p class="head__lede">Events you marked with the heart, the latest first.</p>
+  </header>
+
+  @if (error(); as message) {
+    <div class="state state--error" role="alert">
+      <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+      <h2 class="state__title">Your favorites could not be loaded</h2>
+      <p class="state__text">{{ message }}</p>
+      <button mat-stroked-button type="button" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  } @else if (loading()) {
+    <div class="grid" aria-busy="true">
+      @for (skeleton of skeletons; track skeleton) {
+        <div class="skeleton" aria-hidden="true">
+          <div class="skeleton__poster"></div>
+          <div class="skeleton__line"></div>
+          <div class="skeleton__line skeleton__line--short"></div>
+        </div>
+      }
+    </div>
+  } @else if (list) {
+    @if (list.length === 0) {
+      <div class="state">
+        <span class="state__icon"><mat-icon>favorite_border</mat-icon></span>
+        <h2 class="state__title">No favorites yet</h2>
+        <p class="state__text">Tap the heart on any event in the catalogue and it will wait for you here.</p>
+        <a mat-flat-button routerLink="/events">
+          <mat-icon>confirmation_number</mat-icon>
+          Browse events
+        </a>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (event of list; track event.publicId; let index = $index) {
+          <app-event-card
+            class="grid__item"
+            [style.--delay]="index * 40 + 'ms'"
+            [event]="event"
+            [favorite]="true"
+            [favoriteBusy]="removing().has(event.publicId)"
+            (favoriteToggled)="remove(event)"
+          />
+        }
+      </div>
+    }
+  }
+</section>

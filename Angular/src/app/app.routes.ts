@@ -21,6 +21,11 @@ export const routes: Routes = [
     loadChildren: () => import('./routes/organizer.routes').then(m => m.ORGANIZER_ROUTES)
   },
   {
+    path: 'favorites',
+    canMatch: [authGuard],
+    loadComponent: () => import('./components/favorites/favorites.component').then(m => m.FavoritesComponent)
+  },
+  {
     path: '',
     loadChildren: () => import('./routes/public.routes').then(m => m.PUBLIC_ROUTES)
   },

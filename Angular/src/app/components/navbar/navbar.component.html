@@ -7,6 +7,9 @@
     <div class="navbar__links">
       <a routerLink="/events" routerLinkActive="is-active" class="navbar__link">Events</a>
       <a routerLink="/categories" routerLinkActive="is-active" class="navbar__link">Categories</a>
+      @if (user()) {
+        <a routerLink="/favorites" routerLinkActive="is-active" class="navbar__link">Favorites</a>
+      }
       @if (canManage()) {
         <span class="navbar__divider" aria-hidden="true"></span>
         <a routerLink="/organizer/events" routerLinkActive="is-active" class="navbar__link">Your events</a>
