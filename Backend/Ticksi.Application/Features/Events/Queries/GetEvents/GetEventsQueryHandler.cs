@@ -29,11 +29,23 @@ public class GetEventsQueryHandler : IRequestHandler<GetEventsQuery, PagedResult
         if (request.CategoryId.HasValue)
             events = events.Where(e => e.EventCategory!.PublicId == request.CategoryId.Value);
 
-        if (request.DateFrom.HasValue)
-            events = events.Where(e => e.Date >= request.DateFrom.Value);
+        if (!string.IsNullOrWhiteSpace(request.City))
+        {
+            var city = request.City.Trim();
+            events = events.Where(e => e.Location!.City == city);
+        }
 
-        if (request.DateTo.HasValue)
-            events = events.Where(e => e.Date <= request.DateTo.Value);
+        if (request.DateFrom is { } dateFrom)
+        {
+            var from = dateFrom.ToDateTime(TimeOnly.MinValue);
+            events = events.Where(e => e.Date >= from);
+        }
+
+        if (request.DateTo is { } dateTo)
+        {
+            var to = dateTo.ToDateTime(TimeOnly.MaxValue);
+            events = events.Where(e => e.Date <= to);
+        }
 
         if (request.MinPrice.HasValue)
             events = events.Where(e => e.TicketTypes.Min(t => (decimal?)t.Price) >= request.MinPrice.Value);

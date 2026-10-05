@@ -1,5 +1,6 @@
 using FluentValidation;
 using Ticksi.Application.Common;
+using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.Events.Queries.GetEvents;
 
@@ -18,6 +19,11 @@ public class GetEventsQueryValidator : AbstractValidator<GetEventsQuery>
 
         RuleFor(x => x.Search)
             .MaximumLength(100).WithMessage("Search cannot exceed 100 characters.");
+
+        RuleFor(x => x.City)
+            .Must(c => c!.Trim().Length <= Location.Constraints.CityMaxLength)
+            .When(x => x.City is not null)
+            .WithMessage($"City cannot exceed {Location.Constraints.CityMaxLength} characters.");
 
         RuleFor(x => x.SortBy)
             .Must(s => SortFields.Contains(s!, StringComparer.OrdinalIgnoreCase))
