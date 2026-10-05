@@ -218,6 +218,68 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
     }
 
     [Fact]
+    public async Task GetAll_CityAndWholeDayRange_ReturnsTheMatchingEventAnonymously()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var city = $"City {Guid.NewGuid():N}"[..20];
+        var request = await NewEventAsync() with { LocationId = await AddVenueAsync(city) };
+        var created = await CreateAsync(token, request);
+        await CreateAsync(token, await NewEventAsync());
+        var day = DateOnly.FromDateTime(request.Date).ToString("yyyy-MM-dd");
+
+        var response = await _client.GetAsync($"/api/events?city={Uri.EscapeDataString($" {city} ")}&dateFrom={day}&dateTo={day}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var page = await response.Content.ReadFromJsonAsync<PageBody<EventReadDto>>();
+        Assert.Equal(created.PublicId, Assert.Single(page!.Items).PublicId);
+    }
+
+    [Fact]
+    public async Task GetAll_CityInAnotherCase_ReturnsTheEvent()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var city = $"City {Guid.NewGuid():N}"[..20];
+        var created = await CreateAsync(token, await NewEventAsync() with { LocationId = await AddVenueAsync(city) });
+
+        var lower = await _client.GetFromJsonAsync<PageBody<EventReadDto>>($"/api/events?city={Uri.EscapeDataString(city.ToLowerInvariant())}");
+        var upper = await _client.GetFromJsonAsync<PageBody<EventReadDto>>($"/api/events?city={Uri.EscapeDataString(city.ToUpperInvariant())}");
+
+        Assert.Equal(created.PublicId, Assert.Single(lower!.Items).PublicId);
+        Assert.Equal(created.PublicId, Assert.Single(upper!.Items).PublicId);
+    }
+
+    [Fact]
+    public async Task GetAll_CityTooLongAndRangeReversed_Returns400WithFieldErrors()
+    {
+        var city = new string('a', Location.Constraints.CityMaxLength + 1);
+
+        var response = await _client.GetAsync($"/api/events?city={city}&dateFrom=2027-06-02&dateTo=2027-06-01");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorBody>();
+        Assert.Equal(["city", "dateTo"], error!.Errors!.Keys.Order());
+    }
+
+    [Fact]
+    public async Task GetCatalogueFilters_Anonymously_ListsCategoriesAndCitiesWithEvents()
+    {
+        var token = await SignInAsync(Role.Names.Organizer);
+        var city = $"City {Guid.NewGuid():N}"[..20];
+        var emptyCity = $"City {Guid.NewGuid():N}"[..20];
+        await AddVenueAsync(emptyCity);
+        var request = await NewEventAsync() with { LocationId = await AddVenueAsync(city) };
+        await CreateAsync(token, request);
+
+        var response = await _client.GetAsync("/api/events/catalogue-filters");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var filters = await response.Content.ReadFromJsonAsync<CatalogueFiltersBody>();
+        Assert.Contains(filters!.Categories, c => c.PublicId == request.CategoryId);
+        Assert.Contains(city, filters.Cities);
+        Assert.DoesNotContain(emptyCity, filters.Cities);
+    }
+
+    [Fact]
     public async Task GetForEdit_OwnEventOnly()
     {
         var token = await SignInAsync(Role.Names.Organizer);
@@ -406,6 +468,16 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
             [new("Standard", 30m, 350), new("VIP", 75m, 50)]);
     }
 
+    private async Task<Guid> AddVenueAsync(string city)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var venue = new Location { Name = "Arena", City = city, Address = "Bulevar 1", Capacity = 500 };
+        context.Locations.Add(venue);
+        await context.SaveChangesAsync();
+        return venue.PublicId;
+    }
+
     private async Task<EventReadDto> CreateAsync(string token, EventRequest request)
     {
         var response = await SendAsync(HttpMethod.Post, "/api/events", token, request);
@@ -460,6 +532,8 @@ public class EventApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
     private sealed record OptionBody(Guid PublicId, string Name, int Capacity);
 
     private sealed record FormOptionsBody(List<OptionBody> Venues, List<OptionBody> EventTypes, List<OptionBody> OrganizerCompanies);
+
+    private sealed record CatalogueFiltersBody(List<OptionBody> Categories, List<string> Cities);
 
     private sealed record PosterBody(string PosterUrl);
 

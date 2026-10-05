@@ -7,6 +7,7 @@ using Ticksi.Application.Features.Events.Commands.CreateEvent;
 using Ticksi.Application.Features.Events.Commands.DeleteEvent;
 using Ticksi.Application.Features.Events.Commands.UpdateEvent;
 using Ticksi.Application.Features.Events.Commands.UploadEventPoster;
+using Ticksi.Application.Features.Events.Queries.GetCatalogueFilters;
 using Ticksi.Application.Features.Events.Queries.GetEventById;
 using Ticksi.Application.Features.Events.Queries.GetEventForEdit;
 using Ticksi.Application.Features.Events.Queries.GetEventFormOptions;
@@ -38,6 +39,12 @@ namespace API.Controllers
         {
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
+        }
+
+        [HttpGet("catalogue-filters")]
+        public async Task<ActionResult<CatalogueFiltersDto>> GetCatalogueFilters(CancellationToken cancellationToken)
+        {
+            return Ok(await _mediator.Send(new GetCatalogueFiltersQuery(), cancellationToken));
         }
 
         [HttpGet("{eventId:guid}/images")]

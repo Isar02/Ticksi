@@ -8,8 +8,9 @@ public class GetEventsQuery : IRequest<PagedResult<EventReadDto>>
 {
     public string? Search { get; set; }
     public Guid? CategoryId { get; set; }
-    public DateTime? DateFrom { get; set; }
-    public DateTime? DateTo { get; set; }
+    public string? City { get; set; }
+    public DateOnly? DateFrom { get; set; }
+    public DateOnly? DateTo { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
     public string? SortBy { get; set; }
