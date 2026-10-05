@@ -20,21 +20,21 @@ $notch: 7px;
 }
 
 .toast {
-  --tone: #9e6caf;
-  --tone-soft: #f5eff8;
+  --tone: var(--tk-brand);
+  --tone-soft: var(--tk-brand-soft);
   width: 100%;
   pointer-events: auto;
-  filter: drop-shadow(0 12px 24px rgba(58, 36, 70, 0.14)) drop-shadow(0 2px 4px rgba(58, 36, 70, 0.08));
+  filter: var(--tk-drop-float);
   animation: toast-in 360ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
 
   &--success {
-    --tone: #2e8b6a;
-    --tone-soft: #eaf6f1;
+    --tone: var(--tk-success);
+    --tone-soft: var(--tk-success-soft);
   }
 
   &--error {
-    --tone: #d03a47;
-    --tone-soft: #fdf0f1;
+    --tone: var(--tk-danger);
+    --tone-soft: var(--tk-danger-soft);
   }
 
   &--closing {
@@ -48,8 +48,8 @@ $notch: 7px;
   grid-template-columns: $stub-width 1fr auto;
   align-items: center;
   min-height: 58px;
-  background: #fff;
-  border-radius: 14px;
+  background: var(--tk-surface);
+  border-radius: var(--tk-radius-md);
   mask:
     radial-gradient(circle $notch at $stub-width 0, transparent calc($notch - 0.5px), #000 $notch) top / 100% 51% no-repeat,
     radial-gradient(circle $notch at $stub-width 100%, transparent calc($notch - 0.5px), #000 $notch) bottom / 100% 51% no-repeat;
@@ -74,7 +74,7 @@ $notch: 7px;
 .toast__message {
   margin: 0;
   padding: 14px 6px 14px 16px;
-  color: #333;
+  color: var(--tk-ink);
   font-size: 14px;
   line-height: 1.45;
   overflow-wrap: anywhere;
@@ -90,13 +90,13 @@ $notch: 7px;
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #888;
+  color: var(--tk-faint);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: #f5f5f5;
-    color: #333;
+    background: var(--tk-brand-soft);
+    color: var(--tk-ink);
   }
 
   &:focus-visible {
