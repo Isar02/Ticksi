@@ -85,6 +85,13 @@ public abstract class AuthHandlerTestBase
         });
     }
 
+    protected async Task DeactivateAsync(AppUser user)
+    {
+        await using var context = Database.CreateContext();
+        (await context.AppUsers.SingleAsync(u => u.Id == user.Id)).IsActive = false;
+        await context.SaveChangesAsync();
+    }
+
     protected async Task<List<RefreshToken>> RefreshTokensOfAsync(AppUser user)
     {
         await using var context = Database.CreateContext();

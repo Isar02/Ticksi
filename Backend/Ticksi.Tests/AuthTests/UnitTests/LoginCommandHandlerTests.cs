@@ -61,6 +61,18 @@ public class LoginCommandHandlerTests : AuthHandlerTestBase
         Assert.Equal(PasswordCheck.Valid, PasswordHasher.Verify(upgraded, Password));
     }
 
+    [Fact]
+    public async Task Handle_DeactivatedAccount_ThrowsUnauthorizedAndStartsNoSession()
+    {
+        var user = await AddUserAsync();
+        await DeactivateAsync(user);
+
+        var exception = await Assert.ThrowsAsync<UnauthorizedException>(() => LoginAsync(user.Email, Password));
+
+        Assert.Equal("This account has been deactivated.", exception.Message);
+        Assert.Empty(await RefreshTokensOfAsync(user));
+    }
+
     private async Task<AuthResponseDto> LoginAsync(string email, string password)
     {
         await using var context = Database.CreateContext();

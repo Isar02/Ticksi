@@ -18,8 +18,14 @@ public sealed class InMemoryDatabase
             .AddInterceptors(interceptors)
             .Options;
 
-        var context = new AppDbContext(options);
+        var context = new InMemoryAppDbContext(options);
         context.Database.EnsureCreated();
         return context;
+    }
+
+    private sealed class InMemoryAppDbContext(DbContextOptions options) : AppDbContext(options)
+    {
+        public override Task<IDbContextTransaction> BeginUserAdministrationAsync(CancellationToken cancellationToken = default) =>
+            BeginTransactionAsync(cancellationToken);
     }
 }

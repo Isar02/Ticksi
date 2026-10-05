@@ -29,6 +29,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto
         if (user is null || passwordCheck == PasswordCheck.Failed)
             throw new UnauthorizedException("Invalid email or password.");
 
+        if (!user.IsActive)
+            throw new UnauthorizedException("This account has been deactivated.");
+
         if (passwordCheck == PasswordCheck.ValidNeedsRehash)
             user.PasswordHash = _passwordHasher.Hash(user, request.Password);
 

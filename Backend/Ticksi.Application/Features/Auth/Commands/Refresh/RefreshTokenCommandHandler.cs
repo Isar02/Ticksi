@@ -36,11 +36,11 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
         // A rotated token coming back means it was copied, so every session of the user ends.
         if (storedToken.RevokedReason == RefreshTokenRevocation.Rotated)
         {
-            await RevokeAllActiveAsync(storedToken.AppUserId, now, cancellationToken);
+            await UserSessions.EndAllAsync(_context, storedToken.AppUserId, RefreshTokenRevocation.ReuseDetected, now, cancellationToken);
             throw new UnauthorizedException(InvalidTokenMessage);
         }
 
-        if (storedToken.RevokedAtUtc is not null || storedToken.ExpiresAtUtc <= now)
+        if (storedToken.RevokedAtUtc is not null || storedToken.ExpiresAtUtc <= now || !storedToken.AppUser!.IsActive)
             throw new UnauthorizedException(InvalidTokenMessage);
 
         storedToken.Revoke(RefreshTokenRevocation.Rotated, now);
@@ -56,30 +56,5 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
         }
 
         return response;
-    }
-
-    private async Task RevokeAllActiveAsync(int userId, DateTime now, CancellationToken cancellationToken)
-    {
-        while (true)
-        {
-            var activeTokens = await _context.RefreshTokens
-                .Where(t => t.AppUserId == userId && t.RevokedAtUtc == null)
-                .ToListAsync(cancellationToken);
-
-            foreach (var token in activeTokens)
-                token.Revoke(RefreshTokenRevocation.ReuseDetected, now);
-
-            try
-            {
-                await _context.SaveChangesAsync(cancellationToken);
-                return;
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                // A conflict is a row another request has just revoked; reloaded, it drops out of the next round.
-                foreach (var entry in ex.Entries)
-                    await entry.ReloadAsync(cancellationToken);
-            }
-        }
     }
 }
