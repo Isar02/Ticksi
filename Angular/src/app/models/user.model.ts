@@ -1,3 +1,7 @@
+export const USER_LIMITS = { nameMin: 2, name: 100, email: 256, phone: 20, passwordMin: 6 } as const;
+
+export const PHONE_PATTERN = /^\+?[0-9\s-]{9,}$/;
+
 export interface UserAccount {
   publicId: string;
   firstName: string;

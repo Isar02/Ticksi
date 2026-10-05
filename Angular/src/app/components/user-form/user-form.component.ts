@@ -12,10 +12,11 @@ import { Observable, Subject, catchError, forkJoin, map, of, startWith, switchMa
 import { ApiError } from '../../core/models/api-error';
 import { ToastService } from '../../core/services/toast.service';
 import { passwordStrength } from '../../core/utils/password-strength';
-import { ROLE_DESCRIPTIONS, RoleOption, UserAccount } from '../../models/user.model';
+import { ROLE_DESCRIPTIONS, RoleOption, USER_LIMITS, UserAccount } from '../../models/user.model';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
-import { USER_LIMITS, applyServerErrors, createUserForm, errorText, fillFromUser, toNewUserInput, toUserInput } from './user-form';
+import { applyServerErrors } from '../shared/form-rules';
+import { createUserForm, errorText, fillFromUser, toNewUserInput, toUserInput } from './user-form';
 
 interface FormData {
   roles: RoleOption[];

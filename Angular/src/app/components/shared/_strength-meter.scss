@@ -1,0 +1,45 @@
+@mixin styles {
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0 12px;
+
+    --meter-color: var(--tk-danger);
+
+    &[data-level='medium'] {
+      --meter-color: #fd7e14;
+    }
+
+    &[data-level='strong'] {
+      --meter-color: #ffc107;
+    }
+
+    &[data-level='very-strong'] {
+      --meter-color: var(--tk-success);
+    }
+  }
+
+  .meter__track {
+    flex: 1;
+    height: 6px;
+    border-radius: var(--tk-radius-pill);
+    background: var(--tk-line);
+    overflow: hidden;
+  }
+
+  .meter__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--meter-color);
+    transition: width 200ms ease;
+  }
+
+  .meter__label {
+    min-width: 128px;
+    color: var(--tk-ink-soft);
+    font-size: 13px;
+    font-weight: 500;
+  }
+}

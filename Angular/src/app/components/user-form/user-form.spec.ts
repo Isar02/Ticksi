@@ -1,5 +1,6 @@
 import { UserAccount } from '../../models/user.model';
-import { applyServerErrors, createUserForm, errorText, fillFromUser, toNewUserInput, toUserInput } from './user-form';
+import { applyServerErrors } from '../shared/form-rules';
+import { createUserForm, errorText, fillFromUser, toNewUserInput, toUserInput } from './user-form';
 
 describe('user form', () => {
   const account: UserAccount = {

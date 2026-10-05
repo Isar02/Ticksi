@@ -1,9 +1,6 @@
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { NewUserInput, UserAccount, UserInput } from '../../models/user.model';
-
-export const USER_LIMITS = { nameMin: 2, name: 100, email: 256, phone: 20, passwordMin: 6 } as const;
-
-const PHONE = /^\+?[0-9\s-]{9,}$/;
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { NewUserInput, PHONE_PATTERN, USER_LIMITS, UserAccount, UserInput } from '../../models/user.model';
+import { apiEmail, requiredText, trimmedMinLength } from '../shared/form-rules';
 
 export type UserForm = ReturnType<typeof createUserForm>;
 
@@ -23,7 +20,7 @@ export function createUserForm(withPassword: boolean) {
     }),
     phone: new FormControl('', {
       nonNullable: true,
-      validators: [requiredText, Validators.pattern(PHONE), Validators.maxLength(USER_LIMITS.phone)]
+      validators: [requiredText, Validators.pattern(PHONE_PATTERN), Validators.maxLength(USER_LIMITS.phone)]
     }),
     roleId: new FormControl('', { nonNullable: true, validators: Validators.required }),
     isActive: new FormControl(true, { nonNullable: true }),
@@ -61,25 +58,6 @@ export function toNewUserInput(form: UserForm): NewUserInput {
   return { ...toUserInput(form), password: form.getRawValue().password };
 }
 
-// Puts each API field error on its control and returns the messages that fit no field.
-export function applyServerErrors(form: UserForm, fieldErrors: Readonly<Record<string, string[]>>): string[] {
-  const unplaced: string[] = [];
-
-  for (const [field, messages] of Object.entries(fieldErrors)) {
-    const key = field.replace(/^\$\./, '').toLowerCase();
-    const control = Object.entries(form.controls).find(([name]) => name.toLowerCase() === key)?.[1];
-
-    if (control && control.enabled) {
-      control.setErrors({ ...control.errors, server: messages[0] });
-      control.markAsTouched();
-    } else {
-      unplaced.push(...messages);
-    }
-  }
-
-  return unplaced;
-}
-
 export function errorText(control: AbstractControl, label: string): string {
   const errors = control.errors ?? {};
 
@@ -91,27 +69,4 @@ export function errorText(control: AbstractControl, label: string): string {
   if (errors['email']) return 'Enter a valid email address.';
   if (errors['pattern']) return 'Enter a valid phone number.';
   return '';
-}
-
-// FluentValidation's NotEmpty rejects whitespace-only strings; Angular's required does not.
-function requiredText(control: AbstractControl<string>): ValidationErrors | null {
-  return control.value?.trim() ? null : { required: true };
-}
-
-// Same check as the API's default FluentValidation EmailAddress validator, on the value sent to it.
-function apiEmail(control: AbstractControl<string>): ValidationErrors | null {
-  const value = control.value?.trim() ?? '';
-  if (!value) return null;
-
-  const at = value.indexOf('@');
-  return at > 0 && at < value.length - 1 && at === value.lastIndexOf('@') ? null : { email: true };
-}
-
-function trimmedMinLength(requiredLength: number): ValidatorFn {
-  return (control: AbstractControl<string>): ValidationErrors | null => {
-    const value = control.value ?? '';
-    if (!value) return null;
-    if (!value.trim()) return { required: true };
-    return value.trim().length < requiredLength ? { trimmedMinLength: { requiredLength } } : null;
-  };
 }
