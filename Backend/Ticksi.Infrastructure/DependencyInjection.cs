@@ -7,6 +7,7 @@ using Ticksi.Application.Options;
 using Ticksi.Infrastructure.Data;
 using Ticksi.Infrastructure.Data.Seeders;
 using Ticksi.Infrastructure.Options;
+using Ticksi.Infrastructure.Reports;
 using Ticksi.Infrastructure.Security;
 using Ticksi.Infrastructure.Services;
 
@@ -46,6 +47,8 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton(TimeProvider.System);
+
+        services.AddSingleton<IReportRenderer, QuestPdfReportRenderer>();
 
         return services;
     }

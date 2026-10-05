@@ -1,14 +1,12 @@
 import { Component,OnInit } from '@angular/core';
 import { CategoryService } from '../../services/category.service';
-import { ReportService } from '../../services/report.service';
 import { Category } from '../../models/category.model';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { PagedResult } from '../../services/category.service';
 import { environment} from '../../../environments/environment';
-import { ApiError } from '../../core/models/api-error';
-import { ToastService } from '../../core/services/toast.service';
+import { CategoryReportDialogService } from '../reports/category-report-dialog/category-report-dialog.service';
 
 
 
@@ -22,15 +20,13 @@ import { ToastService } from '../../core/services/toast.service';
 export class CategoriesComponent implements OnInit {
   categories: Category[] = [];
   pagedResult!: PagedResult<Category>;
-  downloadingCategories: Set<string> = new Set();
 
   readonly apiBaseUrl = environment.apiUrl;
   
   constructor(
     private categoryService: CategoryService,
-    private reportService: ReportService,
     private dialog: MatDialog,
-    private toast: ToastService
+    private reportDialog: CategoryReportDialogService
   ) {}
 
   ngOnInit(): void {
@@ -100,29 +96,7 @@ export class CategoriesComponent implements OnInit {
 }
 
   downloadReport(category: Category): void {
-    // Prevent duplicate downloads for the same category
-    if (this.downloadingCategories.has(category.publicId)) {
-      return;
-    }
-
-    this.downloadingCategories.add(category.publicId);
-
-    this.reportService.downloadEventsByCategoryReport(category.publicId, category.name)
-      .subscribe({
-        next: (blob) => {
-          const filename = this.reportService.generateFilename(category.name);
-          this.reportService.triggerDownload(blob, filename);
-          this.downloadingCategories.delete(category.publicId);
-        },
-        error: (error: ApiError) => {
-          this.toast.error(error.message);
-          this.downloadingCategories.delete(category.publicId);
-        }
-      });
-  }
-
-  isDownloading(categoryId: string): boolean {
-    return this.downloadingCategories.has(categoryId);
+    this.reportDialog.open(category);
   }
 
 
