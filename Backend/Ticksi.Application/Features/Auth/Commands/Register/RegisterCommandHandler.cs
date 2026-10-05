@@ -1,6 +1,7 @@
+using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Interfaces;
 using Ticksi.Domain.Entities;
@@ -25,7 +26,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
     public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
         if (await EmailExistsAsync(request.Email, cancellationToken))
-            throw new ConflictException(EmailTaken);
+            throw EmailTakenError();
 
         var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User", cancellationToken)
             ?? throw new InvalidOperationException("The User role has not been seeded.");
@@ -54,11 +55,14 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             if (!await EmailExistsAsync(request.Email, cancellationToken))
                 throw;
 
-            throw new ConflictException(EmailTaken);
+            throw EmailTakenError();
         }
 
         return response;
     }
+
+    private static ValidationException EmailTakenError() =>
+        new([new ValidationFailure(nameof(RegisterCommand.Email), EmailTaken)]);
 
     private Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken) =>
         _context.AppUsers.AnyAsync(u => u.Email == email, cancellationToken);
