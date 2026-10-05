@@ -2,7 +2,6 @@ using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Auth.Commands.Register;
 using Ticksi.Application.Interfaces;
-using Ticksi.Infrastructure.Data.Seeders;
 
 namespace Ticksi.Tests.AuthTests.UnitTests;
 
@@ -15,7 +14,7 @@ public class RegisterCommandHandlerTests : AuthHandlerTestBase
 
         await using var context = Database.CreateContext();
         var user = await context.AppUsers.Include(u => u.Role).SingleAsync(u => u.Email == "marko@ticksi.com");
-        Assert.Equal(StaticDataSeeder.RoleNames.User, user.Role!.Name);
+        Assert.Equal(Role.Names.User, user.Role!.Name);
         Assert.Equal(user.PublicId.ToString(), response.PublicId);
         Assert.NotEqual(Password, user.PasswordHash);
         Assert.Equal(PasswordCheck.Valid, PasswordHasher.Verify(user, Password));
