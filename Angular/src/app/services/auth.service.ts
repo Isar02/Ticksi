@@ -59,6 +59,12 @@ export class AuthService {
       .pipe(map(response => this.startSession(response, crypto.randomUUID())));
   }
 
+  isEmailAvailable(email: string): Observable<boolean> {
+    return this.http
+      .get<{ available: boolean }>(`${this.authUrl}/email-availability`, { params: { email }, context: withoutErrorToast() })
+      .pipe(map(response => response.available));
+  }
+
   logout(): void {
     const refreshToken = this.session()?.refreshToken;
     this.clearSession();

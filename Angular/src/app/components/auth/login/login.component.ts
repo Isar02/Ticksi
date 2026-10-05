@@ -1,61 +1,57 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { readReturnUrl } from '../../../core/guards/return-url';
 import { AuthService } from '../../../services/auth.service';
+import { authErrorText, createLoginForm, serverFailure, toLoginRequest } from '../auth-forms';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent {
-  loginForm: FormGroup;
-  isLoading = false;
-  errorMessage = '';
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
-    });
-  }
+  protected readonly form = createLoginForm();
+  protected readonly errorText = authErrorText;
+  protected readonly submitting = signal(false);
+  protected readonly failure = signal<string | null>(null);
+  protected readonly passwordHidden = signal(true);
 
-  get email() {
-    return this.loginForm.get('email');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
-  }
-
-  onSubmit(): void {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
+  protected submit(): void {
+    if (this.submitting()) {
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.router.navigateByUrl(readReturnUrl(this.route));
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = error.message;
+    const request = toLoginRequest(this.form);
+    this.submitting.set(true);
+    this.failure.set(null);
+    this.form.disable();
+
+    this.auth.login(request).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.router.navigateByUrl(readReturnUrl(this.route)),
+      error: (error: unknown) => {
+        this.form.enable();
+        this.submitting.set(false);
+        this.failure.set(serverFailure(this.form, error));
       }
     });
   }
 }
-
