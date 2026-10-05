@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { readReturnUrl } from '../../../core/guards/return-url';
+import { passwordStrength } from '../../../core/utils/password-strength';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -45,50 +46,11 @@ export class RegisterComponent {
     });
   }
 
-  // Calculate password strength based on criteria
   calculatePasswordStrength(password: string): void {
-    if (!password) {
-      this.passwordStrength = 0;
-      this.passwordStrengthLabel = '';
-      this.passwordStrengthClass = '';
-      return;
-    }
-
-    let strength = 0;
-
-    // Length check
-    if (password.length >= 6) strength += 1;
-    if (password.length >= 10) strength += 1;
-
-    // Contains lowercase
-    if (/[a-z]/.test(password)) strength += 1;
-
-    // Contains uppercase
-    if (/[A-Z]/.test(password)) strength += 1;
-
-    // Contains number
-    if (/[0-9]/.test(password)) strength += 1;
-
-    // Contains special character
-    if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
-
-    // Set strength percentage (max 6 criteria)
-    this.passwordStrength = Math.min((strength / 6) * 100, 100);
-
-    // Set label and class based on strength
-    if (strength <= 2) {
-      this.passwordStrengthLabel = 'Weak';
-      this.passwordStrengthClass = 'weak';
-    } else if (strength <= 3) {
-      this.passwordStrengthLabel = 'Medium';
-      this.passwordStrengthClass = 'medium';
-    } else if (strength <= 4) {
-      this.passwordStrengthLabel = 'Strong';
-      this.passwordStrengthClass = 'strong';
-    } else {
-      this.passwordStrengthLabel = 'Very Strong';
-      this.passwordStrengthClass = 'very-strong';
-    }
+    const strength = passwordStrength(password);
+    this.passwordStrength = strength?.percent ?? 0;
+    this.passwordStrengthLabel = strength?.label ?? '';
+    this.passwordStrengthClass = strength?.level ?? '';
   }
 
   // Custom validator for password matching

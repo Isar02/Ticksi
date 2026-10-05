@@ -1,0 +1,309 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+  padding: 32px 20px 56px;
+  color: var(--tk-ink);
+}
+
+.sheet {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 36px 40px 28px;
+  background: var(--tk-surface);
+  border-radius: var(--tk-radius-lg);
+  box-shadow: var(--tk-shadow-card);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 28px;
+  border-bottom: 1px dashed var(--tk-perforation);
+}
+
+.head__eyebrow {
+  margin: 0 0 6px;
+  color: var(--tk-brand);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.head__title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.head__back {
+  flex-shrink: 0;
+}
+
+form {
+  @include mat.form-field-overrides((
+    container-height: 48px,
+    container-vertical-padding: 12px
+  ));
+}
+
+.section {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 32px;
+  padding: 28px 0 12px;
+
+  & + & {
+    border-top: 1px dashed var(--tk-perforation);
+  }
+}
+
+.section__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.section__hint {
+  margin: 6px 0 0;
+  color: var(--tk-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.section__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  &--pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 16px;
+  }
+}
+
+.roles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.role-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 14px 16px;
+  border: 1px dashed var(--tk-perforation);
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-surface-sunk);
+  cursor: pointer;
+  transition: 140ms ease;
+  transition-property: border-color, background-color, box-shadow;
+
+  &:hover {
+    border-color: var(--tk-brand);
+  }
+
+  &:has(.role-card__input:focus-visible) {
+    box-shadow: 0 0 0 3px var(--tk-brand-soft);
+  }
+
+  &:has(.role-card__input:disabled) {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  &--chosen {
+    border-style: solid;
+    border-color: var(--tk-brand);
+    background: var(--tk-brand-soft);
+  }
+}
+
+.role-card__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.role-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.role-card__name {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.role-card__check {
+  width: 20px;
+  height: 20px;
+  color: var(--tk-brand);
+  font-size: 20px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+
+  .role-card--chosen & {
+    opacity: 1;
+  }
+}
+
+.role-card__text {
+  color: var(--tk-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.field-error {
+  margin: 6px 0 0;
+  color: var(--tk-danger);
+  font-size: 12px;
+}
+
+.active {
+  margin: 18px 0 12px;
+}
+
+.active__label {
+  padding-left: 6px;
+  color: var(--tk-ink-soft);
+  font-size: 14px;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 12px;
+
+  --meter-color: var(--tk-danger);
+
+  &[data-level='medium'] {
+    --meter-color: #fd7e14;
+  }
+
+  &[data-level='strong'] {
+    --meter-color: #ffc107;
+  }
+
+  &[data-level='very-strong'] {
+    --meter-color: var(--tk-success);
+  }
+}
+
+
+.meter__track {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--tk-radius-pill);
+  background: var(--tk-line);
+  overflow: hidden;
+}
+
+.meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--meter-color);
+  transition: width 200ms ease;
+}
+
+.meter__label {
+  min-width: 128px;
+  color: var(--tk-ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--tk-perforation);
+}
+
+.loading {
+  padding: 48px 0 24px;
+  color: var(--tk-muted);
+  text-align: center;
+
+  p {
+    margin: 16px 0 0;
+  }
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px 24px;
+  text-align: center;
+}
+
+.state__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--tk-danger-soft);
+  color: var(--tk-danger);
+}
+
+.state__title {
+  margin: 16px 0 6px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.state__text {
+  max-width: 420px;
+  margin: 0;
+  color: var(--tk-muted);
+}
+
+.state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+@media (max-width: 760px) {
+  :host {
+    padding: 16px 12px 40px;
+  }
+
+  .sheet {
+    padding: 24px 16px 16px;
+    border-radius: var(--tk-radius-md);
+  }
+
+  .head__title {
+    font-size: 26px;
+  }
+
+  .section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .section__fields--pair,
+  .roles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

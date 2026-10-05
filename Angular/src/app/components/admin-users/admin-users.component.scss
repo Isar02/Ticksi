@@ -22,7 +22,7 @@
   }
 
   .mat-column-actions {
-    width: 72px;
+    width: 112px;
   }
 
   tr.is-self td.mat-mdc-cell:first-child {
@@ -51,6 +51,7 @@
 
 .users__actions {
   text-align: right;
+  white-space: nowrap;
 }
 
 .person {

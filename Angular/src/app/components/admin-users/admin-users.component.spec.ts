@@ -1,6 +1,7 @@
+import { Directive, input } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { MatSlideToggle, MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { ActivatedRoute, ParamMap, Params, Router, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, ParamMap, Params, Router, RouterLink, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { ApiError } from '../../core/models/api-error';
 import { ToastService } from '../../core/services/toast.service';
@@ -11,6 +12,11 @@ import { PagedResult } from '../../services/event.service';
 import { ConfirmDialogOptions } from '../shared/confirm-dialog/confirm-dialog.component';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
 import { AdminUsersComponent } from './admin-users.component';
+
+@Directive({ selector: '[routerLink]', standalone: true })
+class RouterLinkStub {
+  readonly routerLink = input<unknown>();
+}
 
 describe('AdminUsersComponent', () => {
   const organizerRole: RoleOption = { publicId: 'role-organizer', name: 'Organizer' };
@@ -62,7 +68,7 @@ describe('AdminUsersComponent', () => {
           }
         }
       ]
-    });
+    }).overrideComponent(AdminUsersComponent, { remove: { imports: [RouterLink] }, add: { imports: [RouterLinkStub] } });
 
     fixture = TestBed.createComponent(AdminUsersComponent);
     component = fixture.componentInstance;

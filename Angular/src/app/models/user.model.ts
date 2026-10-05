@@ -24,6 +24,16 @@ export interface UserInput {
   isActive: boolean;
 }
 
+export interface NewUserInput extends UserInput {
+  password: string;
+}
+
+export const ROLE_DESCRIPTIONS: Readonly<Partial<Record<string, string>>> = {
+  Admin: 'Manages every account, event and category.',
+  Organizer: 'Creates events and manages their own.',
+  User: 'Browses events and buys tickets, without managing anything.'
+};
+
 export const USER_STATUSES = ['active', 'inactive'] as const;
 export type UserStatus = (typeof USER_STATUSES)[number];
 
