@@ -1,0 +1,120 @@
+:host {
+  display: block;
+  padding-top: 8px;
+}
+
+.saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 5px 12px 5px 8px;
+  border-radius: var(--tk-radius-pill);
+  background: var(--tk-success-soft);
+  color: var(--tk-success);
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+
+  mat-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.title {
+  margin: 16px 0 0;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.text {
+  margin: 6px 0 24px;
+  color: var(--tk-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.error {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--tk-danger);
+  border-radius: 0 var(--tk-radius-sm) var(--tk-radius-sm) 0;
+  background: var(--tk-danger-soft);
+  color: var(--tk-danger-strong);
+  font-size: 14px;
+
+  + .text {
+    margin-top: 12px;
+  }
+}
+
+// The colour copy uncovers the grey one as the bytes go out.
+.reveal {
+  position: relative;
+  max-width: 420px;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-ink);
+  box-shadow: var(--tk-shadow-card);
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--progress);
+    border-left: 2px dashed var(--tk-surface);
+    transition: left 200ms linear;
+  }
+}
+
+.reveal__base {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+.reveal__color {
+  clip-path: inset(0 calc(100% - var(--progress)) 0 0);
+  transition: clip-path 200ms linear;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 420px;
+  margin: 20px auto 0;
+}
+
+.meter__value {
+  min-width: 4ch;
+  color: var(--tk-brand-strong);
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--tk-perforation);
+}

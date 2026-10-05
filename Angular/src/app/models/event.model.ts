@@ -94,3 +94,7 @@ export interface EventForEdit extends Omit<EventInput, 'ticketTypes'> {
   posterUrl: string | null;
   ticketTypes: TicketTypeForEdit[];
 }
+
+export interface EventPoster {
+  posterUrl: string;
+}

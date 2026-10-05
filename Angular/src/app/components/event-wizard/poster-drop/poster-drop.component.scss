@@ -1,0 +1,226 @@
+:host {
+  display: block;
+}
+
+.drop {
+  position: relative;
+  border: 2px dashed var(--tk-perforation);
+  border-radius: var(--tk-radius-lg);
+  background: var(--tk-surface-sunk);
+  transition: border-color 200ms ease, background-color 200ms ease;
+
+  &:hover:not(.is-disabled) {
+    border-color: var(--tk-brand);
+  }
+
+  &.is-dragging {
+    border-color: var(--tk-brand);
+    background: var(--tk-brand-soft);
+  }
+
+  &.is-disabled {
+    opacity: 0.6;
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 280px;
+  justify-content: center;
+  padding: 32px 20px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: var(--tk-muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tk-brand);
+    outline-offset: 4px;
+  }
+
+  &:hover:not(:disabled) .empty__punch {
+    transform: translateY(-3px) rotate(-6deg);
+  }
+}
+
+.empty__punch {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 10px;
+  border: 2px dashed var(--tk-brand);
+  border-radius: 50%;
+  background: var(--tk-surface);
+  color: var(--tk-brand-strong);
+  transition: transform 200ms ease;
+
+  mat-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+  }
+}
+
+.empty__title {
+  color: var(--tk-ink);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.empty__link {
+  color: var(--tk-brand-strong);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.empty__rules {
+  margin-top: 10px;
+  padding: 4px 12px;
+  border-radius: var(--tk-radius-pill);
+  background: var(--tk-surface);
+  color: var(--tk-faint);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.chosen {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+}
+
+.frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--tk-radius-md);
+  background: var(--tk-ink);
+  box-shadow: var(--tk-shadow-card);
+}
+
+.frame__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.frame__stamp {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--tk-radius-sm);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--tk-ink-soft);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+
+  &.is-new {
+    color: var(--tk-brand-strong);
+  }
+}
+
+.chosen__name {
+  margin: 0;
+  color: var(--tk-ink);
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.chosen__meta {
+  margin: 4px 0 0;
+  color: var(--tk-faint);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chosen__note {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--tk-perforation);
+  color: var(--tk-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.chosen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.release {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: inherit;
+  background: rgba(245, 239, 248, 0.94);
+  color: var(--tk-brand-strong);
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+
+  mat-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+  }
+
+  .is-dragging & {
+    opacity: 1;
+  }
+}
+
+.problem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  color: var(--tk-danger);
+  font-size: 13px;
+
+  mat-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.picker {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .chosen {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

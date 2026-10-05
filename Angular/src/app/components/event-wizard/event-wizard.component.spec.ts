@@ -1,9 +1,10 @@
+import { HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { Subject, of } from 'rxjs';
 import { ApiError } from '../../core/models/api-error';
 import { ToastService } from '../../core/services/toast.service';
-import { EventForEdit, EventFormOptions } from '../../models/event.model';
+import { EventForEdit, EventFormOptions, EventPoster } from '../../models/event.model';
 import { EventService } from '../../services/event.service';
 import { EventWizardComponent } from './event-wizard.component';
 
@@ -38,17 +39,30 @@ describe('EventWizardComponent', () => {
   let fixture: ComponentFixture<EventWizardComponent>;
   let element: HTMLElement;
   let update: Subject<void>;
+  let posterUpload: Subject<HttpEvent<EventPoster>>;
   let events: jasmine.SpyObj<EventService>;
+  let toast: jasmine.SpyObj<ToastService>;
+  let router: Router;
 
   beforeEach(() => {
     jasmine.clock().install();
     jasmine.clock().mockDate(new Date('2026-10-05T12:00:00'));
 
     update = new Subject<void>();
-    events = jasmine.createSpyObj<EventService>('EventService', ['getFormOptions', 'getEventForEdit', 'updateEvent', 'createEvent']);
+    posterUpload = new Subject<HttpEvent<EventPoster>>();
+    events = jasmine.createSpyObj<EventService>('EventService', [
+      'getFormOptions',
+      'getEventForEdit',
+      'updateEvent',
+      'createEvent',
+      'uploadPoster',
+      'toAssetUrl'
+    ]);
     events.getFormOptions.and.returnValue(of(options));
     events.getEventForEdit.and.returnValue(of(event));
     events.updateEvent.and.returnValue(update);
+    events.uploadPoster.and.callFake(() => posterUpload);
+    toast = jasmine.createSpyObj<ToastService>('ToastService', ['success', 'error', 'info']);
 
     TestBed.configureTestingModule({
       imports: [EventWizardComponent],
@@ -56,11 +70,12 @@ describe('EventWizardComponent', () => {
         provideRouter([]),
         { provide: EventService, useValue: events },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: 'e1' }) } } },
-        { provide: ToastService, useValue: jasmine.createSpyObj<ToastService>('ToastService', ['success', 'error', 'info']) }
+        { provide: ToastService, useValue: toast }
       ]
     });
 
-    spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigateByUrl').and.resolveTo(true);
     fixture = TestBed.createComponent(EventWizardComponent);
     element = fixture.nativeElement;
     fixture.detectChanges();
@@ -83,6 +98,28 @@ describe('EventWizardComponent', () => {
     return element.querySelector('.track__item.is-current')!.textContent!.trim();
   }
 
+  function dropPoster(): File {
+    const poster = new File([new Uint8Array(64)], 'hamlet.png', { type: 'image/png' });
+    const transfer = new DataTransfer();
+    transfer.items.add(poster);
+    element.querySelector('.drop')!.dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, cancelable: true }));
+    fixture.detectChanges();
+    return poster;
+  }
+
+  function saveChanges(): void {
+    openStep(4);
+    clickNavButton('Save changes');
+    update.next();
+    update.complete();
+    fixture.detectChanges();
+  }
+
+  function clickButton(text: string): void {
+    [...element.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.includes(text))!.click();
+    fixture.detectChanges();
+  }
+
   it('shows the event\'s current category even when it is no longer offered', async () => {
     await fixture.whenStable();
     fixture.detectChanges();
@@ -91,7 +128,7 @@ describe('EventWizardComponent', () => {
   });
 
   it('locks the form while saving, so an API error lands on the row that was sent', () => {
-    openStep(3);
+    openStep(4);
     clickNavButton('Save changes');
 
     openStep(2);
@@ -111,7 +148,7 @@ describe('EventWizardComponent', () => {
   });
 
   it('checks the date again before saving, in case the event start has passed meanwhile', () => {
-    openStep(3);
+    openStep(4);
     jasmine.clock().mockDate(new Date('2026-11-14T20:00:00'));
 
     clickNavButton('Save changes');
@@ -129,5 +166,65 @@ describe('EventWizardComponent', () => {
 
     expect(currentStep()).toContain('Venue & date');
     expect(element.querySelector('mat-error')?.textContent).toContain('future');
+  });
+
+  it('uploads the chosen poster to the saved event with progress from the upload itself', () => {
+    openStep(3);
+    const poster = dropPoster();
+
+    saveChanges();
+
+    expect(events.uploadPoster).toHaveBeenCalledOnceWith('e1', poster);
+    posterUpload.next({ type: HttpEventType.UploadProgress, loaded: 2, total: 5 });
+    fixture.detectChanges();
+    expect(element.querySelector('.meter__value')!.textContent).toContain('40%');
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+
+    posterUpload.next(new HttpResponse({ body: { posterUrl: '/images/events/hamlet.png' } }));
+
+    expect(toast.success).toHaveBeenCalledWith('Changes to "Hamlet" were saved.');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/organizer/events');
+  });
+
+  it('keeps the saved event when the upload fails and retries only the upload', () => {
+    openStep(3);
+    dropPoster();
+    saveChanges();
+
+    posterUpload.error(new ApiError(400, 'validation_failed', 'Invalid.', { File: ['The file is not a valid image of its type.'] }));
+    fixture.detectChanges();
+
+    expect(element.querySelector('.error')!.textContent).toContain('The file is not a valid image of its type.');
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+    const chooseAnother = [...element.querySelectorAll<HTMLButtonElement>('app-poster-upload button')].find(b => b.textContent!.includes('Choose another'))!;
+    expect(chooseAnother.disabled).toBeFalse();
+
+    posterUpload = new Subject<HttpEvent<EventPoster>>();
+    clickButton('Try again');
+    posterUpload.next(new HttpResponse({ body: { posterUrl: '/images/events/hamlet.png' } }));
+
+    expect(events.uploadPoster).toHaveBeenCalledTimes(2);
+    expect(events.updateEvent).toHaveBeenCalledTimes(1);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/organizer/events');
+  });
+
+  it('lets the organizer go on without the poster after a failed upload', () => {
+    openStep(3);
+    dropPoster();
+    saveChanges();
+    posterUpload.error(new ApiError(0, 'network_error', 'Cannot reach the server.'));
+    fixture.detectChanges();
+
+    clickButton('Continue without it');
+
+    expect(toast.info).toHaveBeenCalledWith('"Hamlet" is saved without the new poster.');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/organizer/events');
+  });
+
+  it('saves without an upload when no poster was chosen', () => {
+    saveChanges();
+
+    expect(events.uploadPoster).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/organizer/events');
   });
 });

@@ -15,5 +15,7 @@ import { WizardStep } from '../event-wizard-form';
 })
 export class ReviewStepComponent {
   readonly summary = input.required<EventSummary>();
+  readonly poster = input.required<string | null>();
+  readonly posterName = input.required<string | null>();
   readonly editStep = output<WizardStep>();
 }
