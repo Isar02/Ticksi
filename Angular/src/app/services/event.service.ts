@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Event } from '../models/event.model';
+import { withoutErrorToast } from '../core/interceptors/error.interceptor';
+import { Event, EventFormOptions, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
 
 export interface PagedResult<T> {
   items: T[];
@@ -61,11 +62,28 @@ export class EventService {
     return this.http.get<string[]>(`${this.apiUrl}/${eventId}/images`);
   }
 
+  // The organizer screen shows load and delete failures itself.
+  getManagedEvents(query: ManagedEventsQuery): Observable<PagedResult<ManagedEvent>> {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== undefined && value !== '') params = params.set(key, String(value));
+    }
+
+    return this.http.get<PagedResult<ManagedEvent>>(`${this.apiUrl}/managed`, { params, context: withoutErrorToast() });
+  }
+
+  deleteEvent(eventId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${eventId}`, { context: withoutErrorToast() });
+  }
+
+  getFormOptions(): Observable<EventFormOptions> {
+    return this.http.get<EventFormOptions>(`${this.apiUrl}/form-options`);
+  }
+
   toAssetUrl(path: string): string {
     if (!path) return '';
     if (/^https?:\/\//i.test(path)) return path;
 
-    // environment.apiUrl obično završava sa /api
     const base = environment.apiUrl.replace(/\/api\/?$/i, '');
     return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
   }

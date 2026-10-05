@@ -1,0 +1,225 @@
+<section class="page">
+  <header class="head">
+    <div class="head__text">
+      <p class="head__eyebrow">{{ isAdmin ? 'All organizers' : 'Organizer' }}</p>
+      <h1 class="head__title">
+        Your events
+        @if (result(); as page) {
+          <span class="head__count">{{ page.totalCount | number }}</span>
+        }
+      </h1>
+      <p class="head__lede">
+        {{ isAdmin ? 'Every event on Ticksi, whoever organizes it.' : 'Everything you publish, with the tickets sold so far.' }}
+      </p>
+    </div>
+
+    <a mat-flat-button class="head__action" routerLink="/organizer/events/new">
+      <mat-icon>add</mat-icon>
+      New event
+    </a>
+  </header>
+
+  <form class="filters" [formGroup]="filters" (submit)="$event.preventDefault()" aria-label="Filter events">
+    <mat-form-field class="filters__name" appearance="outline" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <mat-label>Event name</mat-label>
+      <input matInput formControlName="name" maxlength="200" autocomplete="off" />
+    </mat-form-field>
+
+    <mat-form-field class="filters__select" appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Category</mat-label>
+      <mat-select formControlName="categoryId" [panelWidth]="null">
+        <mat-option value="">All categories</mat-option>
+        @for (category of categoryOptions(); track category.publicId) {
+          <mat-option [value]="category.publicId">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="filters__select" appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Venue</mat-label>
+      <mat-select formControlName="locationId" [panelWidth]="null">
+        <mat-select-trigger>{{ venueName(filters.controls.locationId.value) }}</mat-select-trigger>
+        <mat-option value="">All venues</mat-option>
+        @for (venue of venueOptions(); track venue.publicId) {
+          <mat-option [value]="venue.publicId">
+            {{ venue.name }} <span class="filters__city">{{ venue.city }}</span>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>From</mat-label>
+      <input matInput type="date" formControlName="dateFrom" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>To</mat-label>
+      <input matInput type="date" formControlName="dateTo" [min]="filters.controls.dateFrom.value" />
+    </mat-form-field>
+
+    <mat-button-toggle-group
+      class="filters__period"
+      formControlName="period"
+      hideSingleSelectionIndicator
+      aria-label="When the events take place"
+    >
+      <mat-button-toggle value="">All</mat-button-toggle>
+      <mat-button-toggle value="upcoming">Upcoming</mat-button-toggle>
+      <mat-button-toggle value="past">Past</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    @if (hasFilters()) {
+      <button mat-button type="button" class="filters__clear" (click)="clearFilters()">
+        <mat-icon>close</mat-icon>
+        Clear filters
+      </button>
+    }
+
+    @if (filters.hasError('dateRange')) {
+      <p class="filters__error" role="alert">The end date is before the start date.</p>
+    }
+  </form>
+
+  <div class="board" [class.board--busy]="loading() && result()" [attr.aria-busy]="loading()">
+    @if (loading() && result()) {
+      <mat-progress-bar class="board__progress" mode="indeterminate" />
+    }
+
+    @if (error(); as message) {
+      <div class="state state--error" role="alert">
+        <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+        <h2 class="state__title">Your events could not be loaded</h2>
+        <p class="state__text">{{ message }}</p>
+        <button mat-stroked-button type="button" (click)="retry()">
+          <mat-icon>refresh</mat-icon>
+          Try again
+        </button>
+      </div>
+    } @else {
+      @if (result(); as page) {
+        @if (page.totalCount === 0) {
+          <div class="state">
+            <span class="state__icon"><mat-icon>{{ hasFilters() ? 'filter_alt_off' : 'confirmation_number' }}</mat-icon></span>
+            @if (hasFilters()) {
+              <h2 class="state__title">No events match these filters</h2>
+              <p class="state__text">Try a wider date range or another venue.</p>
+              <button mat-stroked-button type="button" (click)="clearFilters()">Clear filters</button>
+            } @else {
+              <h2 class="state__title">No events yet</h2>
+              <p class="state__text">Create your first event and it will show up here.</p>
+              <a mat-flat-button routerLink="/organizer/events/new">
+                <mat-icon>add</mat-icon>
+                New event
+              </a>
+            }
+          </div>
+        } @else {
+          <div class="board__scroll">
+            <table
+              mat-table
+              class="events"
+              [dataSource]="page.items"
+              matSort
+              [matSortActive]="query().sortBy ?? 'date'"
+              [matSortDirection]="query().sortDescending ? 'desc' : 'asc'"
+              matSortDisableClear
+              (matSortChange)="sortChanged($event)"
+            >
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Event</th>
+                <td mat-cell *matCellDef="let event">
+                  <span class="events__name">{{ event.name }}</span>
+                  <span class="events__category">{{ event.categoryName }}</span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                <td mat-cell *matCellDef="let event">
+                  <span class="stub">
+                    <span class="stub__day">{{ event.date | date: 'd.' }}</span>
+                    <span class="stub__rest">
+                      <span>{{ event.date | date: 'M. y.' }}</span>
+                      <span class="stub__time">{{ event.date | date: 'HH:mm' }}</span>
+                    </span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="venue">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Venue</th>
+                <td mat-cell *matCellDef="let event" class="events__venue">{{ event.venueName }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="sold">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Sold</th>
+                <td mat-cell *matCellDef="let event">
+                  <span class="sold">
+                    <span class="sold__figures">
+                      <strong>{{ event.ticketsSold | number }}</strong> / {{ event.ticketsTotal | number }}
+                    </span>
+                    <span class="sold__track" aria-hidden="true">
+                      <span class="sold__fill" [style.width.%]="ticketsSoldShare(event)"></span>
+                    </span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Actions</span></th>
+                <td mat-cell *matCellDef="let event" class="events__actions">
+                  <a
+                    mat-icon-button
+                    class="action action--edit"
+                    [routerLink]="['/organizer/events', event.publicId, 'edit']"
+                    matTooltip="Edit"
+                    [attr.aria-label]="'Edit ' + event.name"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </a>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="action action--delete"
+                    matTooltip="Delete"
+                    [attr.aria-label]="'Delete ' + event.name"
+                    [disabled]="deletingId() === event.publicId"
+                    (click)="delete(event)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="columns"></tr>
+              <tr mat-row *matRowDef="let row; columns: columns"></tr>
+            </table>
+          </div>
+
+          <mat-paginator
+            class="board__paginator"
+            [length]="page.totalCount"
+            [pageIndex]="page.page - 1"
+            [pageSize]="page.pageSize"
+            [pageSizeOptions]="pageSizes"
+            (page)="pageChanged($event)"
+            aria-label="Choose a page of events"
+          />
+        }
+      } @else {
+        <div class="skeleton" aria-label="Loading your events">
+          @for (row of skeletonRows; track row) {
+            <div class="skeleton__row">
+              <span class="skeleton__bar skeleton__bar--wide"></span>
+              <span class="skeleton__bar"></span>
+              <span class="skeleton__bar"></span>
+              <span class="skeleton__bar skeleton__bar--short"></span>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>
