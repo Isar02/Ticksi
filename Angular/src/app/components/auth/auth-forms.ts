@@ -1,4 +1,4 @@
-import { AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Observable, catchError, map, of, switchMap, timer } from 'rxjs';
 import { ApiError } from '../../core/models/api-error';
 import { LoginRequest, RegisterRequest } from '../../models/auth.models';
@@ -19,30 +19,36 @@ export function createLoginForm() {
   });
 }
 
-export function createRegisterForm(isEmailAvailable: EmailCheck) {
-  const name = () =>
-    new FormControl('', {
-      nonNullable: true,
-      validators: [requiredText, trimmedMinLength(USER_LIMITS.nameMin), Validators.maxLength(USER_LIMITS.name)]
-    });
+export function nameControl() {
+  return new FormControl('', {
+    nonNullable: true,
+    validators: [requiredText, trimmedMinLength(USER_LIMITS.nameMin), Validators.maxLength(USER_LIMITS.name)]
+  });
+}
 
+export function phoneControl() {
+  return new FormControl('', {
+    nonNullable: true,
+    validators: [requiredText, Validators.pattern(PHONE_PATTERN), Validators.maxLength(USER_LIMITS.phone)]
+  });
+}
+
+export function newPasswordControl() {
+  return new FormControl('', { nonNullable: true, validators: [requiredText, Validators.minLength(USER_LIMITS.passwordMin)] });
+}
+
+export function createRegisterForm(isEmailAvailable: EmailCheck) {
   return new FormGroup({
-    firstName: name(),
-    lastName: name(),
+    firstName: nameControl(),
+    lastName: nameControl(),
     email: new FormControl('', {
       nonNullable: true,
       validators: [requiredText, apiEmail, Validators.maxLength(USER_LIMITS.email)],
       asyncValidators: emailAvailable(isEmailAvailable)
     }),
-    phone: new FormControl('', {
-      nonNullable: true,
-      validators: [requiredText, Validators.pattern(PHONE_PATTERN), Validators.maxLength(USER_LIMITS.phone)]
-    }),
-    password: new FormControl('', {
-      nonNullable: true,
-      validators: [requiredText, Validators.minLength(USER_LIMITS.passwordMin)]
-    }),
-    confirmPassword: new FormControl('', { nonNullable: true, validators: [requiredText, matchesPassword] })
+    phone: phoneControl(),
+    password: newPasswordControl(),
+    confirmPassword: new FormControl('', { nonNullable: true, validators: [requiredText, matches('password')] })
   });
 }
 
@@ -105,7 +111,9 @@ export function authErrorText(control: AbstractControl, label: string): string {
   return '';
 }
 
-function matchesPassword(control: AbstractControl<string>): ValidationErrors | null {
-  const password = control.parent?.get('password')?.value;
-  return control.value && password !== undefined && control.value !== password ? { passwordMismatch: true } : null;
+export function matches(passwordControl: string): ValidatorFn {
+  return (control: AbstractControl<string>): ValidationErrors | null => {
+    const password = control.parent?.get(passwordControl)?.value;
+    return control.value && password !== undefined && control.value !== password ? { passwordMismatch: true } : null;
+  };
 }

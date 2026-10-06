@@ -1,0 +1,7 @@
+@use '../profile-panel';
+
+@include profile-panel.styles;
+
+.email input {
+  color: var(--tk-muted);
+}

@@ -1,0 +1,37 @@
+@let state = outcome();
+
+<section class="profile">
+  <header class="head">
+    <p class="head__eyebrow"><mat-icon aria-hidden="true">badge</mat-icon>Profile</p>
+    <h1 class="head__title">Your profile</h1>
+    <p class="head__lede">Your details, and the password you sign in with.</p>
+  </header>
+
+  @if (state === null) {
+    <div class="layout" aria-busy="true" aria-label="Loading your profile">
+      <div class="skeleton skeleton--pass" aria-hidden="true"></div>
+      <div class="forms">
+        <div class="skeleton skeleton--details" aria-hidden="true"></div>
+        <div class="skeleton" aria-hidden="true"></div>
+      </div>
+    </div>
+  } @else if (state.kind === 'failed') {
+    <div class="state state--error" role="alert">
+      <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+      <h2 class="state__title">Your profile could not be loaded</h2>
+      <p class="state__text">{{ state.message }}</p>
+      <button mat-stroked-button type="button" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  } @else {
+    <div class="layout">
+      <app-profile-pass class="pass" [profile]="state.profile" />
+      <div class="forms">
+        <app-profile-details [profile]="state.profile" (saved)="saved($event)" style="--delay: 80ms" />
+        <app-profile-password (changed)="passwordChanged()" style="--delay: 140ms" />
+      </div>
+    </div>
+  }
+</section>

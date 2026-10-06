@@ -26,6 +26,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
+    path: 'profile',
+    canMatch: [authGuard],
+    loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent)
+  },
+  {
     path: 'favorites',
     canMatch: [authGuard],
     loadComponent: () => import('./components/favorites/favorites.component').then(m => m.FavoritesComponent)

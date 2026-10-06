@@ -103,9 +103,23 @@ $tooth: 10px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: var(--tk-radius-pill);
   color: var(--tk-ink);
   font-size: 14px;
   font-weight: 500;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+
+  &:hover,
+  &.is-active {
+    background: var(--tk-brand-soft);
+  }
+
+  &.is-active .navbar__avatar {
+    background: var(--tk-brand);
+    color: #fff;
+  }
 }
 
 .navbar__avatar {
@@ -191,6 +205,10 @@ $tooth: 10px;
 
   .navbar__name {
     display: none;
+  }
+
+  .navbar__user {
+    padding: 4px;
   }
 
   .navbar__button {

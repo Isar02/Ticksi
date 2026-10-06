@@ -1,0 +1,104 @@
+@use '../shared/event-grid';
+
+@include event-grid.states;
+
+:host {
+  display: block;
+  padding: 32px 20px 64px;
+  color: var(--tk-ink);
+}
+
+.profile {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.head {
+  padding-bottom: 24px;
+  border-bottom: 2px dashed var(--tk-perforation);
+}
+
+.head__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--tk-brand);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.head__title {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.head__lede {
+  margin: 8px 0 0;
+  color: var(--tk-muted);
+  font-size: 15px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 28px;
+}
+
+.pass {
+  position: sticky;
+  top: 24px;
+}
+
+.forms {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeleton {
+  min-height: 300px;
+  border-radius: var(--tk-radius-lg);
+  background: linear-gradient(90deg, var(--tk-line) 25%, var(--tk-surface-sunk) 50%, var(--tk-line) 75%) 0 0 / 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+
+  &--pass {
+    min-height: 460px;
+  }
+
+  &--details {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pass {
+    position: static;
+  }
+
+  .head__title {
+    font-size: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation-duration: 0s;
+  }
+}

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContextToken } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, firstValueFrom, from, map, shareReplay, throwError, timeout } from 'rxjs';
@@ -9,6 +9,7 @@ import { ApiError } from '../core/models/api-error';
 import { Role } from '../core/models/role';
 import { ToastService } from '../core/services/toast.service';
 import { AuthResponse, LoginRequest, RegisterRequest, UserInfo } from '../models/auth.models';
+import { PasswordChange } from '../models/profile.model';
 
 // The id is given at sign-in and kept through token rotation, so a new sign-in is never mistaken for a rotation.
 interface StoredSession {
@@ -28,6 +29,9 @@ const SESSION_KEY = 'ticksi_session';
 const REFRESH_LOCK = 'ticksi_session_refresh';
 const REFRESH_REQUEST_TIMEOUT_MS = 15_000;
 const SESSION_EXPIRED_MESSAGE = 'Your session has expired. Please sign in again.';
+
+// For a request sent with a token chosen here, while the refresh lock is held.
+export const OWN_ACCESS_TOKEN = new HttpContextToken<boolean>(() => false);
 
 @Injectable({
   providedIn: 'root'
@@ -101,6 +105,29 @@ export class AuthService {
     }
 
     return this.refreshInFlight.accessToken$;
+  }
+
+  // The change revokes every refresh token, so no tab may send one until the new session is stored.
+  changePassword(change: PasswordChange): Observable<void> {
+    const sessionId = this.sessionId();
+    return sessionId
+      ? from(navigator.locks.request(REFRESH_LOCK, () => this.changePasswordOnce(sessionId, change)))
+      : throwError(() => sessionChanged());
+  }
+
+  // Under the refresh lock, so a refresh in another tab cannot write the old name back.
+  renameUser(firstName: string): void {
+    const sessionId = this.sessionId();
+    void navigator.locks.request(REFRESH_LOCK, () => {
+      const stored = parseSession(localStorage.getItem(SESSION_KEY));
+      if (!sessionId || stored?.id !== sessionId) {
+        return;
+      }
+
+      const renamed: StoredSession = { ...stored, user: { ...stored.user, firstName } };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(renamed));
+      this.session.set(renamed);
+    });
   }
 
   extendSession(): Observable<void> {
@@ -185,6 +212,40 @@ export class AuthService {
 
     this.startSession(response, original.id);
     return response.accessToken;
+  }
+
+  private async changePasswordOnce(sessionId: string, change: PasswordChange): Promise<void> {
+    const stored = parseSession(localStorage.getItem(SESSION_KEY));
+    if (!stored || stored.id !== sessionId) {
+      throw sessionChanged();
+    }
+
+    let response: AuthResponse;
+    try {
+      response = await this.sendPasswordChange(stored.accessToken, change);
+    } catch (error) {
+      if (!(error instanceof ApiError && error.status === 401)) {
+        throw error;
+      }
+      response = await this.sendPasswordChange(await this.refreshOnce(stored), change);
+    }
+
+    // Another tab may have signed out or in before this tab heard of it, so storage decides too.
+    if (this.sessionId() !== sessionId || parseSession(localStorage.getItem(SESSION_KEY))?.id !== sessionId) {
+      this.revokeOnServer(response.refreshToken);
+      throw sessionChanged();
+    }
+
+    this.startSession(response, sessionId);
+  }
+
+  private sendPasswordChange(accessToken: string, change: PasswordChange): Promise<AuthResponse> {
+    return firstValueFrom(
+      this.http.put<AuthResponse>(`${environment.apiUrl}/profile/password`, change, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        context: withoutErrorToast().set(OWN_ACCESS_TOKEN, true)
+      }).pipe(timeout(REFRESH_REQUEST_TIMEOUT_MS))
+    );
   }
 
   private revokeOnServer(refreshToken: string): void {
