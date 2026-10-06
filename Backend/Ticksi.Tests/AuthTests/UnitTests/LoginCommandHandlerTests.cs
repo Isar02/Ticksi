@@ -25,7 +25,7 @@ public class LoginCommandHandlerTests : AuthHandlerTestBase
         var storedToken = Assert.Single(await RefreshTokensOfAsync(user));
         Assert.Equal(TokenService.HashRefreshToken(response.RefreshToken), storedToken.TokenHash);
         Assert.NotEqual(response.RefreshToken, storedToken.TokenHash);
-        Assert.Equal(Now.AddDays(7), storedToken.ExpiresAtUtc);
+        Assert.Equal(Now.AddMinutes(30), storedToken.ExpiresAtUtc);
     }
 
     [Theory]
