@@ -26,6 +26,7 @@ interface RefreshInFlight {
 
 const SESSION_KEY = 'ticksi_session';
 const REFRESH_LOCK = 'ticksi_session_refresh';
+const SESSION_EXPIRED_MESSAGE = 'Your session has expired. Please sign in again.';
 
 @Injectable({
   providedIn: 'root'
@@ -119,9 +120,14 @@ export class AuthService {
 
   // Runs under a lock shared by all tabs, so only one of them sends a given refresh token.
   private async refreshOnce(original: StoredSession): Promise<string> {
-    const stored = readStoredSession();
+    const stored = parseSession(localStorage.getItem(SESSION_KEY));
     if (!stored || stored.id !== original.id) {
       throw sessionChanged();
+    }
+
+    if (!(Date.parse(stored.refreshTokenExpiresAtUtc) > Date.now())) {
+      this.expireSession();
+      throw new ApiError(401, 'unauthorized', SESSION_EXPIRED_MESSAGE);
     }
 
     if (stored.refreshToken !== original.refreshToken) {
@@ -140,9 +146,7 @@ export class AuthService {
       );
     } catch (error) {
       if (error instanceof ApiError && error.status === 401 && isStored(original)) {
-        this.clearSession();
-        this.toast.info('Your session has expired. Please sign in again.');
-        this.router.navigateByUrl(loginUrl(this.router, this.router.url));
+        this.expireSession();
       }
       throw error;
     }
@@ -182,6 +186,12 @@ export class AuthService {
     localStorage.removeItem(SESSION_KEY);
     this.session.set(null);
   }
+
+  private expireSession(): void {
+    this.clearSession();
+    this.toast.info(SESSION_EXPIRED_MESSAGE);
+    this.router.navigateByUrl(loginUrl(this.router, this.router.url));
+  }
 }
 
 function sessionChanged(): Error {
@@ -189,7 +199,7 @@ function sessionChanged(): Error {
 }
 
 function isStored(session: StoredSession): boolean {
-  const stored = readStoredSession();
+  const stored = parseSession(localStorage.getItem(SESSION_KEY));
   return stored?.id === session.id && stored.refreshToken === session.refreshToken;
 }
 

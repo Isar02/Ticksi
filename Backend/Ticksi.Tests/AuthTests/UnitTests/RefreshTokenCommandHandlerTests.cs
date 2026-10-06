@@ -38,11 +38,24 @@ public class RefreshTokenCommandHandlerTests : AuthHandlerTestBase
     }
 
     [Fact]
-    public async Task Handle_ExpiredToken_ThrowsUnauthorized()
+    public async Task Handle_InsideTheIdleWindow_StartsAFreshWindow()
     {
         var user = await AddUserAsync();
         var token = await AddRefreshTokenAsync(user);
-        Clock.Advance(TimeSpan.FromDays(7));
+        Clock.Advance(TimeSpan.FromMinutes(29));
+
+        var response = await RefreshAsync(token);
+
+        Assert.Equal(Now.AddMinutes(30), response.RefreshTokenExpiresAtUtc);
+        Assert.Equal(Now.AddMinutes(30), (await RefreshTokenAsync(response.RefreshToken)).ExpiresAtUtc);
+    }
+
+    [Fact]
+    public async Task Handle_IdleWindowOver_ThrowsUnauthorized()
+    {
+        var user = await AddUserAsync();
+        var token = await AddRefreshTokenAsync(user);
+        Clock.Advance(TimeSpan.FromMinutes(30));
 
         await Assert.ThrowsAsync<UnauthorizedException>(() => RefreshAsync(token));
 
@@ -109,7 +122,7 @@ public class RefreshTokenCommandHandlerTests : AuthHandlerTestBase
             {
                 AppUserId = user.Id,
                 TokenHash = TokenService.HashRefreshToken(Guid.NewGuid().ToString("N")),
-                ExpiresAtUtc = Now.AddDays(7)
+                ExpiresAtUtc = Now.AddMinutes(30)
             });
             await other.SaveChangesAsync(cancellationToken);
         });

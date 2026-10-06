@@ -28,7 +28,7 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options, TimeProvider t
             accessExpiresAtUtc,
             refreshToken,
             HashRefreshToken(refreshToken),
-            now.AddDays(_jwt.RefreshTokenDays).UtcDateTime);
+            now.AddMinutes(_jwt.SessionIdleMinutes).UtcDateTime);
     }
 
     public string HashRefreshToken(string refreshToken) =>

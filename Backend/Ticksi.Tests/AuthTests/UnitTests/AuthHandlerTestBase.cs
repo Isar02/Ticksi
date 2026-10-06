@@ -25,7 +25,7 @@ public abstract class AuthHandlerTestBase
             Audience = "Ticksi.Tests",
             Key = "TestSigningKeyThatIsAtLeast32CharactersLong",
             AccessTokenMinutes = 15,
-            RefreshTokenDays = 7
+            SessionIdleMinutes = 30
         };
 
         TokenService = new JwtTokenService(Options.Create(jwt), Clock);
@@ -60,7 +60,7 @@ public abstract class AuthHandlerTestBase
         {
             AppUserId = user.Id,
             TokenHash = TokenService.HashRefreshToken(rawToken),
-            ExpiresAtUtc = Now.AddDays(7)
+            ExpiresAtUtc = Now.AddMinutes(30)
         };
 
         if (revokedAs is not null)

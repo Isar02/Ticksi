@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Ticksi.Application.DTOs;
 using Ticksi.Application.Features.Auth.Queries.CheckEmailAvailability;
+using Ticksi.Application.Interfaces;
 using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.AuthTests.IntegrationTests;
@@ -135,6 +137,35 @@ public class AuthApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFac
 
         await AssertErrorAsync(await RefreshAsync(session.RefreshToken), HttpStatusCode.Unauthorized, "unauthorized");
         await AssertErrorAsync(await RefreshAsync(rotated.RefreshToken), HttpStatusCode.Unauthorized, "unauthorized");
+    }
+
+    [Fact]
+    public async Task SignInAndRefresh_EachStartAThirtyMinuteIdleWindow()
+    {
+        var before = DateTime.UtcNow;
+        var session = await RegisterAsync(NewUser());
+        var refreshed = await (await RefreshAsync(session.RefreshToken)).Content.ReadFromJsonAsync<AuthResponseDto>();
+        var after = DateTime.UtcNow;
+
+        Assert.All([session.RefreshTokenExpiresAtUtc, refreshed!.RefreshTokenExpiresAtUtc], expiresAt =>
+            Assert.InRange(expiresAt, before.AddMinutes(30), after.AddMinutes(30)));
+    }
+
+    [Fact]
+    public async Task Refresh_AfterTheIdleWindow_Returns401()
+    {
+        var session = await RegisterAsync(NewUser());
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var tokenHash = scope.ServiceProvider.GetRequiredService<IJwtTokenService>().HashRefreshToken(session.RefreshToken);
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var stored = await context.RefreshTokens.SingleAsync(t => t.TokenHash == tokenHash);
+            stored.ExpiresAtUtc = DateTime.UtcNow.AddSeconds(-1);
+            await context.SaveChangesAsync();
+        }
+
+        await AssertErrorAsync(await RefreshAsync(session.RefreshToken), HttpStatusCode.Unauthorized, "unauthorized");
     }
 
     [Fact]
