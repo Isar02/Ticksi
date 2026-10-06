@@ -7,6 +7,7 @@ using Ticksi.Application.Options;
 using Ticksi.Infrastructure.Data;
 using Ticksi.Infrastructure.Data.Seeders;
 using Ticksi.Infrastructure.Options;
+using Ticksi.Infrastructure.Payments;
 using Ticksi.Infrastructure.Reports;
 using Ticksi.Infrastructure.Security;
 using Ticksi.Infrastructure.Services;
@@ -38,6 +39,10 @@ public static class DependencyInjection
                 "Seeding:DemoPassword is required when demo data is enabled.")
             .ValidateOnStart();
 
+        // Without keys the app still starts; only the payment calls fail until they are set in user secrets.
+        services.AddOptions<StripeOptions>()
+            .Bind(configuration.GetSection(StripeOptions.SectionName));
+
         services.AddDbContext<AppDbContext>((provider, options) =>
             options.UseSqlServer(provider.GetRequiredService<IOptions<ConnectionStringsOptions>>().Value.DefaultConnection));
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
@@ -49,6 +54,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
 
         services.AddSingleton<IReportRenderer, QuestPdfReportRenderer>();
+        services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
 
         return services;
     }

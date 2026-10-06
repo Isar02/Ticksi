@@ -13,6 +13,10 @@ public class OrderConfiguration : BaseEntityConfiguration<Order>
         builder.Property(o => o.TotalAmount)
             .HasPrecision(18, 2);
 
+        // Two requests paying the same order cannot both issue its tickets.
+        builder.Property(o => o.Status)
+            .IsConcurrencyToken();
+
         builder.HasOne(o => o.AppUser)
             .WithMany(u => u.Orders)
             .HasForeignKey(o => o.AppUserId)

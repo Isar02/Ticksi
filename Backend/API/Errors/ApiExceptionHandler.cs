@@ -30,6 +30,7 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
             ForbiddenException e => (StatusCodes.Status403Forbidden, new ErrorResponse("forbidden", e.Message, traceId)),
             NotFoundException e => (StatusCodes.Status404NotFound, new ErrorResponse("not_found", e.Message, traceId)),
             ConflictException e => (StatusCodes.Status409Conflict, new ErrorResponse("conflict", e.Message, traceId)),
+            PaymentGatewayException e => (StatusCodes.Status502BadGateway, new ErrorResponse("payment_unavailable", e.Message, traceId)),
             BadHttpRequestException e => (e.StatusCode,
                 new ErrorResponse("bad_request", "The request could not be processed.", traceId)),
             _ => (StatusCodes.Status500InternalServerError,

@@ -13,4 +13,5 @@ public class Order : BaseEntity
     public DateTime? PaidAtUtc { get; set; }
 
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+    public Payment? Payment { get; set; }
 }
