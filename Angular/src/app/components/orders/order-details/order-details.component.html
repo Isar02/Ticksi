@@ -1,0 +1,72 @@
+@let state = outcome();
+
+<section class="order">
+  @if (state === null) {
+    <div class="slip slip--skeleton" aria-busy="true" aria-label="Loading the order"></div>
+  } @else if (state.kind === 'missing') {
+    <div class="state">
+      <span class="state__icon"><mat-icon>receipt_long</mat-icon></span>
+      <h1 class="state__title">Order not found</h1>
+      <p class="state__text">This order does not exist or belongs to another account.</p>
+      <a mat-flat-button routerLink="/events">
+        <mat-icon>confirmation_number</mat-icon>
+        Browse events
+      </a>
+    </div>
+  } @else if (state.kind === 'failed') {
+    <div class="state state--error" role="alert">
+      <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+      <h1 class="state__title">The order could not be loaded</h1>
+      <p class="state__text">{{ state.message }}</p>
+      <button mat-stroked-button type="button" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  } @else {
+    @let item = state.order;
+
+    <header class="head">
+      <p class="head__eyebrow">Order <span class="head__number">#{{ orderNumber(item) }}</span></p>
+      <h1 class="head__title">Your tickets</h1>
+      <p class="head__meta">Placed {{ item.createdAtUtc | date: 'd. M. y. HH:mm' }}</p>
+    </header>
+
+    <article class="slip">
+      <div [class]="'slip__status slip__status--' + item.status.toLowerCase()">
+        <mat-icon aria-hidden="true">{{ item.status === 'Paid' ? 'check_circle' : item.status === 'Cancelled' ? 'block' : 'schedule' }}</mat-icon>
+        <div>
+          <strong>{{ statusLabel() }}</strong>
+          @if (item.status === 'Pending') {
+            <span>Your tickets are held under this order until it is paid.</span>
+          }
+        </div>
+      </div>
+
+      <ul class="slip__lines">
+        @for (line of item.items; track $index) {
+          <li class="line">
+            <div class="line__what">
+              <span class="line__event">{{ line.eventName }}</span>
+              <span class="line__meta">{{ line.eventDate | date: 'd. M. y. HH:mm' }} · {{ line.ticketTypeName }}</span>
+            </div>
+            <span class="line__count">{{ line.quantity }} × {{ line.unitPrice | currency }}</span>
+            <span class="line__sum">{{ line.quantity * line.unitPrice | currency }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="slip__tear" aria-hidden="true"></div>
+
+      <footer class="slip__total">
+        <span>{{ ticketCount() | number }} {{ ticketCount() === 1 ? 'ticket' : 'tickets' }}</span>
+        <strong>{{ item.totalAmount | currency }}</strong>
+      </footer>
+    </article>
+
+    <a mat-button class="back" routerLink="/events">
+      <mat-icon>arrow_back</mat-icon>
+      Back to events
+    </a>
+  }
+</section>

@@ -1,0 +1,3 @@
+@if (onSale()) {
+  <button mat-flat-button type="button" [attr.aria-label]="'Buy tickets: ' + event().name" (click)="buy()">Buy now</button>
+}

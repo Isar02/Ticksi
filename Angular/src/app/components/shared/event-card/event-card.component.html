@@ -26,6 +26,8 @@
         <mat-icon>{{ favorite() ? 'favorite' : 'favorite_border' }}</mat-icon>
       </button>
     }
+
+    <app-buy-button [event]="item" [overlay]="true" />
   </div>
 
   <div class="card__tear" aria-hidden="true"></div>

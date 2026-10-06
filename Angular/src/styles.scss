@@ -57,7 +57,8 @@ body {
 
 // Ticket-shaped dialogs draw their own shape and shadow.
 .cdk-overlay-pane.confirm-dialog-panel .mat-mdc-dialog-surface,
-.cdk-overlay-pane.report-dialog-panel .mat-mdc-dialog-surface {
+.cdk-overlay-pane.report-dialog-panel .mat-mdc-dialog-surface,
+.cdk-overlay-pane.buy-dialog-panel .mat-mdc-dialog-surface {
   background: transparent;
   box-shadow: none;
   overflow: visible;

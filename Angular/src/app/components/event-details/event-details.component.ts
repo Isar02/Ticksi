@@ -6,11 +6,12 @@ import { forkJoin } from 'rxjs';
 import { EventService } from '../../services/event.service';
 import { Event } from '../../models/event.model';
 import { EventImageGalleryComponent } from './event-image-gallery.component';
+import { BuyButtonComponent } from '../orders/buy-button/buy-button.component';
 
 @Component({
   selector: 'app-event-details',
   standalone: true,
-  imports: [CommonModule, RouterModule, EventImageGalleryComponent],
+  imports: [CommonModule, RouterModule, EventImageGalleryComponent, BuyButtonComponent],
   templateUrl: './event-details.component.html',
   styleUrl: './event-details.component.scss',
   

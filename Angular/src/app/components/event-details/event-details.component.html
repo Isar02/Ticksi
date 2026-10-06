@@ -19,6 +19,7 @@
       <div class="price-area">
         <div class="price" *ngIf="event.lowestPrice !== null">From {{ event.lowestPrice | currency }}</div>
         <div class="small">Tickets left: {{ event.availableTickets | number }}</div>
+        <app-buy-button class="buy" [event]="event" />
       </div>
     </header>
 

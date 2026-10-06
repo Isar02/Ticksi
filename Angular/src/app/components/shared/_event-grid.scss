@@ -1,5 +1,7 @@
 // Card grid with loading skeletons and empty or error states, shared by the catalogue and the favorites page.
 @mixin styles {
+  @include states;
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -43,6 +45,26 @@
     }
   }
 
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid__item {
+      animation: none;
+    }
+
+    .skeleton__poster,
+    .skeleton__line {
+      animation-duration: 0s;
+    }
+  }
+}
+
+// Empty and error states with the entrance and loading animations, for pages without the card grid.
+@mixin states {
   .state {
     display: flex;
     flex-direction: column;
@@ -95,23 +117,6 @@
   @keyframes shimmer {
     to {
       background-position: -200% 0;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .grid {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .grid__item {
-      animation: none;
-    }
-
-    .skeleton__poster,
-    .skeleton__line {
-      animation-duration: 0s;
     }
   }
 }
