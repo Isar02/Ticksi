@@ -25,6 +25,14 @@ public sealed class InMemoryDatabase
 
     private sealed class InMemoryAppDbContext(DbContextOptions options) : AppDbContext(options)
     {
+        public override async Task<IDbContextTransaction> BeginPasswordChangeAsync(Guid userPublicId, CancellationToken cancellationToken = default)
+        {
+            var transaction = await BeginTransactionAsync(cancellationToken);
+            foreach (var entry in ChangeTracker.Entries<AppUser>().Where(e => e.Entity.PublicId == userPublicId).ToList())
+                await entry.ReloadAsync(cancellationToken);
+            return transaction;
+        }
+
         public override Task<IDbContextTransaction> BeginUserAdministrationAsync(CancellationToken cancellationToken = default) =>
             BeginTransactionAsync(cancellationToken);
     }
