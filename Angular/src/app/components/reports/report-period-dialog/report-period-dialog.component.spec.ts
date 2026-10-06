@@ -7,10 +7,10 @@ import { Subject } from 'rxjs';
 import { ApiError } from '../../../core/models/api-error';
 import { ToastService } from '../../../core/services/toast.service';
 import { ReportPeriod, ReportService } from '../../../services/report.service';
-import { CategoryReportDialogComponent } from './category-report-dialog.component';
+import { ReportPeriodDialogComponent, ReportPeriodDialogData } from './report-period-dialog.component';
 
-describe('CategoryReportDialogComponent', () => {
-  let fixture: ComponentFixture<CategoryReportDialogComponent>;
+describe('ReportPeriodDialogComponent', () => {
+  let fixture: ComponentFixture<ReportPeriodDialogComponent>;
   let requests: ReportPeriod[];
   let response: Subject<Blob>;
   let downloads: string[];
@@ -26,31 +26,35 @@ describe('CategoryReportDialogComponent', () => {
     toasts = [];
     closedWith = [];
     dialogRef = { disableClose: false, close: result => closedWith.push(result) };
+  });
+
+  function open(data: Partial<ReportPeriodDialogData> = {}): void {
+    const report: ReportPeriodDialogData = {
+      kind: 'Sales report',
+      subject: 'Jazz Night',
+      message: 'Choose the days of sale the report counts.',
+      filename: 'sales-jazz-night-report.pdf',
+      download: period => {
+        requests.push(period);
+        response = new Subject<Blob>();
+        return response;
+      },
+      ...data
+    };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: LOCALE_ID, useValue: 'bs' },
-        { provide: MAT_DIALOG_DATA, useValue: { publicId: 'music-id', name: 'Live Music' } },
+        { provide: MAT_DIALOG_DATA, useValue: report },
         { provide: MatDialogRef, useValue: dialogRef },
-        {
-          provide: ReportService,
-          useValue: {
-            downloadEventsByCategoryReport: (_: string, period: ReportPeriod) => {
-              requests.push(period);
-              response = new Subject<Blob>();
-              return response;
-            },
-            triggerDownload: (_: Blob, filename: string) => downloads.push(filename),
-            generateFilename: () => 'events-live-music-report.pdf'
-          }
-        },
+        { provide: ReportService, useValue: { triggerDownload: (_: Blob, filename: string) => downloads.push(filename) } },
         { provide: ToastService, useValue: { error: (message: string) => toasts.push(message) } }
       ]
     });
 
-    fixture = TestBed.createComponent(CategoryReportDialogComponent);
+    fixture = TestBed.createComponent(ReportPeriodDialogComponent);
     fixture.detectChanges();
-  });
+  }
 
   function dialog(): HTMLElement {
     return fixture.nativeElement;
@@ -74,8 +78,21 @@ describe('CategoryReportDialogComponent', () => {
     fixture.detectChanges();
   }
 
+  it('names the report and its subject, with the detail only when there is one', () => {
+    open({ detail: '8. 10. 2026. · Zetra' });
+
+    expect(dialog().querySelector('.report__eyebrow')!.textContent).toContain('Sales report');
+    expect(dialog().querySelector('.report__title')!.textContent).toContain('Jazz Night');
+    expect(dialog().querySelector('.report__detail')!.textContent).toContain('8. 10. 2026. · Zetra');
+    expect(dialog().querySelector('.ticket__message')!.textContent).toContain('Choose the days of sale the report counts.');
+
+    TestBed.resetTestingModule();
+    open();
+    expect(dialog().querySelector('.report__detail')).toBeNull();
+  });
+
   it('describes the chosen period in the regional date format', () => {
-    expect(dialog().querySelector('.report__title')!.textContent).toContain('Live Music');
+    open();
     expect(covers()).toBe('All dates');
 
     setDates('2026-10-01', '');
@@ -89,6 +106,7 @@ describe('CategoryReportDialogComponent', () => {
   });
 
   it('asks for the period, then downloads the report and closes', () => {
+    open();
     setDates('2026-10-01', '2026-10-31');
     download();
 
@@ -99,11 +117,12 @@ describe('CategoryReportDialogComponent', () => {
     response.next(new Blob(['%PDF']));
     response.complete();
 
-    expect(downloads).toEqual(['events-live-music-report.pdf']);
+    expect(downloads).toEqual(['sales-jazz-night-report.pdf']);
     expect(closedWith).toEqual([true]);
   });
 
   it('blocks a range that ends before it starts', () => {
+    open();
     setDates('2026-10-31', '2026-10-01');
 
     expect(dialog().querySelector('.report__error')!.textContent).toContain('The end date is before the start date.');
@@ -114,11 +133,12 @@ describe('CategoryReportDialogComponent', () => {
   });
 
   it('shows a failure as a toast and stays open for another try', () => {
+    open();
     download();
-    response.error(new ApiError(404, 'not_found', 'Event category not found.'));
+    response.error(new ApiError(403, 'forbidden', 'You can only manage your own events.'));
     fixture.detectChanges();
 
-    expect(toasts).toEqual(['Event category not found.']);
+    expect(toasts).toEqual(['You can only manage your own events.']);
     expect(closedWith).toEqual([]);
     expect(downloadButton().disabled).toBeFalse();
     expect(dialogRef.disableClose).toBeFalse();

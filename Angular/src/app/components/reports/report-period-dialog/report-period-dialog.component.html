@@ -5,14 +5,15 @@
         <span class="material-icons">picture_as_pdf</span>
       </span>
       <div>
-        <p class="report__eyebrow">Events report</p>
-        <h2 id="report-dialog-title" class="report__title">{{ category.name }}</h2>
+        <p class="report__eyebrow">{{ report.kind }}</p>
+        <h2 id="report-dialog-title" class="report__title">{{ report.subject }}</h2>
+        @if (report.detail) {
+          <p class="report__detail">{{ report.detail }}</p>
+        }
       </div>
     </div>
 
-    <p id="report-dialog-message" class="ticket__message">
-      Choose the period the report covers. Leave a date empty to keep that side open.
-    </p>
+    <p id="report-dialog-message" class="ticket__message">{{ report.message }}</p>
 
     <div class="report__dates">
       <mat-form-field appearance="outline" subscriptSizing="dynamic">

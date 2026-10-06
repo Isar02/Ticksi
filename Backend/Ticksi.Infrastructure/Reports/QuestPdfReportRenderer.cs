@@ -14,4 +14,7 @@ public sealed class QuestPdfReportRenderer : IReportRenderer
 
     public byte[] RenderEventsByCategory(EventsByCategoryReport report) =>
         new EventsByCategoryReportDocument(report).GeneratePdf();
+
+    public byte[] RenderEventSales(EventSalesReport report) =>
+        new EventSalesReportDocument(report).GeneratePdf();
 }

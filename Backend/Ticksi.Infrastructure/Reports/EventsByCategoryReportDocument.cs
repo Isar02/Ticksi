@@ -16,43 +16,15 @@ public sealed class EventsByCategoryReportDocument : IDocument
 
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
 
-    public void Compose(IDocumentContainer container)
-    {
-        container
-            .Page(page =>
-            {
-                page.Margin(50);
-                page.Size(PageSizes.A4);
-                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+    public void Compose(IDocumentContainer container) =>
+        ReportLayout.Page(container, ComposeHeader, ComposeContent);
 
-                page.Header().Element(ComposeHeader);
-                page.Content().Element(ComposeContent);
-                page.Footer().Element(ComposeFooter);
-            });
-    }
-
-    private void ComposeHeader(IContainer container)
-    {
-        container.Column(column =>
-        {
-            column.Item().PaddingBottom(10).Column(col =>
-            {
-                col.Item().Text($"EVENTS REPORT - {_report.CategoryName.ToUpper(ReportFormat.Culture)}")
-                    .FontSize(16)
-                    .Bold()
-                    .FontColor(Colors.Blue.Darken2);
-
-                col.Item().PaddingTop(5).Text($"Period: {ReportFormat.Period(_report.DateFrom, _report.DateTo)}")
-                    .FontSize(10);
-
-                col.Item().PaddingTop(2).Text($"Generated: {ReportFormat.DateTime(_report.GeneratedAt.DateTime)}")
-                    .FontSize(9)
-                    .FontColor(Colors.Grey.Darken1);
-            });
-
-            column.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
-        });
-    }
+    private void ComposeHeader(IContainer container) =>
+        ReportLayout.Header(
+            container,
+            $"EVENTS REPORT - {_report.CategoryName.ToUpper(ReportFormat.Culture)}",
+            [$"Period: {ReportFormat.Period(_report.DateFrom, _report.DateTo)}"],
+            _report.GeneratedAt);
 
     private void ComposeContent(IContainer container)
     {
@@ -79,44 +51,25 @@ public sealed class EventsByCategoryReportDocument : IDocument
 
                 table.Header(header =>
                 {
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Event Name").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Date").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Location").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("From").FontColor(Colors.White).Bold();
+                    foreach (var title in new[] { "Event Name", "Date", "Location", "From" })
+                        header.Cell().Element(ReportLayout.HeaderCell).Text(title).FontColor(Colors.White).Bold();
                 });
 
-                var rowIndex = 0;
-                foreach (var eventItem in _report.Events)
+                foreach (var (eventItem, row) in _report.Events.Select((e, i) => (e, i)))
                 {
-                    var backgroundColor = rowIndex % 2 == 0 ? Colors.White : Colors.Grey.Lighten3;
-
-                    table.Cell().Background(backgroundColor).Padding(8).Text(eventItem.Name);
-                    table.Cell().Background(backgroundColor).Padding(8).Text(ReportFormat.DateTime(eventItem.Date));
+                    table.Cell().Element(cell => ReportLayout.BodyCell(cell, row)).Text(eventItem.Name);
+                    table.Cell().Element(cell => ReportLayout.BodyCell(cell, row)).Text(ReportFormat.DateTime(eventItem.Date));
 
                     var locationText = $"{eventItem.LocationName}\n{eventItem.City}\n{eventItem.Address}";
-                    table.Cell().Background(backgroundColor).Padding(8).Text(locationText).FontSize(9);
+                    table.Cell().Element(cell => ReportLayout.BodyCell(cell, row)).Text(locationText).FontSize(9);
 
-                    table.Cell().Background(backgroundColor).Padding(8).Text(ReportFormat.Price(eventItem.LowestPrice));
-
-                    rowIndex++;
+                    table.Cell().Element(cell => ReportLayout.BodyCell(cell, row)).Text(ReportFormat.Price(eventItem.LowestPrice));
                 }
             });
 
             column.Item().PaddingTop(20).Text($"Total Events: {_report.Events.Count}")
                 .Bold()
                 .FontSize(11);
-        });
-    }
-
-    private void ComposeFooter(IContainer container)
-    {
-        container.AlignCenter().Text(text =>
-        {
-            text.DefaultTextStyle(x => x.FontSize(9).FontColor(Colors.Grey.Darken1));
-            text.Span("Page ");
-            text.CurrentPageNumber();
-            text.Span(" of ");
-            text.TotalPages();
         });
     }
 }

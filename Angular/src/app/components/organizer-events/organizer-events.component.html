@@ -182,6 +182,16 @@
                   <button
                     mat-icon-button
                     type="button"
+                    class="action action--report"
+                    matTooltip="Sales report"
+                    [attr.aria-label]="'Sales report for ' + event.name"
+                    (click)="openSalesReport(event)"
+                  >
+                    <mat-icon>receipt_long</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    type="button"
                     class="action action--delete"
                     matTooltip="Delete"
                     [attr.aria-label]="'Delete ' + event.name"
