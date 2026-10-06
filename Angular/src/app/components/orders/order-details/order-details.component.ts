@@ -8,6 +8,7 @@ import { Subject, catchError, map, of, startWith, switchMap, tap } from 'rxjs';
 import { ApiError } from '../../../core/models/api-error';
 import { Order, OrderStatus } from '../../../models/order.model';
 import { OrderService } from '../../../services/order.service';
+import { OrderPaymentComponent } from '../order-payment/order-payment.component';
 
 type Outcome = { kind: 'loaded'; order: Order } | { kind: 'missing' } | { kind: 'failed'; message: string };
 
@@ -20,7 +21,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 @Component({
   selector: 'app-order-details',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, DecimalPipe, RouterLink, MatButtonModule, MatIconModule],
+  imports: [CurrencyPipe, DatePipe, DecimalPipe, RouterLink, MatButtonModule, MatIconModule, OrderPaymentComponent],
   templateUrl: './order-details.component.html',
   styleUrl: './order-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -64,6 +65,10 @@ export class OrderDetailsComponent {
 
   protected retry(): void {
     this.reload$.next();
+  }
+
+  protected showSettled(order: Order): void {
+    this.outcome.set({ kind: 'loaded', order });
   }
 
   protected orderNumber(order: Order): string {

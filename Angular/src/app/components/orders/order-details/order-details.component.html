@@ -39,6 +39,8 @@
           <strong>{{ statusLabel() }}</strong>
           @if (item.status === 'Pending') {
             <span>Your tickets are held under this order until it is paid.</span>
+          } @else if (item.status === 'Paid') {
+            <span>Your {{ ticketCount() | number }} {{ ticketCount() === 1 ? 'ticket is' : 'tickets are' }} issued.</span>
           }
         </div>
       </div>
@@ -63,6 +65,10 @@
         <strong>{{ item.totalAmount | currency }}</strong>
       </footer>
     </article>
+
+    @if (item.status === 'Pending') {
+      <app-order-payment [order]="item" (settled)="showSettled($event)" />
+    }
 
     <a mat-button class="back" routerLink="/events">
       <mat-icon>arrow_back</mat-icon>
