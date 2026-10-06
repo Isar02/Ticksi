@@ -1,0 +1,50 @@
+<section class="pay" aria-labelledby="pay-title">
+  <header class="pay__head">
+    <span class="pay__badge" aria-hidden="true"><mat-icon>credit_card</mat-icon></span>
+    <div class="pay__heading">
+      <h2 id="pay-title" class="pay__title">Pay by card</h2>
+      <p class="pay__hint">Your tickets are issued as soon as the payment goes through.</p>
+    </div>
+    <strong class="pay__amount">{{ order().totalAmount | currency }}</strong>
+  </header>
+
+  @if (failure(); as message) {
+    <div class="pay__failure" role="alert">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>
+      <p>{{ message }}</p>
+      <button mat-stroked-button type="button" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  }
+
+  <form class="pay__form" [hidden]="failure() !== null" (submit)="$event.preventDefault(); pay()">
+    <div class="pay__field" [class.pay__field--ready]="cardReady()" [attr.aria-busy]="!cardReady()">
+      <div class="pay__skeleton" aria-hidden="true">
+        <span class="pay__bone pay__bone--label"></span>
+        <span class="pay__bone pay__bone--input"></span>
+        <span class="pay__bone pay__bone--label"></span>
+        <span class="pay__bone pay__bone--input"></span>
+      </div>
+      <div #card class="pay__card"></div>
+    </div>
+
+    @if (refusal(); as message) {
+      <p class="pay__refusal" role="alert">{{ message }}</p>
+    }
+
+    <button mat-flat-button class="pay__button" type="submit" [class.pay__button--busy]="paying()" [disabled]="!canPay()">
+      @if (paying()) {
+        <span class="pay__label"><mat-spinner diameter="18" aria-hidden="true" />Paying…</span>
+      } @else {
+        <span class="pay__label"><mat-icon aria-hidden="true">lock</mat-icon>Pay {{ order().totalAmount | currency }}</span>
+      }
+    </button>
+
+    <p class="pay__note">
+      <mat-icon aria-hidden="true">verified_user</mat-icon>
+      Card details go straight to Stripe and never reach Ticksi.
+    </p>
+  </form>
+</section>

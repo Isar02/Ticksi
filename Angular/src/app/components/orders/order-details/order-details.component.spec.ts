@@ -1,4 +1,4 @@
-import { DEFAULT_CURRENCY_CODE, LOCALE_ID } from '@angular/core';
+import { Component, DEFAULT_CURRENCY_CODE, LOCALE_ID, input, output } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeBs from '@angular/common/locales/bs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -7,7 +7,14 @@ import { Subject, of } from 'rxjs';
 import { ApiError } from '../../../core/models/api-error';
 import { Order } from '../../../models/order.model';
 import { OrderService } from '../../../services/order.service';
+import { OrderPaymentComponent } from '../order-payment/order-payment.component';
 import { OrderDetailsComponent } from './order-details.component';
+
+@Component({ selector: 'app-order-payment', standalone: true, template: '' })
+class OrderPaymentStub {
+  readonly order = input.required<Order>();
+  readonly settled = output<Order>();
+}
 
 describe('OrderDetailsComponent', () => {
   let fixture: ComponentFixture<OrderDetailsComponent>;
@@ -47,6 +54,10 @@ describe('OrderDetailsComponent', () => {
         }
       ]
     });
+    TestBed.overrideComponent(OrderDetailsComponent, {
+      remove: { imports: [OrderPaymentComponent] },
+      add: { imports: [OrderPaymentStub] }
+    });
 
     fixture = TestBed.createComponent(OrderDetailsComponent);
     fixture.detectChanges();
@@ -78,13 +89,36 @@ describe('OrderDetailsComponent', () => {
     expect(text('.slip__total')).toContain('157,50');
   });
 
-  it('shows a paid order without the reservation note', () => {
+  it('shows a paid order with its issued tickets and no payment form', () => {
     order$.next({ ...order, status: 'Paid' });
     fixture.detectChanges();
 
     expect(page().querySelector('.slip__status--paid')).not.toBeNull();
     expect(text('.slip__status strong')).toBe('Paid');
-    expect(page().querySelector('.slip__status span')).toBeNull();
+    expect(text('.slip__status span')).toBe('Your 3 tickets are issued.');
+    expect(page().querySelector('app-order-payment')).toBeNull();
+  });
+
+  it('offers the payment of a pending order and shows it paid once settled', () => {
+    order$.next(order);
+    fixture.detectChanges();
+
+    const payment = fixture.debugElement.query(debug => debug.componentInstance instanceof OrderPaymentStub);
+    expect((payment.componentInstance as OrderPaymentStub).order()).toEqual(order);
+
+    (payment.componentInstance as OrderPaymentStub).settled.emit({ ...order, status: 'Paid' });
+    fixture.detectChanges();
+
+    expect(text('.slip__status strong')).toBe('Paid');
+    expect(page().querySelector('app-order-payment')).toBeNull();
+  });
+
+  it('shows no payment form for a cancelled order', () => {
+    order$.next({ ...order, status: 'Cancelled' });
+    fixture.detectChanges();
+
+    expect(text('.slip__status strong')).toBe('Cancelled');
+    expect(page().querySelector('app-order-payment')).toBeNull();
   });
 
   it('shows a not-found state for an unknown or foreign order', () => {

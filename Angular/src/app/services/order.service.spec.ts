@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Order } from '../models/order.model';
+import { Order, PaymentSession } from '../models/order.model';
 import { OrderService } from './order.service';
 
 describe('OrderService', () => {
@@ -37,5 +37,29 @@ describe('OrderService', () => {
     http.expectOne(request => request.url.endsWith('/orders/order-1')).flush({ ...order, createdAtUtc: '2026-10-06T09:33:12+02:00' });
 
     expect(loaded!.createdAtUtc).toBe('2026-10-06T09:33:12+02:00');
+  });
+
+  it('starts the payment of the order', () => {
+    let session: PaymentSession | undefined;
+    service.startPayment('order-1').subscribe(result => (session = result));
+
+    const request = http.expectOne(request => request.url.endsWith('/orders/order-1/payment'));
+    expect(request.request.method).toBe('POST');
+    const started: PaymentSession = { paid: false, clientSecret: 'pi_1_secret_2', publishableKey: 'pk_test_1', amount: 70, currency: 'BAM' };
+    request.flush(started);
+
+    expect(session).toEqual(started);
+  });
+
+  it('confirms the payment and reads the creation time as UTC', () => {
+    let confirmed: Order | undefined;
+    service.confirmPayment('order-1').subscribe(result => (confirmed = result));
+
+    const request = http.expectOne(request => request.url.endsWith('/orders/order-1/payment/confirm'));
+    expect(request.request.method).toBe('POST');
+    request.flush({ ...order, status: 'Paid' });
+
+    expect(confirmed!.status).toBe('Paid');
+    expect(confirmed!.createdAtUtc).toBe('2026-10-06T09:33:12.19Z');
   });
 });

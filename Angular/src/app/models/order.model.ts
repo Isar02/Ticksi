@@ -30,3 +30,11 @@ export interface Order {
   createdAtUtc: string;
   items: OrderItem[];
 }
+
+export interface PaymentSession {
+  paid: boolean;
+  clientSecret: string | null;
+  publishableKey: string | null;
+  amount: number;
+  currency: string;
+}

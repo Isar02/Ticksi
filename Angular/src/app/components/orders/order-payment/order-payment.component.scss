@@ -1,0 +1,213 @@
+:host {
+  display: block;
+  margin-top: 20px;
+  animation: pay-rise 420ms 160ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.pay {
+  overflow: hidden;
+  border-radius: var(--tk-radius-lg);
+  background: var(--tk-surface);
+  box-shadow: var(--tk-shadow-card);
+}
+
+.pay__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  border-bottom: 2px dashed var(--tk-perforation);
+}
+
+.pay__badge {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--tk-brand-soft);
+  color: var(--tk-brand);
+}
+
+.pay__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.pay__hint {
+  margin: 2px 0 0;
+  color: var(--tk-muted);
+  font-size: 14px;
+}
+
+.pay__amount {
+  font-size: 22px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay__form {
+  padding: 22px 24px 20px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+// Stripe's frame stays invisible under the skeleton until it reports ready, then fades in.
+.pay__field {
+  display: grid;
+  min-height: 150px;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+}
+
+.pay__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: opacity 0.2s ease;
+
+  .pay__field--ready & {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.pay__bone {
+  border-radius: var(--tk-radius-sm);
+  background: linear-gradient(90deg, var(--tk-line) 25%, var(--tk-surface-sunk) 50%, var(--tk-line) 75%) 0 0 / 200% 100%;
+  animation: pay-shimmer 1.4s linear infinite;
+
+  &--label {
+    width: 30%;
+    height: 12px;
+    margin-top: 6px;
+  }
+
+  &--input {
+    height: 44px;
+  }
+}
+
+.pay__card {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  .pay__field--ready & {
+    opacity: 1;
+  }
+}
+
+.pay__refusal,
+.pay__failure {
+  border-radius: var(--tk-radius-sm);
+  background: var(--tk-danger-soft);
+  color: var(--tk-danger-strong);
+  font-size: 14px;
+}
+
+.pay__refusal {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+}
+
+.pay__failure {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 24px;
+  padding: 14px 16px;
+
+  p {
+    margin: 0;
+    line-height: 1.45;
+  }
+}
+
+.pay__button {
+  --mdc-circular-progress-active-indicator-color: currentColor;
+  width: 100%;
+  height: 48px;
+  margin-top: 20px;
+  border-radius: var(--tk-radius-pill);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+
+  // While the card is being charged the button keeps its colour and only shows the spinner.
+  &--busy {
+    --mdc-filled-button-disabled-container-color: var(--tk-brand);
+    --mdc-filled-button-disabled-label-text-color: var(--tk-surface);
+  }
+}
+
+.pay__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.pay__note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  color: var(--tk-faint);
+  font-size: 13px;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .pay__head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .pay__amount {
+    grid-column: 1 / -1;
+  }
+
+  .pay__failure {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    button {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+@keyframes pay-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes pay-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .pay__bone {
+    animation: none;
+  }
+}
