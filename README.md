@@ -6,8 +6,8 @@ ASP.NET Core 8 Web API (Clean Architecture, CQRS with MediatR, EF Core, SQL Serv
 
 | Folder | Contents |
 |---|---|
-| `Backend/` | API, Application, Domain, Infrastructure and Tests projects (`TicksiApp.sln`) |
-| `Angular/` | Web application |
+| `backend/` | API, Application, Domain, Infrastructure and Tests projects (`TicksiApp.sln`) |
+| `frontend/` | Web application |
 | `dokumenti/` | ER diagram and class diagram (entities coloured by the sprint that added them) |
 | `db-backups/` | Zipped backup of the migrated and seeded database |
 
@@ -23,14 +23,14 @@ ASP.NET Core 8 Web API (Clean Architecture, CQRS with MediatR, EF Core, SQL Serv
 1. Add Stripe test keys from the Stripe dashboard as user secrets. Without them the application runs; only card payments fail.
 
    ```bash
-   dotnet user-secrets set "Stripe:SecretKey" "sk_test_..." --project Backend/API
-   dotnet user-secrets set "Stripe:PublishableKey" "pk_test_..." --project Backend/API
+   dotnet user-secrets set "Stripe:SecretKey" "sk_test_..." --project backend/API
+   dotnet user-secrets set "Stripe:PublishableKey" "pk_test_..." --project backend/API
    ```
 
 2. Start the API on `https://localhost:5001` (Swagger at `/swagger`). On start it applies the migrations to `TicksiDb` on LocalDB and, in Development and Staging, adds the demo data.
 
    ```bash
-   dotnet run --project Backend/API --launch-profile https
+   dotnet run --project backend/API --launch-profile https
    ```
 
    If the browser refuses the certificate, run `dotnet dev-certs https --trust` once.
@@ -38,7 +38,7 @@ ASP.NET Core 8 Web API (Clean Architecture, CQRS with MediatR, EF Core, SQL Serv
 3. Start the web application on `http://localhost:4200`.
 
    ```bash
-   cd Angular
+   cd frontend
    npm ci
    npm start
    ```
@@ -62,7 +62,7 @@ The API reads `appsettings.json`, then `appsettings.{Environment}.json`, then us
 | `FileUpload:EventPosterPath`, `FileUpload:CategoryPosterPath` | Upload folders under `wwwroot` | `images/events`, `images/categories` |
 | `Seeding:DemoData`, `Seeding:DemoPassword` | Demo data on start | on, `Demo123!` |
 
-The web application keeps the API address (`apiUrl`) and the event time zone (`eventTimeZone`) in `Angular/src/environments/`; `npm run build -- --configuration staging` or `production`, run in `Angular/`, picks the matching file.
+The web application keeps the API address (`apiUrl`) and the event time zone (`eventTimeZone`) in `frontend/src/environments/`; `npm run build -- --configuration staging` or `production`, run in `frontend/`, picks the matching file.
 
 ## Paying in test mode
 
@@ -91,12 +91,12 @@ In Development and Staging every demo account has the password `Demo123!`.
 ## Tests
 
 ```bash
-dotnet test Backend/TicksiApp.sln
+dotnet test backend/TicksiApp.sln
 ```
 
 Unit tests run on EF Core InMemory; integration tests run the API against temporary LocalDB databases that are removed afterwards.
 
 ```bash
-cd Angular
+cd frontend
 npm test -- --watch=false
 ```

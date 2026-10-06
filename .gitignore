@@ -392,7 +392,7 @@ FodyWeavers.xsd
 !.vscode/extensions.json
 *.code-workspace
 **/.vscode/
-Angular/.vscode/
+frontend/.vscode/
 
 # Local History for Visual Studio Code
 .history/
@@ -489,7 +489,7 @@ $RECYCLE.BIN/
 API/tickets.db*
 
 # Uploaded files (auto-created at runtime)
-Backend/API/wwwroot/images/
+backend/API/wwwroot/images/
 
 # Private working notes
 doc/
