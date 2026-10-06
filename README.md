@@ -8,6 +8,7 @@ ASP.NET Core 8 Web API (Clean Architecture, CQRS with MediatR, EF Core, SQL Serv
 |---|---|
 | `Backend/` | API, Application, Domain, Infrastructure and Tests projects (`TicksiApp.sln`) |
 | `Angular/` | Web application |
+| `dokumenti/` | ER diagram and class diagram (entities coloured by the sprint that added them) |
 
 ## Requirements
 
