@@ -8,6 +8,7 @@ using Ticksi.Infrastructure.Data;
 using Ticksi.Infrastructure.Data.Seeders;
 using Ticksi.Infrastructure.Options;
 using Ticksi.Infrastructure.Payments;
+using Ticksi.Infrastructure.QrCodes;
 using Ticksi.Infrastructure.Reports;
 using Ticksi.Infrastructure.Security;
 using Ticksi.Infrastructure.Services;
@@ -55,6 +56,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IReportRenderer, QuestPdfReportRenderer>();
         services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
+        services.AddSingleton<IQrCodeGenerator, QrCoderGenerator>();
 
         return services;
     }
