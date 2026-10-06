@@ -12,7 +12,7 @@ ASP.NET Core 8 Web API (Clean Architecture, CQRS with MediatR, EF Core, SQL Serv
 ## Requirements
 
 - .NET SDK 8 (pinned in `global.json`)
-- Node.js 20.11.1 or later, or 22 and later
+- Node.js 20 (20.11.1 or later) or 22 and later
 - SQL Server LocalDB, installed with Visual Studio, or any SQL Server with its connection string
 - Google Chrome for the web application's tests
 
