@@ -1,0 +1,95 @@
+@let list = offers();
+
+<form class="ticket" [formGroup]="quantities" (ngSubmit)="reserve()">
+  <div class="ticket__body">
+    <div class="buy__head">
+      <span class="ticket__badge" aria-hidden="true">
+        <span class="material-icons">confirmation_number</span>
+      </span>
+      <div>
+        <p class="buy__eyebrow">Buy tickets</p>
+        <h2 id="buy-dialog-title" class="buy__title">{{ event.name }}</h2>
+        <p class="buy__meta">{{ event.date | date: 'd. M. y. HH:mm' }} · {{ event.locationName }}</p>
+      </div>
+    </div>
+
+    @if (loadError(); as message) {
+      <div class="buy__state" role="alert">
+        <span>{{ message }}</span>
+        <button mat-stroked-button type="button" (click)="load()" [disabled]="loading()">
+          <mat-icon>refresh</mat-icon>
+          Try again
+        </button>
+      </div>
+    } @else if (!list) {
+      <div class="buy__state" aria-busy="true">
+        <mat-spinner diameter="28" aria-label="Loading the ticket types" />
+      </div>
+    } @else if (list.length === 0) {
+      <div class="buy__state">No tickets are on sale for this event.</div>
+    } @else {
+      <p id="buy-dialog-message" class="ticket__message">Choose up to 10 tickets of each type.</p>
+
+      @if (refusal(); as message) {
+        <p class="buy__refusal" role="alert">{{ message }}</p>
+      }
+
+      <ul class="buy__types" [attr.aria-busy]="loading()">
+        @for (offer of list; track offer.publicId) {
+          @let quantity = quantityOf(offer);
+          <li class="buy__type" [class.is-sold-out]="offer.available === 0" [class.is-picked]="quantity > 0">
+            <div class="buy__type-info">
+              <span class="buy__type-name">{{ offer.name }}</span>
+              <span class="buy__type-price">
+                @if (offer.price === 0) { Free } @else { {{ offer.price | currency }} }
+              </span>
+              @if (leftLabel(offer); as left) {
+                <span class="buy__type-left">{{ left }}</span>
+              }
+            </div>
+
+            <div class="buy__stepper" role="group" [attr.aria-label]="offer.name + ' tickets'">
+              <button
+                mat-icon-button
+                type="button"
+                [attr.aria-label]="'Fewer ' + offer.name + ' tickets'"
+                [disabled]="quantity === 0 || controlsLocked()"
+                (click)="change(offer, -1)"
+              >
+                <mat-icon>remove</mat-icon>
+              </button>
+              <output class="buy__quantity" aria-live="polite">{{ quantity }}</output>
+              <button
+                mat-icon-button
+                type="button"
+                [attr.aria-label]="'More ' + offer.name + ' tickets'"
+                [disabled]="quantity >= maxOf(offer) || controlsLocked()"
+                (click)="change(offer, 1)"
+              >
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <div class="ticket__stub">
+    <p class="buy__total" aria-live="polite">
+      <span class="buy__total-label">{{ ticketCount() | number }} {{ ticketCount() === 1 ? 'ticket' : 'tickets' }}</span>
+      <strong class="buy__total-value">{{ total() | currency }}</strong>
+    </p>
+    <button type="button" class="ticket__button ticket__button--cancel" [mat-dialog-close]="undefined" [disabled]="reserving()">
+      Cancel
+    </button>
+    <button type="submit" class="ticket__button ticket__button--confirm" [disabled]="!canReserve()">
+      @if (reserving()) {
+        <mat-spinner diameter="16" aria-hidden="true" />
+        Reserving…
+      } @else {
+        Reserve
+      }
+    </button>
+  </div>
+</form>

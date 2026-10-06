@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { withoutErrorToast } from '../core/interceptors/error.interceptor';
 import { CatalogueFilters, CatalogueQuery, Event, EventForEdit, EventFormOptions, EventInput, EventPoster, ManagedEvent, ManagedEventsQuery } from '../models/event.model';
+import { TicketTypeOffer } from '../models/order.model';
 
 export interface PagedResult<T> {
   items: T[];
@@ -37,6 +38,11 @@ export class EventService {
 
   getEventImages(eventId: string): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/${eventId}/images`);
+  }
+
+  // The buy dialog shows a load failure itself.
+  getTicketTypes(eventId: string): Observable<TicketTypeOffer[]> {
+    return this.http.get<TicketTypeOffer[]>(`${this.apiUrl}/${eventId}/ticket-types`, { context: withoutErrorToast() });
   }
 
   // The organizer screen shows load and delete failures itself.

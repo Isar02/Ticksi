@@ -75,6 +75,11 @@
   }
 
   .ticket__button {
+    --mdc-circular-progress-active-indicator-color: currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     height: 40px;
     padding: 0 22px;
     border-radius: var(--tk-radius-pill);
@@ -87,6 +92,11 @@
     &:focus-visible {
       outline: 2px solid var(--tone);
       outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      pointer-events: none;
     }
 
     &--cancel {

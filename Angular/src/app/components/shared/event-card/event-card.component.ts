@@ -5,11 +5,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Event } from '../../../models/event.model';
 import { EventService } from '../../../services/event.service';
+import { BuyButtonComponent } from '../../orders/buy-button/buy-button.component';
 
 @Component({
   selector: 'app-event-card',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, RouterLink, MatIconModule, MatTooltipModule],
+  imports: [CurrencyPipe, DatePipe, RouterLink, MatIconModule, MatTooltipModule, BuyButtonComponent],
   templateUrl: './event-card.component.html',
   styleUrl: './event-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

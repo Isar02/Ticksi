@@ -70,21 +70,8 @@
   color: var(--tk-danger);
 }
 
-.ticket__button {
-  --mdc-circular-progress-active-indicator-color: currentColor;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  .material-icons {
-    font-size: 18px;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    pointer-events: none;
-  }
+.ticket__button .material-icons {
+  font-size: 18px;
 }
 
 @media (max-width: 480px) {
