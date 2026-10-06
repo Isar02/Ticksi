@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
     public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
         Database.BeginTransactionAsync(cancellationToken);

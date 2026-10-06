@@ -23,6 +23,7 @@ namespace Ticksi.Application.Interfaces
         DbSet<Notification> Notifications { get; }
         DbSet<Favorite> Favorites { get; }
         DbSet<RefreshToken> RefreshTokens { get; }
+        DbSet<Payment> Payments { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
