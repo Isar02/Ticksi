@@ -12,6 +12,7 @@ using Ticksi.Application.Features.Events.Queries.GetEventById;
 using Ticksi.Application.Features.Events.Queries.GetEventForEdit;
 using Ticksi.Application.Features.Events.Queries.GetEventFormOptions;
 using Ticksi.Application.Features.Events.Queries.GetEventImages;
+using Ticksi.Application.Features.Events.Queries.GetEventTicketTypes;
 using Ticksi.Application.Features.Events.Queries.GetEvents;
 using Ticksi.Application.Features.Events.Queries.GetManagedEvents;
 using Ticksi.Domain.Entities;
@@ -60,6 +61,16 @@ namespace API.Controllers
             );
 
             return Ok(result);
+        }
+
+        [HttpGet("{eventId:guid}/ticket-types")]
+        [ProducesResponseType(typeof(List<EventTicketTypeDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<List<EventTicketTypeDto>>> GetTicketTypes(
+            Guid eventId,
+            CancellationToken cancellationToken)
+        {
+            return Ok(await _mediator.Send(new GetEventTicketTypesQuery(eventId), cancellationToken));
         }
 
         // GET event by ID

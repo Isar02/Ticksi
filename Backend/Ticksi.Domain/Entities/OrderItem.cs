@@ -12,4 +12,9 @@ public class OrderItem : BaseEntity
     public decimal UnitPrice { get; set; }
 
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+
+    public static class Constraints
+    {
+        public const int MaxQuantity = 10;
+    }
 }

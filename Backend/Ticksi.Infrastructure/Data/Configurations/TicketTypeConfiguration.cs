@@ -21,7 +21,10 @@ public class TicketTypeConfiguration : BaseEntityConfiguration<TicketType>
         builder.Property(t => t.Price)
             .HasPrecision(18, 2);
 
-        // Two buyers taking the last tickets at once: the second save fails instead of overselling.
+        // Reservations retry if another buyer reserves or the organizer changes the total quantity.
+        builder.Property(t => t.Quantity)
+            .IsConcurrencyToken();
+
         builder.Property(t => t.QuantityReserved)
             .IsConcurrencyToken();
 
