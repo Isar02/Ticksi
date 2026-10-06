@@ -1,0 +1,17 @@
+@let current = state();
+
+@switch (current.kind) {
+  @case ('ready') {
+    <img class="qr__image" [src]="current.url" [alt]="'QR code for ticket ' + code()" width="168" height="168" />
+  }
+  @case ('failed') {
+    <div class="qr__failed" role="alert">
+      <mat-icon aria-hidden="true">qr_code_2</mat-icon>
+      <span>QR code unavailable</span>
+      <button type="button" class="qr__retry" (click)="retry()">Try again</button>
+    </div>
+  }
+  @default {
+    <div class="qr__loading" aria-busy="true" aria-label="Loading the QR code"></div>
+  }
+}

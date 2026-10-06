@@ -87,6 +87,7 @@ describe('OrderDetailsComponent', () => {
     expect(text('.line__count')).toContain('2 × 35,00');
     expect(text('.slip__total')).toContain('3 tickets');
     expect(text('.slip__total')).toContain('157,50');
+    expect(page().querySelector('a[href="/tickets"]')).toBeNull();
   });
 
   it('shows a paid order with its issued tickets and no payment form', () => {
@@ -97,6 +98,7 @@ describe('OrderDetailsComponent', () => {
     expect(text('.slip__status strong')).toBe('Paid');
     expect(text('.slip__status span')).toBe('Your 3 tickets are issued.');
     expect(page().querySelector('app-order-payment')).toBeNull();
+    expect(page().querySelector('.actions a[href="/tickets"]')!.textContent).toContain('View my tickets');
   });
 
   it('offers the payment of a pending order and shows it paid once settled', () => {

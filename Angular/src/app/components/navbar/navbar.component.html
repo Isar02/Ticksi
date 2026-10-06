@@ -9,6 +9,7 @@
       <a routerLink="/categories" routerLinkActive="is-active" class="navbar__link">Categories</a>
       @if (user()) {
         <a routerLink="/favorites" routerLinkActive="is-active" class="navbar__link">Favorites</a>
+        <a routerLink="/tickets" routerLinkActive="is-active" class="navbar__link">My tickets</a>
       }
       @if (canManage()) {
         <span class="navbar__divider" aria-hidden="true"></span>

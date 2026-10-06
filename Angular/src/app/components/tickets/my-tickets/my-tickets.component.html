@@ -1,0 +1,80 @@
+@let state = outcome();
+@let groups = wallet();
+
+<section class="wallet">
+  <header class="head">
+    <p class="head__eyebrow"><mat-icon aria-hidden="true">confirmation_number</mat-icon>Your wallet</p>
+    <h1 class="head__title">
+      My tickets
+      @if (ticketCount() > 0) {
+        <span class="head__count">{{ ticketCount() | number }}</span>
+      }
+    </h1>
+    <p class="head__lede">Show the QR code at the entrance. Each code lets one person in.</p>
+  </header>
+
+  @if (state === null) {
+    <div class="tickets" aria-busy="true" aria-label="Loading your tickets">
+      @for (skeleton of skeletons; track skeleton) {
+        <div class="ticket ticket--skeleton" aria-hidden="true"></div>
+      }
+    </div>
+  } @else if (state.kind === 'failed') {
+    <div class="state state--error" role="alert">
+      <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+      <h2 class="state__title">Your tickets could not be loaded</h2>
+      <p class="state__text">{{ state.message }}</p>
+      <button mat-stroked-button type="button" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  } @else if (groups && ticketCount() === 0) {
+    <div class="state">
+      <span class="state__icon"><mat-icon>local_activity</mat-icon></span>
+      <h2 class="state__title">No tickets yet</h2>
+      <p class="state__text">Pick an event, choose Buy now and pay by card. Your tickets and their QR codes appear here.</p>
+      <a mat-flat-button routerLink="/events">
+        <mat-icon>confirmation_number</mat-icon>
+        Browse events
+      </a>
+    </div>
+  } @else if (groups) {
+    @if (groups.upcoming.length > 0) {
+      <h2 class="section">Upcoming</h2>
+      @for (group of groups.upcoming; track group.eventId) {
+        <ng-container *ngTemplateOutlet="event; context: { $implicit: group, past: false }" />
+      }
+    }
+    @if (groups.past.length > 0) {
+      <h2 class="section section--past">Past events</h2>
+      @for (group of groups.past; track group.eventId) {
+        <ng-container *ngTemplateOutlet="event; context: { $implicit: group, past: true }" />
+      }
+    }
+  }
+</section>
+
+<ng-template #event let-group let-past="past">
+  <article class="event" [class.event--past]="past">
+    <header class="event__head">
+      <div class="event__date" aria-hidden="true">
+        <span class="event__day">{{ group.eventDate | date: 'd.' }}</span>
+        <span class="event__month">{{ group.eventDate | date: 'M. y.' }}</span>
+      </div>
+      <div class="event__what">
+        <h3 class="event__name"><a [routerLink]="['/event', group.eventId]">{{ group.eventName }}</a></h3>
+        <p class="event__meta">{{ group.eventDate | date: 'd. M. y. HH:mm' }} · {{ group.venueName }}, {{ group.venueCity }}</p>
+      </div>
+      <span class="event__count">{{ group.tickets.length | number }} {{ group.tickets.length === 1 ? 'ticket' : 'tickets' }}</span>
+    </header>
+
+    <ul class="tickets">
+      @for (ticket of group.tickets; track ticket.publicId; let index = $index) {
+        <li class="ticket" [style.--delay]="index * 60 + 'ms'">
+          <app-ticket-card [ticket]="ticket" [past]="past" />
+        </li>
+      }
+    </ul>
+  </article>
+</ng-template>

@@ -26,6 +26,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/favorites/favorites.component').then(m => m.FavoritesComponent)
   },
   {
+    path: 'tickets',
+    canMatch: [authGuard],
+    loadComponent: () => import('./components/tickets/my-tickets/my-tickets.component').then(m => m.MyTicketsComponent)
+  },
+  {
     path: 'orders/:id',
     canMatch: [authGuard],
     loadComponent: () => import('./components/orders/order-details/order-details.component').then(m => m.OrderDetailsComponent)
