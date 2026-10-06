@@ -25,6 +25,15 @@ public class OrderApiTests(TicksiApiFactory factory) : IClassFixture<TicksiApiFa
     }
 
     [Fact]
+    public async Task GetTicketTypes_EmptyEventId_Returns400OnTheEvent()
+    {
+        var response = await _client.GetAsync($"/api/events/{Guid.Empty}/ticket-types");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("Event is required.", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
     public async Task GetTicketTypes_UnknownEvent_Returns404()
     {
         var response = await _client.GetAsync($"/api/events/{Guid.NewGuid()}/ticket-types");

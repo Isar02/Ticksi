@@ -1,11 +1,12 @@
 using FluentValidation;
+using Ticksi.Application.Interfaces;
 using Ticksi.Domain.Entities;
 
 namespace Ticksi.Application.Features.Events.Commands;
 
 public abstract class EventInputValidator<T> : AbstractValidator<T> where T : EventInput
 {
-    protected EventInputValidator(TimeProvider timeProvider)
+    protected EventInputValidator(IEventClock eventClock)
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
@@ -23,7 +24,7 @@ public abstract class EventInputValidator<T> : AbstractValidator<T> where T : Ev
             .WithMessage("Contact cannot exceed {MaxLength} characters.");
 
         RuleFor(x => x.Date)
-            .GreaterThan(_ => timeProvider.GetUtcNow().UtcDateTime)
+            .GreaterThan(_ => eventClock.Now)
             .WithMessage("The event date must be in the future.");
 
         RuleFor(x => x.CategoryId).NotEmpty().WithMessage("Category is required.");

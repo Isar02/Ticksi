@@ -29,6 +29,11 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<EventOptions>()
+            .Bind(configuration.GetSection(EventOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddOptions<ConnectionStringsOptions>()
             .Bind(configuration.GetSection(ConnectionStringsOptions.SectionName))
             .ValidateDataAnnotations()
@@ -53,6 +58,7 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IEventClock, EventClock>();
 
         services.AddSingleton<IReportRenderer, QuestPdfReportRenderer>();
         services.AddSingleton<IPaymentGateway, StripePaymentGateway>();

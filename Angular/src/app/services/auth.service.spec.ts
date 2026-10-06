@@ -1,7 +1,6 @@
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
 import { Router, provideRouter } from '@angular/router';
 import { Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -9,7 +8,7 @@ import { authInterceptor } from '../core/interceptors/auth.interceptor';
 import { errorInterceptor } from '../core/interceptors/error.interceptor';
 import { ApiError } from '../core/models/api-error';
 import { ToastService } from '../core/services/toast.service';
-import { SessionTimeoutService } from '../core/services/session-timeout.service';
+import { SESSION_WARNING, SessionTimeoutService } from '../core/services/session-timeout.service';
 import { AuthResponse } from '../models/auth.models';
 import { AuthService } from './auth.service';
 
@@ -58,16 +57,15 @@ describe('AuthService session expiry', () => {
         provideRouter([]),
         { provide: ToastService, useValue: toast },
         {
-          provide: MatDialog,
-          useValue: {
-            open: () => {
+          provide: SESSION_WARNING,
+          useValue: () =>
+            Promise.resolve(() => {
               const closed = new Subject<void>();
               return {
                 close: () => { closeWarning(); closed.next(); },
                 afterClosed: () => closed
               };
-            }
-          }
+            })
         }
       ]
     });

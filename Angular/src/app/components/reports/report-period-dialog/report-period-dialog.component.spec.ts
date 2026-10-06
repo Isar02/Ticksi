@@ -121,6 +121,21 @@ describe('ReportPeriodDialogComponent', () => {
     expect(closedWith).toEqual([true]);
   });
 
+  it('shows the chosen dates in the regional format and reads typed ones', async () => {
+    open();
+    setDates('2026-10-01', '');
+    await fixture.whenStable();
+
+    const [from, to] = Array.from(dialog().querySelectorAll<HTMLInputElement>('input'));
+    expect(from.value).toBe('1. 10. 2026.');
+
+    to.value = '31. 10. 2026.';
+    to.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance['period'].getRawValue()).toEqual({ dateFrom: '2026-10-01', dateTo: '2026-10-31' });
+  });
+
   it('blocks a range that ends before it starts', () => {
     open();
     setDates('2026-10-31', '2026-10-01');

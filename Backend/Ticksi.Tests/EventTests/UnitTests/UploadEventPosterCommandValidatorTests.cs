@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Ticksi.Application.Common;
 using Ticksi.Application.Features.Events.Commands.UploadEventPoster;
 using Ticksi.Application.Options;
 using Ticksi.Tests.Common;
@@ -85,5 +85,5 @@ public class UploadEventPosterCommandValidatorTests
         Assert.Equal(["File", "PublicId"], missing.Errors.Select(e => e.PropertyName).Order());
     }
 
-    private static UploadEventPosterCommand Command(IFormFile file) => new() { PublicId = Guid.NewGuid(), File = file };
+    private static UploadEventPosterCommand Command(FileUpload file) => new() { PublicId = Guid.NewGuid(), File = file };
 }

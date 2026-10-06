@@ -25,7 +25,7 @@ public class OrderConcurrencyTests(TicksiApiFactory factory) : IClassFixture<Tic
 
         await using (var context = Context(connection, vipSoldElsewhere))
         {
-            var handler = new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System);
+            var handler = new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System, EventClocks.Utc(TimeProvider.System));
             await handler.Handle(new CreateOrderCommand
             {
                 Items =
@@ -51,7 +51,7 @@ public class OrderConcurrencyTests(TicksiApiFactory factory) : IClassFixture<Tic
         var (buyer, item, connection) = await AddBuyerAndEventAsync();
         var vip = item.TicketTypes.Single(t => t.Name == "VIP");
         await using var context = Context(connection, ChangeQuantityBeforeSave(connection, vip.Id, 1));
-        var handler = new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System);
+        var handler = new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System, EventClocks.Utc(TimeProvider.System));
 
         var error = await Assert.ThrowsAsync<ConflictException>(() =>
             handler.Handle(OrderFor(item), CancellationToken.None));
@@ -70,7 +70,7 @@ public class OrderConcurrencyTests(TicksiApiFactory factory) : IClassFixture<Tic
         var (buyer, item, connection) = await AddBuyerAndEventAsync();
         var vip = item.TicketTypes.Single(t => t.Name == "VIP");
         await using var context = Context(connection, ChangeQuantityBeforeSave(connection, vip.Id, 3));
-        var handler = new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System);
+        var handler = new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System, EventClocks.Utc(TimeProvider.System));
 
         var order = await handler.Handle(OrderFor(item), CancellationToken.None);
 

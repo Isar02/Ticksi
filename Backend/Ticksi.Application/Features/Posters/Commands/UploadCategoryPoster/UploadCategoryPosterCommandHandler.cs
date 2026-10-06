@@ -19,7 +19,9 @@ namespace Ticksi.Application.Features.Categories.Commands.UploadCategoryPoster
 
         public async Task<UploadCategoryPosterResponse> Handle(UploadCategoryPosterCommand request, CancellationToken cancellationToken)
         {
-            var url = await _fileStorageService.SaveFileAsync(request.File, _uploadOptions.CategoryPosterPath, cancellationToken);
+            await using var content = request.File.OpenReadStream();
+            var url = await _fileStorageService.SaveFileAsync(
+                content, Path.GetExtension(request.File.FileName), _uploadOptions.CategoryPosterPath, cancellationToken);
 
             return new UploadCategoryPosterResponse
             {

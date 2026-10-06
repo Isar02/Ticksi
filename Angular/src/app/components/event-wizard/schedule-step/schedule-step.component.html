@@ -25,13 +25,17 @@
 
   <mat-form-field>
     <mat-label>Date</mat-label>
-    <input matInput type="date" formControlName="date" [min]="today" />
+    <input matInput [matDatepicker]="datePicker" formControlName="date" [min]="today" placeholder="d. m. yyyy." />
+    <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+    <mat-datepicker #datePicker />
     <mat-error>{{ errorText(group().controls.date, 'Date') }}</mat-error>
   </mat-form-field>
 
   <mat-form-field>
     <mat-label>Start time</mat-label>
-    <input matInput type="time" formControlName="time" />
+    <input matInput formControlName="time" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="20:00" />
+    <mat-icon matIconSuffix aria-hidden="true">schedule</mat-icon>
+    <mat-hint>24-hour clock, e.g. 20:00</mat-hint>
     <mat-error>{{ errorText(group().controls.time, 'Start time') }}</mat-error>
   </mat-form-field>
 </div>

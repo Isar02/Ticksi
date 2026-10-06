@@ -2,11 +2,13 @@ import { ChangeDetectionStrategy, Component, DestroyRef, LOCALE_ID, computed, in
 import { formatDate } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DIALOG_DATA, MatDialogClose, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Observable } from 'rxjs';
+import { provideIsoDates } from '../../../core/dates/iso-date-adapter';
 import { ApiError } from '../../../core/models/api-error';
 import { ToastService } from '../../../core/services/toast.service';
 import { ReportPeriod, ReportService } from '../../../services/report.service';
@@ -24,7 +26,8 @@ export interface ReportPeriodDialogData {
 @Component({
   selector: 'app-report-period-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, MatDialogClose, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule],
+  imports: [ReactiveFormsModule, MatDatepickerModule, MatDialogClose, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule],
+  providers: [provideIsoDates()],
   templateUrl: './report-period-dialog.component.html',
   styleUrl: './report-period-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -42,7 +45,7 @@ export class ReportPeriodDialogComponent {
       dateFrom: new FormControl('', { nonNullable: true }),
       dateTo: new FormControl('', { nonNullable: true })
     },
-    { validators: endDateNotBeforeStart }
+    { validators: endDateNotBeforeStart() }
   );
 
   protected readonly downloading = signal(false);

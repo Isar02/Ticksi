@@ -5,6 +5,7 @@ using Ticksi.Application.Features.Orders.Commands.CreateOrder;
 using Ticksi.Application.Features.Orders.Queries.GetOrderById;
 using Ticksi.Domain.Enums;
 using Ticksi.Tests.EventTests.UnitTests;
+using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.OrderTests.UnitTests;
 
@@ -39,7 +40,7 @@ public class GetOrderByIdQueryHandlerTests : EventHandlerTestBase
     private async Task<OrderDto> CreateOrderAsync(AppUser buyer, Event item)
     {
         await using var context = Database.CreateContext();
-        var handler = new CreateOrderCommandHandler(context, SignedIn(buyer), new FakeTimeProvider(NextYear.AddMonths(-1)));
+        var handler = new CreateOrderCommandHandler(context, SignedIn(buyer), new FakeTimeProvider(NextYear.AddMonths(-1)), EventClocks.Utc(new FakeTimeProvider(NextYear.AddMonths(-1))));
         var vip = item.TicketTypes.Single(t => t.Name == "VIP").PublicId;
         return await handler.Handle(
             new CreateOrderCommand { Items = [new() { TicketTypeId = vip, Quantity = 2 }] },

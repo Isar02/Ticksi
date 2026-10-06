@@ -1,9 +1,8 @@
 import { signal } from '@angular/core';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
+import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { SESSION_WARNING_MS, SessionTimeoutService } from './session-timeout.service';
+import { SESSION_WARNING, SESSION_WARNING_MS, SessionTimeoutService } from './session-timeout.service';
 
 describe('SessionTimeoutService', () => {
   const minute = 60_000;
@@ -23,15 +22,14 @@ describe('SessionTimeoutService', () => {
       providers: [
         { provide: AuthService, useValue: { sessionExpiresAt: expiresAt, expireIfDue } },
         {
-          provide: MatDialog,
-          useValue: {
-            open: () => {
+          provide: SESSION_WARNING,
+          useValue: () =>
+            Promise.resolve(() => {
               const closed = new Subject<void>();
               const dialog = { close: jasmine.createSpy('close').and.callFake(() => closed.next()), closed };
               opened.push(dialog);
               return { close: dialog.close, afterClosed: () => closed };
-            }
-          }
+            })
         }
       ]
     });
@@ -87,6 +85,7 @@ describe('SessionTimeoutService', () => {
   it('closes the warning and stops counting when the user signs out', fakeAsync(() => {
     start();
     sessionEndsIn(1);
+    flushMicrotasks();
     expect(opened.length).toBe(1);
 
     expiresAt.set(null);
@@ -101,10 +100,30 @@ describe('SessionTimeoutService', () => {
     start();
     sessionEndsIn(1.5);
     sessionEndsIn(1);
+    flushMicrotasks();
 
     expect(opened.length).toBe(1);
     advance(minute);
     expect(expireIfDue).toHaveBeenCalledTimes(1);
+  }));
+
+  it('does not show a warning that finished loading after the session was extended', fakeAsync(() => {
+    let loaded!: () => void;
+    const open = () => {
+      opened.push({ close: jasmine.createSpy('close'), closed: new Subject<void>() });
+      return { close: () => {}, afterClosed: () => new Subject<void>() };
+    };
+    TestBed.overrideProvider(SESSION_WARNING, { useValue: () => new Promise(resolve => (loaded = () => resolve(open))) });
+    start();
+    sessionEndsIn(1);
+
+    sessionEndsIn(30);
+    loaded();
+    flushMicrotasks();
+
+    expect(opened.length).toBe(0);
+    advance(SESSION_WARNING_MS);
+    expect(expireIfDue).not.toHaveBeenCalled();
   }));
 
   it('checks the deadline again when a hidden tab becomes visible', fakeAsync(() => {

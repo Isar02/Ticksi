@@ -1,3 +1,4 @@
+using API.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin,Organizer")]
+[Authorize(Roles = ApiRoles.EventManagers)]
 public class ReportsController : ControllerBase
 {
     private readonly IMediator _mediator;

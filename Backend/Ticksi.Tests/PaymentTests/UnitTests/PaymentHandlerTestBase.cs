@@ -35,7 +35,7 @@ public abstract class PaymentHandlerTestBase : EventHandlerTestBase
         if (standard > 0) lines.Add(new() { TicketTypeId = TicketTypeId(item, "Standard"), Quantity = standard });
         if (vip > 0) lines.Add(new() { TicketTypeId = TicketTypeId(item, "VIP"), Quantity = vip });
 
-        var order = await new CreateOrderCommandHandler(context, SignedIn(buyer), _time)
+        var order = await new CreateOrderCommandHandler(context, SignedIn(buyer), _time, EventClocks.Utc(_time))
             .Handle(new CreateOrderCommand { Items = lines }, CancellationToken.None);
         return (buyer, order);
     }

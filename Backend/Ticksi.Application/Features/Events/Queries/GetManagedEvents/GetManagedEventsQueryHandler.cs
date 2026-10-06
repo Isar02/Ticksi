@@ -10,13 +10,13 @@ public class GetManagedEventsQueryHandler : IRequestHandler<GetManagedEventsQuer
 {
     private readonly IAppDbContext _context;
     private readonly ICurrentUser _currentUser;
-    private readonly TimeProvider _timeProvider;
+    private readonly IEventClock _eventClock;
 
-    public GetManagedEventsQueryHandler(IAppDbContext context, ICurrentUser currentUser, TimeProvider timeProvider)
+    public GetManagedEventsQueryHandler(IAppDbContext context, ICurrentUser currentUser, IEventClock eventClock)
     {
         _context = context;
         _currentUser = currentUser;
-        _timeProvider = timeProvider;
+        _eventClock = eventClock;
     }
 
     public async Task<PagedResult<ManagedEventDto>> Handle(GetManagedEventsQuery request, CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ public class GetManagedEventsQueryHandler : IRequestHandler<GetManagedEventsQuer
             events = events.Where(e => e.Date <= to);
         }
 
-        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var now = _eventClock.Now;
         if (string.Equals(request.Period, "upcoming", StringComparison.OrdinalIgnoreCase))
             events = events.Where(e => e.Date >= now);
         else if (string.Equals(request.Period, "past", StringComparison.OrdinalIgnoreCase))

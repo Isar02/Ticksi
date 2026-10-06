@@ -7,6 +7,8 @@ import { ApiError } from '../../../core/models/api-error';
 import { StripeLoader } from '../../../core/services/stripe-loader.service';
 import { Order, PaymentSession } from '../../../models/order.model';
 import { OrderService } from '../../../services/order.service';
+import { ConfirmDialogOptions } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { OrderPaymentComponent } from './order-payment.component';
 
 describe('OrderPaymentComponent', () => {
@@ -16,6 +18,8 @@ describe('OrderPaymentComponent', () => {
   let card: ReturnType<typeof fakeStripe>;
   let loaded: string[];
   let settled: Order[];
+  let questions: ConfirmDialogOptions[];
+  let answer: boolean;
 
   const order: Order = {
     publicId: '590d40e2-f31a-483b-9894-5118861eda63',
@@ -34,12 +38,23 @@ describe('OrderPaymentComponent', () => {
     card = fakeStripe();
     loaded = [];
     settled = [];
+    questions = [];
+    answer = true;
 
     TestBed.configureTestingModule({
       providers: [
         { provide: LOCALE_ID, useValue: 'bs' },
         { provide: DEFAULT_CURRENCY_CODE, useValue: 'BAM' },
         { provide: OrderService, useValue: { startPayment: () => start(), confirmPayment: () => confirm() } },
+        {
+          provide: ConfirmDialogService,
+          useValue: {
+            confirm: (options: ConfirmDialogOptions) => {
+              questions.push(options);
+              return of(answer);
+            }
+          }
+        },
         {
           provide: StripeLoader,
           useValue: {
@@ -53,9 +68,9 @@ describe('OrderPaymentComponent', () => {
     });
   });
 
-  async function render(): Promise<void> {
+  async function render(value: Order = order): Promise<void> {
     fixture = TestBed.createComponent(OrderPaymentComponent);
-    fixture.componentRef.setInput('order', order);
+    fixture.componentRef.setInput('order', value);
     fixture.componentInstance.settled.subscribe(result => settled.push(result));
     fixture.detectChanges();
     await settle();
@@ -121,6 +136,56 @@ describe('OrderPaymentComponent', () => {
     expect(settled.map(result => result.status)).toEqual(['Paid']);
   });
 
+  it('asks before charging, with the total, the tickets and every event once', async () => {
+    const line = { eventId: 'e1', eventName: 'Jazz Night', eventDate: '2026-11-08T20:00:00', ticketTypeName: 'Standard', quantity: 2, unitPrice: 50 };
+    await render({
+      ...order,
+      items: [line, { ...line, ticketTypeName: 'VIP', quantity: 1, unitPrice: 57.5 }, { ...line, eventId: 'e2', eventName: 'Rock Night', quantity: 1 }]
+    });
+    card.handlers['ready']();
+    fixture.detectChanges();
+
+    await pay();
+
+    expect(card.elements.submit).toHaveBeenCalledBefore(card.stripe.confirmPayment);
+    // The locale puts a no-break space between the amount and the currency.
+    expect(questions).toEqual([{
+      title: 'Pay 157,50 KM?',
+      message: 'Your card is charged 157,50 KM for 4 tickets to Jazz Night, Rock Night. A payment cannot be undone.',
+      confirmText: 'Pay 157,50 KM',
+      cancelText: 'Not yet'
+    }]);
+    expect(settled.map(result => result.status)).toEqual(['Paid']);
+  });
+
+  it('charges nothing and keeps the form open when the buyer is not ready yet', async () => {
+    answer = false;
+    await render();
+    card.handlers['ready']();
+    fixture.detectChanges();
+
+    await pay();
+
+    expect(questions.length).toBe(1);
+    expect(card.stripe.confirmPayment).not.toHaveBeenCalled();
+    expect(card.element.update).not.toHaveBeenCalled();
+    expect(payButton().disabled).toBeFalse();
+  });
+
+  it('leaves incomplete card fields to Stripe without asking', async () => {
+    await render();
+    card.handlers['ready']();
+    card.elements.submit.and.resolveTo({ error: { type: 'validation_error', message: 'Your card number is incomplete.' } });
+    fixture.detectChanges();
+
+    await pay();
+
+    expect(questions).toEqual([]);
+    expect(card.stripe.confirmPayment).not.toHaveBeenCalled();
+    expect(page().querySelector('.pay__refusal')).toBeNull();
+    expect(payButton().disabled).toBeFalse();
+  });
+
   it('lets the buyer try another card after a decline, which Stripe shows in the form', async () => {
     await render();
     card.handlers['ready']();
@@ -159,13 +224,52 @@ describe('OrderPaymentComponent', () => {
     expect(settled).toEqual([]);
   });
 
-  it('completes a free order without loading the card form', async () => {
-    start = () => of({ ...session, paid: true, clientSecret: null, publishableKey: null, amount: 0 });
+  it('issues free tickets only after the buyer clicks and confirms completion', async () => {
+    let requests = 0;
+    start = () => {
+      requests++;
+      return of({ ...session, paid: true, clientSecret: null, publishableKey: null, amount: 0 });
+    };
+    await render({ ...order, totalAmount: 0 });
+    expect(requests).toBe(0);
+    expect(settled).toEqual([]);
+    expect(text('.pay__button')).toContain('Complete order');
+    expect(page().querySelector('.pay__field')).toBeNull();
 
-    await render();
+    await pay();
 
+    expect(questions[0].title).toBe('Complete order?');
+    expect(requests).toBe(1);
     expect(loaded).toEqual([]);
     expect(settled.map(result => result.status)).toEqual(['Paid']);
+  });
+
+  it('leaves free orders pending when completion is declined', async () => {
+    let requests = 0;
+    start = () => { requests++; return of(session); };
+    answer = false;
+    await render({ ...order, totalAmount: 0 });
+    await pay();
+    expect(questions.length).toBe(1);
+    expect(requests).toBe(0);
+    expect(settled).toEqual([]);
+    expect(payButton().disabled).toBeFalse();
+  });
+
+  it('requires confirmation again after a failed free completion is retried', async () => {
+    let requests = 0;
+    start = () => { requests++; return throwError(() => new ApiError(502, 'unavailable', 'Please try again.')); };
+    await render({ ...order, totalAmount: 0 });
+    await pay();
+    expect(requests).toBe(1);
+    page().querySelector<HTMLButtonElement>('.pay__failure button')!.click();
+    await settle();
+    expect(requests).toBe(1);
+    answer = false;
+    await pay();
+    expect(questions.length).toBe(2);
+    expect(requests).toBe(1);
+    expect(settled).toEqual([]);
   });
 
   it('shows the order as it is now when it was paid meanwhile', async () => {
@@ -236,7 +340,10 @@ function fakeStripe() {
     update: jasmine.createSpy('update'),
     destroy: jasmine.createSpy('destroy')
   };
-  const elements = { create: jasmine.createSpy('create').and.returnValue(element) };
+  const elements = {
+    create: jasmine.createSpy('create').and.returnValue(element),
+    submit: jasmine.createSpy('submit').and.resolveTo({})
+  };
   const stripe = {
     elements: jasmine.createSpy('elements').and.returnValue(elements),
     confirmPayment: jasmine.createSpy('confirmPayment').and.resolveTo({})

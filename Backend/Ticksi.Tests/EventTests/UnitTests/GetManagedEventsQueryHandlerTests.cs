@@ -3,6 +3,7 @@ using Ticksi.Application.Common;
 using Ticksi.Application.Common.Exceptions;
 using Ticksi.Application.Features.Events.Queries.GetManagedEvents;
 using Ticksi.Domain.Enums;
+using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.EventTests.UnitTests;
 
@@ -111,6 +112,20 @@ public class GetManagedEventsQueryHandlerTests : EventHandlerTestBase
     }
 
     [Fact]
+    public async Task Handle_Period_UsesTheEventTimeZone()
+    {
+        var organizer = await AddUserAsync(Role.Names.Organizer);
+        var references = await AddReferencesAsync();
+        await AddEventAsync(organizer, references, name: "Lunch", date: new DateTime(2026, 10, 5, 13, 0, 0));
+        await AddEventAsync(organizer, references, name: "Dinner", date: new DateTime(2026, 10, 5, 19, 0, 0));
+        _timeZone = "Europe/Sarajevo";
+
+        var upcoming = await QueryAsync(organizer, new GetManagedEventsQuery { Period = "upcoming" });
+
+        Assert.Equal(["Dinner"], upcoming.Items.Select(e => e.Name));
+    }
+
+    [Fact]
     public async Task Handle_SortBySold_CountsOnlyPaidOrders()
     {
         var organizer = await AddUserAsync(Role.Names.Organizer);
@@ -143,10 +158,12 @@ public class GetManagedEventsQueryHandlerTests : EventHandlerTestBase
         Assert.Equal((5, 3), (result.TotalCount, result.TotalPages));
     }
 
+    private string _timeZone = "UTC";
+
     private async Task<PagedResult<ManagedEventDto>> QueryAsync(AppUser user, GetManagedEventsQuery query)
     {
         await using var context = Database.CreateContext();
-        var handler = new GetManagedEventsQueryHandler(context, SignedIn(user), new FakeTimeProvider(Today));
+        var handler = new GetManagedEventsQueryHandler(context, SignedIn(user), EventClocks.In(_timeZone, new FakeTimeProvider(Today)));
         return await handler.Handle(query, CancellationToken.None);
     }
 }

@@ -16,7 +16,8 @@ import { ROLE_DESCRIPTIONS, RoleOption, USER_LIMITS, UserAccount } from '../../m
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { applyServerErrors } from '../shared/form-rules';
-import { createUserForm, errorText, fillFromUser, toNewUserInput, toUserInput } from './user-form';
+import { authErrorText } from '../auth/auth-forms';
+import { createUserForm, fillFromUser, toNewUserInput, toUserInput } from './user-form';
 
 interface FormData {
   roles: RoleOption[];
@@ -56,7 +57,7 @@ export class UserFormComponent {
   protected readonly form = createUserForm(this.userId === null);
   protected readonly limits = USER_LIMITS;
   protected readonly descriptions = ROLE_DESCRIPTIONS;
-  protected readonly errorText = errorText;
+  protected readonly errorText = authErrorText;
 
   protected readonly loaded = signal<LoadOutcome>(null);
   protected readonly saving = signal(false);

@@ -1,3 +1,4 @@
+import { eventLocalNow, eventWallClockValue } from '../../core/dates/event-time';
 import { EventTickets, Ticket } from '../../models/ticket.model';
 
 export interface TicketWallet {
@@ -19,6 +20,7 @@ export function groupByEvent(tickets: Ticket[], now: Date): TicketWallet {
   }
 
   const all = [...groups.values()];
-  const isPast = (group: EventTickets) => new Date(group.eventDate).getTime() < now.getTime();
+  const currentTime = eventWallClockValue(eventLocalNow(now));
+  const isPast = (group: EventTickets) => eventWallClockValue(group.eventDate) < currentTime;
   return { upcoming: all.filter(group => !isPast(group)), past: all.filter(isPast).reverse() };
 }

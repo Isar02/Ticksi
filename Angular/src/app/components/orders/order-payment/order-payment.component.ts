@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DEFAULT_CURRENCY_CODE,
   DestroyRef,
   ElementRef,
+  LOCALE_ID,
   afterNextRender,
   computed,
   inject,
@@ -11,7 +13,7 @@ import {
   signal,
   viewChild
 } from '@angular/core';
-import { CurrencyPipe, DOCUMENT } from '@angular/common';
+import { CurrencyPipe, DOCUMENT, formatCurrency, getCurrencySymbol } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -21,6 +23,8 @@ import { ApiError } from '../../../core/models/api-error';
 import { StripeLoader } from '../../../core/services/stripe-loader.service';
 import { Order } from '../../../models/order.model';
 import { OrderService } from '../../../services/order.service';
+import { ConfirmDialogOptions } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 
 interface CardForm {
   stripe: Stripe;
@@ -46,6 +50,9 @@ export class OrderPaymentComponent {
   private readonly orders = inject(OrderService);
   private readonly stripeLoader = inject(StripeLoader);
   private readonly document = inject(DOCUMENT);
+  private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly locale = inject(LOCALE_ID);
+  private readonly currency = inject(DEFAULT_CURRENCY_CODE);
   private readonly cardHost = viewChild.required<ElementRef<HTMLElement>>('card');
 
   private form: CardForm | null = null;
@@ -53,12 +60,16 @@ export class OrderPaymentComponent {
 
   protected readonly cardReady = signal(false);
   protected readonly paying = signal(false);
+  private readonly confirming = signal(false);
   protected readonly failure = signal<string | null>(null);
   protected readonly refusal = signal<string | null>(null);
-  protected readonly canPay = computed(() => this.cardReady() && !this.paying() && this.failure() === null);
+  protected readonly free = computed(() => this.order().totalAmount === 0);
+  protected readonly canPay = computed(() => (this.free() || this.cardReady()) && !this.paying() && !this.confirming() && this.failure() === null);
 
   constructor() {
-    afterNextRender(() => this.start());
+    afterNextRender(() => {
+      if (!this.free()) void this.start();
+    });
     inject(DestroyRef).onDestroy(() => {
       this.destroyed = true;
       this.dropForm();
@@ -66,15 +77,22 @@ export class OrderPaymentComponent {
   }
 
   protected retry(): void {
-    this.start();
+    if (this.free()) this.failure.set(null);
+    else void this.start();
   }
 
   protected async pay(): Promise<void> {
     const form = this.form;
-    if (!form || !this.canPay()) return;
+    if (!this.canPay() || (!this.free() && !form)) return;
+
+    this.refusal.set(null);
+    if (!(await this.confirmed(form)) || this.destroyed) return;
 
     this.paying.set(true);
-    this.refusal.set(null);
+    if (!form) {
+      await this.start();
+      return;
+    }
     form.element.update({ readOnly: true });
 
     const { error } = await form.stripe.confirmPayment({
@@ -96,11 +114,49 @@ export class OrderPaymentComponent {
     await this.settle('Your card was charged, but the order could not be updated yet. Please try again.');
   }
 
+  // Stripe checks the card fields first, so the question is only asked for a card that can be charged.
+  private async confirmed(form: CardForm | null): Promise<boolean> {
+    this.confirming.set(true);
+    try {
+      if (form) {
+        const { error } = await form.elements.submit();
+        if (error) return false;
+      }
+      if (this.destroyed) return false;
+      return await firstValueFrom(this.confirmDialog.confirm(this.paymentQuestion()));
+    } finally {
+      this.confirming.set(false);
+    }
+  }
+
+  private paymentQuestion(): ConfirmDialogOptions {
+    const order = this.order();
+    const total = formatCurrency(order.totalAmount, this.locale, getCurrencySymbol(this.currency, 'wide', this.locale), this.currency);
+    const tickets = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    const events = [...new Set(order.items.map(item => item.eventName))].join(', ');
+    const description = `${tickets} ${tickets === 1 ? 'ticket' : 'tickets'} to ${events}`;
+
+    if (this.free()) {
+      return {
+        title: 'Complete order?',
+        message: `Your ${description} will be issued free of charge. Complete this order?`,
+        confirmText: 'Complete order',
+        cancelText: 'Not yet'
+      };
+    }
+
+    return {
+      title: `Pay ${total}?`,
+      message: `Your card is charged ${total} for ${description}. A payment cannot be undone.`,
+      confirmText: `Pay ${total}`,
+      cancelText: 'Not yet'
+    };
+  }
+
   private async start(): Promise<void> {
     this.dropForm();
     this.failure.set(null);
     this.refusal.set(null);
-    this.paying.set(false);
 
     try {
       const session = await firstValueFrom(this.orders.startPayment(this.order().publicId));
@@ -116,6 +172,8 @@ export class OrderPaymentComponent {
       // Paid or cancelled meanwhile, for example after the bank's check in another tab: show the order as it is now.
       if (error instanceof ApiError && error.status === 409) await this.settle(error.message);
       else this.failure.set(error instanceof ApiError ? error.message : FALLBACK_FAILURE);
+    } finally {
+      this.paying.set(false);
     }
   }
 

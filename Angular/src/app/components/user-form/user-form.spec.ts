@@ -1,6 +1,7 @@
 import { UserAccount } from '../../models/user.model';
 import { applyServerErrors } from '../shared/form-rules';
-import { createUserForm, errorText, fillFromUser, toNewUserInput, toUserInput } from './user-form';
+import { authErrorText as errorText } from '../auth/auth-forms';
+import { createUserForm, fillFromUser, toNewUserInput, toUserInput } from './user-form';
 
 describe('user form', () => {
   const account: UserAccount = {
@@ -31,8 +32,8 @@ describe('user form', () => {
     expect(messages).toEqual({
       firstName: 'First name must be at least 2 characters.',
       lastName: 'Last name is required.',
-      email: 'Enter a valid email address.',
-      phone: 'Enter a valid phone number.',
+      email: 'Invalid email format.',
+      phone: 'Please enter a valid phone number.',
       roleId: 'Role is required.',
       password: 'Password must be at least 6 characters.'
     });
@@ -90,7 +91,7 @@ describe('user form', () => {
 
     for (const email of ['not-an-email', '@example.com', 'local@', 'a@b@c']) {
       form.controls.email.setValue(email);
-      expect(errorText(form.controls.email, 'Email')).withContext(email).toBe('Enter a valid email address.');
+      expect(errorText(form.controls.email, 'Email')).withContext(email).toBe('Invalid email format.');
     }
   });
 

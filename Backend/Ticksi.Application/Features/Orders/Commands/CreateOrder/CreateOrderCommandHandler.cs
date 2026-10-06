@@ -15,12 +15,14 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly IAppDbContext _context;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly IEventClock _eventClock;
 
-    public CreateOrderCommandHandler(IAppDbContext context, ICurrentUser currentUser, TimeProvider timeProvider)
+    public CreateOrderCommandHandler(IAppDbContext context, ICurrentUser currentUser, TimeProvider timeProvider, IEventClock eventClock)
     {
         _context = context;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _eventClock = eventClock;
     }
 
     public async Task<OrderDto> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -42,13 +44,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         if (ticketTypes.Count != publicIds.Count)
             throw new NotFoundException(TicketTypeGone);
 
-        var nowUtc = _timeProvider.GetUtcNow().UtcDateTime;
-        var started = ticketTypes.Values.FirstOrDefault(t => t.Event!.Date <= nowUtc);
+        var started = ticketTypes.Values.FirstOrDefault(t => t.Event!.Date <= _eventClock.Now);
         if (started is not null)
             throw new ConflictException($"Ticket sales for \"{started.Event!.Name}\" have closed.");
 
         var lines = request.Items.Select(i => (TicketType: ticketTypes[i.TicketTypeId], i.Quantity)).ToList();
-        var orderId = await PlaceAsync(userId, lines, nowUtc, cancellationToken);
+        var orderId = await PlaceAsync(userId, lines, _timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
 
         return await _context.Orders
             .AsNoTracking()

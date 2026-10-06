@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+using Ticksi.Application.Common;
 
 namespace Ticksi.Tests.Common;
 
@@ -10,6 +10,6 @@ public static class TestImages
     public static readonly byte[] Webp = "RIFF$\0\0\0WEBPVP8 "u8.ToArray();
     public static readonly byte[] Text = "just some text, not an image"u8.ToArray();
 
-    public static IFormFile File(string fileName, byte[] content) =>
-        new FormFile(new MemoryStream(content), 0, content.Length, "file", fileName);
+    public static FileUpload File(string fileName, byte[] content) =>
+        new(fileName, content.Length, () => new MemoryStream(content));
 }

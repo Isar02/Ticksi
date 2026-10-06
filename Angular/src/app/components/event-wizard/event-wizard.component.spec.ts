@@ -46,7 +46,7 @@ describe('EventWizardComponent', () => {
 
   beforeEach(() => {
     jasmine.clock().install();
-    jasmine.clock().mockDate(new Date('2026-10-05T12:00:00'));
+    jasmine.clock().mockDate(new Date('2026-10-05T12:00:00+02:00'));
 
     update = new Subject<void>();
     posterUpload = new Subject<HttpEvent<EventPoster>>();
@@ -127,6 +127,17 @@ describe('EventWizardComponent', () => {
     expect(element.querySelector('mat-select[formControlName="categoryId"]')!.textContent).toContain('Archived theatre');
   });
 
+  it('shows a typed single-digit hour in both the live preview and the review', () => {
+    openStep(1);
+    const input = element.querySelector<HTMLInputElement>('input[formControlName="time"]')!;
+    input.value = '9:30';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(element.querySelector('.ticket__time')!.textContent).toBe('09:30');
+    openStep(4);
+    expect(element.querySelector('app-review-step')!.textContent).toContain('09:30');
+  });
+
   it('locks the form while saving, so an API error lands on the row that was sent', () => {
     openStep(4);
     clickNavButton('Save changes');
@@ -149,7 +160,7 @@ describe('EventWizardComponent', () => {
 
   it('checks the date again before saving, in case the event start has passed meanwhile', () => {
     openStep(4);
-    jasmine.clock().mockDate(new Date('2026-11-14T20:00:00'));
+    jasmine.clock().mockDate(new Date('2026-11-14T20:00:00+01:00'));
 
     clickNavButton('Save changes');
 
@@ -160,7 +171,7 @@ describe('EventWizardComponent', () => {
 
   it('checks the date again before moving on to the next step', () => {
     openStep(1);
-    jasmine.clock().mockDate(new Date('2026-11-14T20:00:00'));
+    jasmine.clock().mockDate(new Date('2026-11-14T20:00:00+01:00'));
 
     clickNavButton('Next');
 

@@ -31,8 +31,8 @@ public class UserCommandValidatorTests
 
         Assert.Equal("First name is required.", errors["FirstName"]);
         Assert.Equal("Last name must be at least 2 characters.", errors["LastName"]);
-        Assert.Equal("Enter a valid email address.", errors["Email"]);
-        Assert.Equal("Enter a valid phone number.", errors["Phone"]);
+        Assert.Equal("Invalid email format.", errors["Email"]);
+        Assert.Equal("Please enter a valid phone number.", errors["Phone"]);
         Assert.Equal("Role is required.", errors["RoleId"]);
         Assert.Equal("Password must be at least 6 characters.", errors["Password"]);
     }

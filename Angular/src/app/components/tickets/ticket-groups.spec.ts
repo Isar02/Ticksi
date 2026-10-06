@@ -2,7 +2,7 @@ import { Ticket } from '../../models/ticket.model';
 import { groupByEvent } from './ticket-groups';
 
 describe('groupByEvent', () => {
-  const now = new Date('2026-10-06T12:00:00');
+  const now = new Date('2026-10-06T12:00:00+02:00');
 
   function ticket(code: string, eventId: string, eventDate: string): Ticket {
     return {

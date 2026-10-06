@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+using Ticksi.Application.Common;
 
 namespace Ticksi.Application.Features.Events.Commands.UploadEventPoster;
 
@@ -6,13 +6,13 @@ internal static class ImageSignatures
 {
     private const int HeaderLength = 12;
 
-    public static async Task<bool> MatchesExtensionAsync(IFormFile file, CancellationToken cancellationToken)
+    public static async Task<bool> MatchesExtensionAsync(FileUpload file, CancellationToken cancellationToken)
     {
         var header = new byte[HeaderLength];
         await using var stream = file.OpenReadStream();
         var read = await stream.ReadAtLeastAsync(header, HeaderLength, throwOnEndOfStream: false, cancellationToken);
 
-        return Matches(Path.GetExtension(file.FileName).ToLowerInvariant(), header.AsSpan(0, read));
+        return Matches(file.Extension, header.AsSpan(0, read));
     }
 
     private static bool Matches(string extension, ReadOnlySpan<byte> header) => extension switch
