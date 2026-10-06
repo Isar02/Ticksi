@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { withoutErrorToast } from '../core/interceptors/error.interceptor';
+import { asUtcTime } from '../core/utils/utc-time';
 import { Order, OrderLineInput, PaymentSession } from '../models/order.model';
 
 // The buy dialog and the order page show their failures themselves.
@@ -30,8 +31,6 @@ export class OrderService {
   }
 }
 
-// The API sends the creation time in UTC without a zone, which the browser would read as local time.
 function withUtcTime(order: Order): Order {
-  const time = order.createdAtUtc;
-  return /(Z|[+-]\d\d:\d\d)$/.test(time) ? order : { ...order, createdAtUtc: `${time}Z` };
+  return { ...order, createdAtUtc: asUtcTime(order.createdAtUtc) };
 }

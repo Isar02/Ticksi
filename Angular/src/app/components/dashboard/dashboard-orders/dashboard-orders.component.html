@@ -1,0 +1,26 @@
+<section class="panel" aria-labelledby="orders-title">
+  <h2 id="orders-title" class="panel-title">Recent orders</h2>
+
+  @if (orders().length === 0) {
+    <p class="empty">No orders yet. Your purchases will show up here.</p>
+  } @else {
+    <ul class="orders">
+      @for (order of orders(); track order.orderId) {
+        <li>
+          <a class="order" [routerLink]="['/orders', order.orderId]">
+            <span [class]="'order__status order__status--' + order.status.toLowerCase()">{{ order.status }}</span>
+            <span class="order__text">
+              <span class="order__events" [title]="order.eventNames.join(', ')">{{ label(order.eventNames) }}</span>
+              <span class="order__meta">
+                {{ order.createdAtUtc | date: 'd. M. y. HH:mm' }} · {{ order.tickets }}
+                {{ order.tickets === 1 ? 'ticket' : 'tickets' }}
+              </span>
+            </span>
+            <span class="order__total">{{ order.totalAmount | currency }}</span>
+            <mat-icon class="order__arrow" aria-hidden="true">chevron_right</mat-icon>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>

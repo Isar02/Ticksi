@@ -1,0 +1,101 @@
+@use '../shared/event-grid';
+@use './dashboard-panel';
+
+@include event-grid.states;
+// The entrance animation comes with the shared states.
+@include dashboard-panel.panel($keyframes: false);
+@include dashboard-panel.tiles;
+
+:host {
+  display: block;
+  padding: 32px 20px 64px;
+  color: var(--tk-ink);
+}
+
+.board {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.head {
+  padding-bottom: 24px;
+  border-bottom: 2px dashed var(--tk-perforation);
+}
+
+.head__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--tk-brand);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.head__title {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.head__lede {
+  margin: 8px 0 0;
+  color: var(--tk-muted);
+  font-size: 15px;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 28px;
+}
+
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  > * {
+    flex: 1;
+  }
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.skeleton {
+  min-height: 95px;
+  border-radius: var(--tk-radius-lg);
+  background: linear-gradient(90deg, var(--tk-line) 25%, var(--tk-surface-sunk) 50%, var(--tk-line) 75%) 0 0 / 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+
+  &--next {
+    min-height: 210px;
+  }
+
+  &--wide {
+    grid-column: 1 / -1;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 760px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .head__title {
+    font-size: 30px;
+  }
+}

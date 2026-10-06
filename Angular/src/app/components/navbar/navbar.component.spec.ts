@@ -19,12 +19,14 @@ describe('NavbarComponent', () => {
     return [...fixture.nativeElement.querySelectorAll('.navbar__link')].map((link: HTMLElement) => link.getAttribute('href')!);
   }
 
-  it('shows the favorites and tickets links to signed-in visitors only', () => {
+  it('shows the dashboard, favorites and tickets links to signed-in visitors only', () => {
     user.set(null);
+    expect(links()).not.toContain('/dashboard');
     expect(links()).not.toContain('/favorites');
     expect(links()).not.toContain('/tickets');
 
     user.set({ firstName: 'Emir' });
+    expect(links()).toContain('/dashboard');
     expect(links()).toContain('/favorites');
     expect(links()).toContain('/tickets');
   });

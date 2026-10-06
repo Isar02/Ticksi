@@ -1,0 +1,60 @@
+@let figures = sales();
+
+<section class="sales" aria-labelledby="sales-title">
+  <header class="sales__head">
+    <h2 id="sales-title" class="sales__title">Sales</h2>
+    <span class="sales__scope">{{ figures.allEvents ? 'All events' : 'Your events' }}</span>
+    <a mat-button class="sales__link" routerLink="/organizer/events">
+      Manage events
+      <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+    </a>
+  </header>
+
+  <div class="figures">
+    <div class="panel tile tile--revenue">
+      <span class="tile__icon"><mat-icon aria-hidden="true">payments</mat-icon></span>
+      <span class="tile__value">{{ figures.revenue | currency }}</span>
+      <span class="tile__label">Revenue from paid orders</span>
+    </div>
+    <div class="panel tile" style="--delay: 40ms">
+      <span class="tile__icon"><mat-icon aria-hidden="true">local_activity</mat-icon></span>
+      <span class="tile__value">{{ figures.ticketsSold | number }}</span>
+      <span class="tile__label">Tickets sold</span>
+    </div>
+    <a class="panel tile" routerLink="/organizer/events" [queryParams]="{ period: 'upcoming' }" style="--delay: 80ms">
+      <span class="tile__icon"><mat-icon aria-hidden="true">event</mat-icon></span>
+      <span class="tile__value">{{ figures.upcomingEvents | number }}</span>
+      <span class="tile__label">Upcoming {{ figures.upcomingEvents === 1 ? 'event' : 'events' }}</span>
+      <mat-icon class="tile__arrow" aria-hidden="true">arrow_forward</mat-icon>
+    </a>
+    @if (figures.activeUsers !== null) {
+      <a class="panel tile" routerLink="/admin/users" style="--delay: 120ms">
+        <span class="tile__icon"><mat-icon aria-hidden="true">group</mat-icon></span>
+        <span class="tile__value">{{ figures.activeUsers | number }}</span>
+        <span class="tile__label">Active {{ figures.activeUsers === 1 ? 'user' : 'users' }}</span>
+        <mat-icon class="tile__arrow" aria-hidden="true">arrow_forward</mat-icon>
+      </a>
+    }
+  </div>
+
+  <section class="panel best" aria-labelledby="best-title">
+    <h3 id="best-title" class="panel-title">Best sellers</h3>
+    @if (figures.topEvents.length === 0) {
+      <p class="best__empty">No paid sales yet. Sold tickets will rank your events here.</p>
+    } @else {
+      <ol class="best__list">
+        @for (event of figures.topEvents; track event.eventId; let rank = $index) {
+          <li class="best__item">
+            <span class="best__rank">{{ rank + 1 }}</span>
+            <span class="best__text">
+              <a class="best__name" [routerLink]="['/event', event.eventId]">{{ event.name }}</a>
+              <span class="best__meta">{{ event.date | date: 'd. M. y.' }} · {{ event.revenue | currency }}</span>
+              <span class="best__bar" aria-hidden="true"><span class="best__fill" [style.width.%]="share(event)"></span></span>
+            </span>
+            <span class="best__sold"><strong>{{ event.ticketsSold | number }}</strong> sold</span>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+</section>

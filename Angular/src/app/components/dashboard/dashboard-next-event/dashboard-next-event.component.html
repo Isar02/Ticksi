@@ -1,0 +1,41 @@
+@if (event(); as next) {
+  <article class="next" aria-labelledby="next-title">
+    <div class="next__stub">
+      <span class="next__day">{{ next.date | date: 'd.' }}</span>
+      <span class="next__month">{{ next.date | date: 'M. y.' }}</span>
+      <span class="next__time">{{ next.date | date: 'HH:mm' }}</span>
+    </div>
+    <div class="next__body">
+      <p class="next__eyebrow">Next up</p>
+      <h2 id="next-title" class="next__title">
+        <a [routerLink]="['/event', next.eventId]">{{ next.name }}</a>
+      </h2>
+      <p class="next__venue">
+        <mat-icon aria-hidden="true">place</mat-icon>
+        {{ next.venueName }}, {{ next.venueCity }}
+      </p>
+      <div class="next__actions">
+        <span class="next__count">{{ next.tickets }} {{ next.tickets === 1 ? 'ticket' : 'tickets' }}</span>
+        <a mat-flat-button routerLink="/tickets">
+          <mat-icon>qr_code_2</mat-icon>
+          Show tickets
+        </a>
+      </div>
+    </div>
+  </article>
+} @else {
+  <article class="next next--empty" aria-labelledby="next-title">
+    <div class="next__stub" aria-hidden="true"><mat-icon>event_available</mat-icon></div>
+    <div class="next__body">
+      <p class="next__eyebrow">Next up</p>
+      <h2 id="next-title" class="next__title">Nothing coming up</h2>
+      <p class="next__venue">Find an event you like and your tickets will wait here.</p>
+      <div class="next__actions">
+        <a mat-flat-button routerLink="/events">
+          <mat-icon>search</mat-icon>
+          Browse events
+        </a>
+      </div>
+    </div>
+  </article>
+}

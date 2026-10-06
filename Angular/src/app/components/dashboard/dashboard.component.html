@@ -1,0 +1,56 @@
+@let state = outcome();
+
+<section class="board">
+  <header class="head">
+    <p class="head__eyebrow"><mat-icon aria-hidden="true">space_dashboard</mat-icon>Dashboard</p>
+    <h1 class="head__title">{{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}</h1>
+    <p class="head__lede">Your tickets, saved events and orders at a glance.</p>
+  </header>
+
+  @if (state === null) {
+    <div class="overview" aria-busy="true" aria-label="Loading your dashboard">
+      <div class="skeleton skeleton--next" aria-hidden="true"></div>
+      <div class="tiles">
+        <div class="skeleton" aria-hidden="true"></div>
+        <div class="skeleton" aria-hidden="true"></div>
+      </div>
+      <div class="skeleton skeleton--wide" aria-hidden="true"></div>
+    </div>
+  } @else if (state.kind === 'failed') {
+    <div class="state state--error" role="alert">
+      <span class="state__icon"><mat-icon>cloud_off</mat-icon></span>
+      <h2 class="state__title">Your dashboard could not be loaded</h2>
+      <p class="state__text">{{ state.message }}</p>
+      <button mat-stroked-button type="button" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  } @else {
+    @let dashboard = state.dashboard;
+    <div class="overview">
+      <app-dashboard-next-event [event]="dashboard.nextEvent" />
+
+      <div class="tiles">
+        <a class="panel tile" routerLink="/tickets" style="--delay: 80ms">
+          <span class="tile__icon"><mat-icon aria-hidden="true">confirmation_number</mat-icon></span>
+          <span class="tile__value">{{ dashboard.upcomingTickets | number }}</span>
+          <span class="tile__label">Upcoming {{ dashboard.upcomingTickets === 1 ? 'ticket' : 'tickets' }}</span>
+          <mat-icon class="tile__arrow" aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+        <a class="panel tile" routerLink="/favorites" style="--delay: 120ms">
+          <span class="tile__icon"><mat-icon aria-hidden="true">favorite</mat-icon></span>
+          <span class="tile__value">{{ dashboard.favorites | number }}</span>
+          <span class="tile__label">Saved {{ dashboard.favorites === 1 ? 'event' : 'events' }}</span>
+          <mat-icon class="tile__arrow" aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      </div>
+
+      <app-dashboard-orders class="wide" [orders]="dashboard.recentOrders" />
+    </div>
+
+    @if (dashboard.sales; as sales) {
+      <app-dashboard-sales [sales]="sales" />
+    }
+  }
+</section>
