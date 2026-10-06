@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { PagedResult } from '../../services/category.service';
 import { environment} from '../../../environments/environment';
-import { CategoryReportDialogService } from '../reports/category-report-dialog/category-report-dialog.service';
+import { ReportDialogService } from '../reports/report-dialog.service';
 
 
 
@@ -26,7 +26,7 @@ export class CategoriesComponent implements OnInit {
   constructor(
     private categoryService: CategoryService,
     private dialog: MatDialog,
-    private reportDialog: CategoryReportDialogService
+    private reportDialog: ReportDialogService
   ) {}
 
   ngOnInit(): void {
@@ -96,7 +96,7 @@ export class CategoriesComponent implements OnInit {
 }
 
   downloadReport(category: Category): void {
-    this.reportDialog.open(category);
+    this.reportDialog.openCategoryReport(category);
   }
 
 

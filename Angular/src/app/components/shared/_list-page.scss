@@ -172,6 +172,11 @@
       background: var(--tk-brand-soft);
     }
 
+    &--report:hover {
+      color: var(--tk-success);
+      background: var(--tk-success-soft);
+    }
+
     &--delete:hover {
       color: var(--tk-danger);
       background: var(--tk-danger-soft);

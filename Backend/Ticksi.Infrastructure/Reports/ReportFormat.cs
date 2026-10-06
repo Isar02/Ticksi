@@ -10,6 +10,8 @@ public static class ReportFormat
 
     public static string DateTime(DateTime value) => value.ToString("g", Culture);
 
+    public static string Count(int value) => value.ToString("N0", Culture);
+
     public static string Price(decimal? price) => price is { } value ? value.ToString("C", Culture) : "-";
 
     public static string Period(DateOnly? from, DateOnly? to) => (from, to) switch

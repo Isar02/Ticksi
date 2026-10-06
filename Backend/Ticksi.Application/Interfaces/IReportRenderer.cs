@@ -5,4 +5,6 @@ namespace Ticksi.Application.Interfaces;
 public interface IReportRenderer
 {
     byte[] RenderEventsByCategory(EventsByCategoryReport report);
+
+    byte[] RenderEventSales(EventSalesReport report);
 }

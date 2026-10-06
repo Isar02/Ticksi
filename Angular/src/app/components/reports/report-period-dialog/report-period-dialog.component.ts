@@ -6,27 +6,32 @@ import { MAT_DIALOG_DATA, MatDialogClose, MatDialogRef } from '@angular/material
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Observable } from 'rxjs';
 import { ApiError } from '../../../core/models/api-error';
 import { ToastService } from '../../../core/services/toast.service';
-import { ReportService } from '../../../services/report.service';
+import { ReportPeriod, ReportService } from '../../../services/report.service';
 import { endDateNotBeforeStart } from '../../shared/form-rules';
 
-export interface CategoryReportDialogData {
-  publicId: string;
-  name: string;
+export interface ReportPeriodDialogData {
+  kind: string;
+  subject: string;
+  detail?: string;
+  message: string;
+  filename: string;
+  download: (period: ReportPeriod) => Observable<Blob>;
 }
 
 @Component({
-  selector: 'app-category-report-dialog',
+  selector: 'app-report-period-dialog',
   standalone: true,
   imports: [ReactiveFormsModule, MatDialogClose, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule],
-  templateUrl: './category-report-dialog.component.html',
-  styleUrl: './category-report-dialog.component.scss',
+  templateUrl: './report-period-dialog.component.html',
+  styleUrl: './report-period-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CategoryReportDialogComponent {
-  protected readonly category = inject<CategoryReportDialogData>(MAT_DIALOG_DATA);
-  private readonly dialogRef = inject<MatDialogRef<CategoryReportDialogComponent, boolean>>(MatDialogRef);
+export class ReportPeriodDialogComponent {
+  protected readonly report = inject<ReportPeriodDialogData>(MAT_DIALOG_DATA);
+  private readonly dialogRef = inject<MatDialogRef<ReportPeriodDialogComponent, boolean>>(MatDialogRef);
   private readonly reports = inject(ReportService);
   private readonly toast = inject(ToastService);
   private readonly locale = inject(LOCALE_ID);
@@ -58,12 +63,12 @@ export class CategoryReportDialogComponent {
     if (this.period.invalid || this.downloading()) return;
 
     this.setDownloading(true);
-    this.reports
-      .downloadEventsByCategoryReport(this.category.publicId, this.period.getRawValue())
+    this.report
+      .download(this.period.getRawValue())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: blob => {
-          this.reports.triggerDownload(blob, this.reports.generateFilename(this.category.name));
+          this.reports.triggerDownload(blob, this.report.filename);
           this.dialogRef.close(true);
         },
         error: (error: ApiError) => {

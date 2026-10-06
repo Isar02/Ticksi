@@ -27,4 +27,17 @@ describe('ReportService', () => {
     ranged.flush(new Blob());
     open.flush(new Blob());
   });
+
+  it('asks for the sales report of the event with the period', () => {
+    service.downloadEventSalesReport('jazz-id', { dateFrom: '', dateTo: '2026-10-31' }).subscribe();
+
+    const request = http.expectOne(request => request.url.endsWith('/reports/event-sales/jazz-id'));
+    expect(request.request.params.keys()).toEqual(['dateTo']);
+    expect(request.request.responseType).toBe('blob');
+    request.flush(new Blob());
+  });
+
+  it('names the file after the kind of report and its subject', () => {
+    expect(service.generateFilename('sales', 'Jazz Night: Live!')).toBe('sales-jazz-night-live-report.pdf');
+  });
 });

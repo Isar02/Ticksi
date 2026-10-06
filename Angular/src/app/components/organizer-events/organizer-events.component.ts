@@ -23,6 +23,7 @@ import { EventPeriod, ManagedEvent, ManagedEventSort, ManagedEventsQuery, VenueO
 import { AuthService } from '../../services/auth.service';
 import { CategoryService } from '../../services/category.service';
 import { EventService, PagedResult } from '../../services/event.service';
+import { ReportDialogService } from '../reports/report-dialog.service';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
 import { PAGE_SIZES } from '../shared/list-params';
 import { readManagedEventsQuery, toManagedEventsParams } from './managed-events-url';
@@ -60,6 +61,7 @@ export class OrganizerEventsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly reportDialog = inject(ReportDialogService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly reload$ = new Subject<void>();
@@ -154,6 +156,10 @@ export class OrganizerEventsComponent {
 
   protected ticketsSoldShare(event: ManagedEvent): number {
     return event.ticketsTotal > 0 ? Math.min(100, (event.ticketsSold / event.ticketsTotal) * 100) : 0;
+  }
+
+  protected openSalesReport(event: ManagedEvent): void {
+    this.reportDialog.openEventSalesReport(event);
   }
 
   protected delete(event: ManagedEvent): void {

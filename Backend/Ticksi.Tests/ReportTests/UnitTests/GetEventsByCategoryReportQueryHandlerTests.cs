@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using Ticksi.Application.Common.Exceptions;
-using Ticksi.Application.Features.Reports.Models;
 using Ticksi.Application.Features.Reports.Queries.GetEventsByCategoryReport;
-using Ticksi.Application.Interfaces;
 using Ticksi.Tests.EventTests.UnitTests;
 
 namespace Ticksi.Tests.ReportTests.UnitTests;
@@ -10,7 +8,7 @@ namespace Ticksi.Tests.ReportTests.UnitTests;
 public class GetEventsByCategoryReportQueryHandlerTests : EventHandlerTestBase
 {
     private readonly FakeTimeProvider _clock = new(new DateTimeOffset(2026, 10, 5, 20, 15, 0, TimeSpan.Zero));
-    private readonly CapturingRenderer _renderer = new();
+    private readonly CapturingReportRenderer _renderer = new();
 
     [Fact]
     public async Task Handle_WithRange_ListsTheCategoryEventsOnWholeDaysByDate()
@@ -26,8 +24,8 @@ public class GetEventsByCategoryReportQueryHandlerTests : EventHandlerTestBase
 
         var pdf = await HandleAsync(Query(music, new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 31)));
 
-        var report = _renderer.Report!;
-        Assert.Equal(CapturingRenderer.Output, pdf);
+        var report = _renderer.EventsByCategory!;
+        Assert.Equal(CapturingReportRenderer.Output, pdf);
         Assert.Equal(["Early", "Late"], report.Events.Select(e => e.Name));
         Assert.Equal((new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 31)), (report.DateFrom, report.DateTo));
         var first = report.Events[0];
@@ -44,7 +42,7 @@ public class GetEventsByCategoryReportQueryHandlerTests : EventHandlerTestBase
 
         await HandleAsync(Query(music, null, null));
 
-        Assert.Equal(["Last year", "Next year"], _renderer.Report!.Events.Select(e => e.Name));
+        Assert.Equal(["Last year", "Next year"], _renderer.EventsByCategory!.Events.Select(e => e.Name));
     }
 
     [Fact]
@@ -55,7 +53,7 @@ public class GetEventsByCategoryReportQueryHandlerTests : EventHandlerTestBase
 
         await HandleAsync(Query(music, null, null));
 
-        var generatedAt = _renderer.Report!.GeneratedAt;
+        var generatedAt = _renderer.EventsByCategory!.GeneratedAt;
         Assert.Equal((new DateTime(2026, 10, 5, 22, 15, 0), TimeSpan.FromHours(2)), (generatedAt.DateTime, generatedAt.Offset));
     }
 
@@ -64,7 +62,7 @@ public class GetEventsByCategoryReportQueryHandlerTests : EventHandlerTestBase
     {
         await Assert.ThrowsAsync<NotFoundException>(() =>
             HandleAsync(new GetEventsByCategoryReportQuery { CategoryPublicId = Guid.NewGuid() }));
-        Assert.Null(_renderer.Report);
+        Assert.Null(_renderer.EventsByCategory);
     }
 
     private static GetEventsByCategoryReportQuery Query(References references, DateOnly? from, DateOnly? to) =>
@@ -74,18 +72,5 @@ public class GetEventsByCategoryReportQueryHandlerTests : EventHandlerTestBase
     {
         await using var context = Database.CreateContext();
         return await new GetEventsByCategoryReportQueryHandler(context, _renderer, _clock).Handle(query, CancellationToken.None);
-    }
-
-    private sealed class CapturingRenderer : IReportRenderer
-    {
-        public static readonly byte[] Output = [1, 2, 3];
-
-        public EventsByCategoryReport? Report { get; private set; }
-
-        public byte[] RenderEventsByCategory(EventsByCategoryReport report)
-        {
-            Report = report;
-            return Output;
-        }
     }
 }
