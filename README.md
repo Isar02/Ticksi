@@ -9,6 +9,7 @@ ASP.NET Core 8 Web API (Clean Architecture, CQRS with MediatR, EF Core, SQL Serv
 | `Backend/` | API, Application, Domain, Infrastructure and Tests projects (`TicksiApp.sln`) |
 | `Angular/` | Web application |
 | `dokumenti/` | ER diagram and class diagram (entities coloured by the sprint that added them) |
+| `db-backups/` | Zipped backup of the migrated and seeded database |
 
 ## Requirements
 
@@ -66,6 +67,16 @@ The web application keeps the API address (`apiUrl`) and the event time zone (`e
 ## Paying in test mode
 
 Pay with card `4242 4242 4242 4242`, any future expiry date and any security code. The order page confirms the payment with the API itself. To receive Stripe's webhooks locally as well, run `stripe listen --forward-to https://localhost:5001/api/payments/webhook` and set `Stripe:WebhookSecret` to the secret it prints.
+
+## Database backup
+
+The API builds the database itself on start, so the backup is only needed to inspect the data without running the API. `db-backups/TicksiDb.zip` holds `TicksiDb.bak`: every migration and the demo data, with no orders yet. To restore it on LocalDB (SQL Server 2019 or later) with `sqlcmd` installed, unzip it and run this in PowerShell in that folder (add `, REPLACE` at the end of the options to overwrite an existing `TicksiDb`):
+
+```powershell
+sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "RESTORE DATABASE TicksiDb FROM DISK = N'$PWD\TicksiDb.bak' WITH MOVE 'TicksiDb' TO N'$env:USERPROFILE\TicksiDb.mdf', MOVE 'TicksiDb_log' TO N'$env:USERPROFILE\TicksiDb_log.ldf'"
+```
+
+Started in Development or Staging, the API copies the demo images into `wwwroot` for the restored data as well.
 
 ## Demo accounts
 
