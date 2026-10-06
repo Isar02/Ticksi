@@ -1,0 +1,30 @@
+@let user = profile();
+
+<article class="card" aria-label="Your account">
+  <div class="top">
+    <span class="badge"><mat-icon aria-hidden="true">verified</mat-icon>Member pass</span>
+    <span class="monogram" aria-hidden="true">{{ initials() }}</span>
+    <h2 class="name">{{ user.firstName }} {{ user.lastName }}</h2>
+    <span class="role" [attr.data-role]="user.role">{{ user.role }}</span>
+    @if (roleText()) {
+      <p class="role-text">{{ roleText() }}</p>
+    }
+  </div>
+
+  <dl class="facts">
+    <div class="fact">
+      <dt><mat-icon aria-hidden="true">alternate_email</mat-icon>Email</dt>
+      <dd>{{ user.email }}</dd>
+    </div>
+    <div class="fact">
+      <dt><mat-icon aria-hidden="true">call</mat-icon>Phone</dt>
+      <dd>{{ user.phone }}</dd>
+    </div>
+    <div class="fact">
+      <dt><mat-icon aria-hidden="true">event_available</mat-icon>Member since</dt>
+      <dd>{{ user.registrationDate | date: 'd. M. y.' }}</dd>
+    </div>
+  </dl>
+
+  <span class="code" aria-hidden="true"></span>
+</article>

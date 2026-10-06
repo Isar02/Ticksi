@@ -24,10 +24,10 @@
 
     <div class="navbar__account">
       @if (user(); as user) {
-        <span class="navbar__user">
+        <a routerLink="/profile" routerLinkActive="is-active" class="navbar__user" [attr.aria-label]="user.firstName + ', your profile'">
           <span class="navbar__avatar" aria-hidden="true">{{ user.firstName.charAt(0) }}</span>
           <span class="navbar__name">{{ user.firstName }}</span>
-        </span>
+        </a>
         <button type="button" class="navbar__button" (click)="logout()">Log out</button>
       } @else {
         <a routerLink="/auth/login" class="navbar__button navbar__button--quiet">Log in</a>

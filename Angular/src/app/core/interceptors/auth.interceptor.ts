@@ -2,13 +2,13 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/comm
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, OWN_ACCESS_TOKEN } from '../../services/auth.service';
 import { ApiError } from '../models/api-error';
 
 const authUrl = `${environment.apiUrl}/auth/`;
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  if (!request.url.startsWith(environment.apiUrl) || request.url.startsWith(authUrl)) {
+  if (!request.url.startsWith(environment.apiUrl) || request.url.startsWith(authUrl) || request.context.get(OWN_ACCESS_TOKEN)) {
     return next(request);
   }
 

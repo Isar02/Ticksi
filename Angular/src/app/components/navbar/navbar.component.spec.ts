@@ -30,4 +30,15 @@ describe('NavbarComponent', () => {
     expect(links()).toContain('/favorites');
     expect(links()).toContain('/tickets');
   });
+
+  it('links the signed-in name to the profile page', () => {
+    user.set({ firstName: 'Emir' });
+    const fixture = TestBed.createComponent(NavbarComponent);
+    fixture.detectChanges();
+
+    const profile: HTMLAnchorElement = fixture.nativeElement.querySelector('.navbar__user');
+    expect(profile.getAttribute('href')).toBe('/profile');
+    expect(profile.textContent).toContain('Emir');
+    expect(profile.getAttribute('aria-label')).toBe('Emir, your profile');
+  });
 });
