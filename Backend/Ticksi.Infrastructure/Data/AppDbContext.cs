@@ -30,6 +30,26 @@ public class AppDbContext(DbContextOptions options) : DbContext(options), IAppDb
     public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
         Database.BeginTransactionAsync(cancellationToken);
 
+    public virtual async Task<IDbContextTransaction> BeginPasswordChangeAsync(Guid userPublicId, CancellationToken cancellationToken = default)
+    {
+        var transaction = await Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            await Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT [Id] FROM [AppUsers] WITH (UPDLOCK, HOLDLOCK) WHERE [PublicId] = {userPublicId}", cancellationToken);
+
+            foreach (var entry in ChangeTracker.Entries<AppUser>().Where(e => e.Entity.PublicId == userPublicId).ToList())
+                await entry.ReloadAsync(cancellationToken);
+
+            return transaction;
+        }
+        catch
+        {
+            await transaction.DisposeAsync();
+            throw;
+        }
+    }
+
     public virtual async Task<IDbContextTransaction> BeginUserAdministrationAsync(CancellationToken cancellationToken = default)
     {
         var transaction = await Database.BeginTransactionAsync(cancellationToken);
