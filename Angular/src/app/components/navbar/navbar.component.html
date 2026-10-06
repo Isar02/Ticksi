@@ -8,6 +8,7 @@
       <a routerLink="/events" routerLinkActive="is-active" class="navbar__link">Events</a>
       <a routerLink="/categories" routerLinkActive="is-active" class="navbar__link">Categories</a>
       @if (user()) {
+        <a routerLink="/dashboard" routerLinkActive="is-active" class="navbar__link">Dashboard</a>
         <a routerLink="/favorites" routerLinkActive="is-active" class="navbar__link">Favorites</a>
         <a routerLink="/tickets" routerLinkActive="is-active" class="navbar__link">My tickets</a>
       }
