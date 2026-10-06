@@ -1,0 +1,14 @@
+@let item = ticket();
+
+<div class="ticket__body">
+  <div class="ticket__top">
+    <span class="ticket__type">{{ item.ticketTypeName }}</span>
+    <span [class]="'ticket__status ticket__status--' + item.status.toLowerCase()">{{ item.status }}</span>
+  </div>
+  <app-ticket-qr class="ticket__qr" [ticketId]="item.publicId" [code]="item.code" />
+</div>
+<div class="ticket__stub">
+  <span class="ticket__label">Ticket code</span>
+  <span class="ticket__code">{{ spacedCode() }}</span>
+  <a class="ticket__order" [routerLink]="['/orders', item.orderId]">Order #{{ orderNumber() }}</a>
+</div>

@@ -70,9 +70,17 @@
       <app-order-payment [order]="item" (settled)="showSettled($event)" />
     }
 
-    <a mat-button class="back" routerLink="/events">
-      <mat-icon>arrow_back</mat-icon>
-      Back to events
-    </a>
+    <div class="actions">
+      <a mat-button routerLink="/events">
+        <mat-icon>arrow_back</mat-icon>
+        Back to events
+      </a>
+      @if (item.status === 'Paid') {
+        <a mat-flat-button routerLink="/tickets">
+          <mat-icon>qr_code_2</mat-icon>
+          View my tickets
+        </a>
+      }
+    </div>
   }
 </section>
