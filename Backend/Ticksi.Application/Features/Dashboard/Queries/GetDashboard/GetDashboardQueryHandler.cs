@@ -16,13 +16,13 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Dashb
 
     private readonly IAppDbContext _context;
     private readonly ICurrentUser _currentUser;
-    private readonly TimeProvider _timeProvider;
+    private readonly IEventClock _eventClock;
 
-    public GetDashboardQueryHandler(IAppDbContext context, ICurrentUser currentUser, TimeProvider timeProvider)
+    public GetDashboardQueryHandler(IAppDbContext context, ICurrentUser currentUser, IEventClock eventClock)
     {
         _context = context;
         _currentUser = currentUser;
-        _timeProvider = timeProvider;
+        _eventClock = eventClock;
     }
 
     public async Task<DashboardDto> Handle(GetDashboardQuery request, CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Dashb
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new UnauthorizedException("Your account could not be found.");
 
-        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var now = _eventClock.Now;
         var upcomingTickets = _context.Tickets
             .AsNoTracking()
             .Where(t => t.OrderItem!.Order!.AppUserId == user.Id

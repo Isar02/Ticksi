@@ -31,6 +31,16 @@ public class RegisterCommandValidatorTests
     }
 
     [Fact]
+    public void Validate_PaddedValues_AreJudgedTrimmed()
+    {
+        var result = _validator.TestValidate(Command(c => (c.FirstName, c.LastName, c.Phone) = (" A ", "  Kovac  ", " +387 61 123 456 ")));
+
+        result.ShouldHaveValidationErrorFor(x => x.FirstName).WithErrorMessage("First name must be at least 2 characters.");
+        result.ShouldNotHaveValidationErrorFor(x => x.LastName);
+        result.ShouldNotHaveValidationErrorFor(x => x.Phone);
+    }
+
+    [Fact]
     public void Validate_PasswordShorterThanSix_FailsOnPassword()
     {
         var result = _validator.TestValidate(Command(c => c.Password = "12345"));

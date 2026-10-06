@@ -1,33 +1,25 @@
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
-import { NewUserInput, PHONE_PATTERN, USER_LIMITS, UserAccount, UserInput } from '../../models/user.model';
-import { apiEmail, requiredText, trimmedMinLength } from '../shared/form-rules';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { NewUserInput, USER_LIMITS, UserAccount, UserInput } from '../../models/user.model';
+import { nameControl, newPasswordControl, phoneControl } from '../auth/auth-forms';
+import { apiEmail, requiredText } from '../shared/form-rules';
 
 export type UserForm = ReturnType<typeof createUserForm>;
 
 export function createUserForm(withPassword: boolean) {
-  const name = () =>
-    new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, trimmedMinLength(USER_LIMITS.nameMin), Validators.maxLength(USER_LIMITS.name)]
-    });
+  const password = newPasswordControl();
+  if (!withPassword) password.disable();
 
   return new FormGroup({
-    firstName: name(),
-    lastName: name(),
+    firstName: nameControl(),
+    lastName: nameControl(),
     email: new FormControl('', {
       nonNullable: true,
       validators: [requiredText, apiEmail, Validators.maxLength(USER_LIMITS.email)]
     }),
-    phone: new FormControl('', {
-      nonNullable: true,
-      validators: [requiredText, Validators.pattern(PHONE_PATTERN), Validators.maxLength(USER_LIMITS.phone)]
-    }),
+    phone: phoneControl(),
     roleId: new FormControl('', { nonNullable: true, validators: Validators.required }),
     isActive: new FormControl(true, { nonNullable: true }),
-    password: new FormControl(
-      { value: '', disabled: !withPassword },
-      { nonNullable: true, validators: [requiredText, Validators.minLength(USER_LIMITS.passwordMin)] }
-    )
+    password
   });
 }
 
@@ -56,17 +48,4 @@ export function toUserInput(form: UserForm): UserInput {
 
 export function toNewUserInput(form: UserForm): NewUserInput {
   return { ...toUserInput(form), password: form.getRawValue().password };
-}
-
-export function errorText(control: AbstractControl, label: string): string {
-  const errors = control.errors ?? {};
-
-  if (errors['server']) return errors['server'];
-  if (errors['required']) return `${label} is required.`;
-  if (errors['trimmedMinLength']) return `${label} must be at least ${errors['trimmedMinLength'].requiredLength} characters.`;
-  if (errors['minlength']) return `${label} must be at least ${errors['minlength'].requiredLength} characters.`;
-  if (errors['maxlength']) return `${label} can have at most ${errors['maxlength'].requiredLength} characters.`;
-  if (errors['email']) return 'Enter a valid email address.';
-  if (errors['pattern']) return 'Enter a valid phone number.';
-  return '';
 }

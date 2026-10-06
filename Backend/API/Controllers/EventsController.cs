@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using API.Authorization;
+using API.Helpers;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ticksi.Application.Common;
@@ -15,7 +17,6 @@ using Ticksi.Application.Features.Events.Queries.GetEventImages;
 using Ticksi.Application.Features.Events.Queries.GetEventTicketTypes;
 using Ticksi.Application.Features.Events.Queries.GetEvents;
 using Ticksi.Application.Features.Events.Queries.GetManagedEvents;
-using Ticksi.Domain.Entities;
 
 namespace API.Controllers
 {
@@ -23,8 +24,6 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class EventsController : ControllerBase
     {
-        private const string EventManagers = $"{Role.Names.Admin},{Role.Names.Organizer}";
-
         private readonly IMediator _mediator;
 
         public EventsController(IMediator mediator)
@@ -84,7 +83,7 @@ namespace API.Controllers
         }
 
         [HttpGet("managed")]
-        [Authorize(Roles = EventManagers)]
+        [Authorize(Roles = ApiRoles.EventManagers)]
         public async Task<ActionResult<PagedResult<ManagedEventDto>>> GetManaged(
             [FromQuery] GetManagedEventsQuery query,
             CancellationToken cancellationToken)
@@ -93,7 +92,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{eventId:guid}/edit")]
-        [Authorize(Roles = EventManagers)]
+        [Authorize(Roles = ApiRoles.EventManagers)]
         [ProducesResponseType(typeof(EventForEditDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<EventForEditDto>> GetForEdit(Guid eventId, CancellationToken cancellationToken)
@@ -102,14 +101,14 @@ namespace API.Controllers
         }
 
         [HttpGet("form-options")]
-        [Authorize(Roles = EventManagers)]
+        [Authorize(Roles = ApiRoles.EventManagers)]
         public async Task<ActionResult<EventFormOptionsDto>> GetFormOptions(CancellationToken cancellationToken)
         {
             return Ok(await _mediator.Send(new GetEventFormOptionsQuery(), cancellationToken));
         }
 
         [HttpPost]
-        [Authorize(Roles = EventManagers)]
+        [Authorize(Roles = ApiRoles.EventManagers)]
         [ProducesResponseType(typeof(EventReadDto), StatusCodes.Status201Created)]
         public async Task<ActionResult<EventReadDto>> Create(
             CreateEventCommand command,
@@ -120,7 +119,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{eventId:guid}")]
-        [Authorize(Roles = EventManagers)]
+        [Authorize(Roles = ApiRoles.EventManagers)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> Update(
             Guid eventId,
@@ -133,19 +132,19 @@ namespace API.Controllers
         }
 
         [HttpPut("{eventId:guid}/poster")]
-        [Authorize(Roles = EventManagers)]
+        [Authorize(Roles = ApiRoles.EventManagers)]
         [ProducesResponseType(typeof(EventPosterDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<EventPosterDto>> UploadPoster(
             Guid eventId,
             IFormFile? file,
             CancellationToken cancellationToken)
         {
-            var command = new UploadEventPosterCommand { PublicId = eventId, File = file };
+            var command = new UploadEventPosterCommand { PublicId = eventId, File = file.ToUpload() };
             return Ok(await _mediator.Send(command, cancellationToken));
         }
 
         [HttpDelete("{eventId:guid}")]
-        [Authorize(Roles = EventManagers)]
+        [Authorize(Roles = ApiRoles.EventManagers)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> Delete(Guid eventId, CancellationToken cancellationToken)
         {

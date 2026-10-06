@@ -1,9 +1,9 @@
 import { EventForEdit } from '../../models/event.model';
-import { applyServerErrors, createEventWizardForm, createTicketTypeForm, fillFromEvent, toEventInput } from './event-wizard-form';
+import { applyServerErrors, createEventWizardForm, createTicketTypeForm, errorText, fillFromEvent, toEventInput } from './event-wizard-form';
 
 describe('event wizard form', () => {
   const venueId = 'f0c1b6a2-3c4d-4e5f-8a9b-0c1d2e3f4a5b';
-  const now = new Date('2026-10-05T12:00:00');
+  const now = new Date('2026-10-05T12:00:00+02:00');
   const createForm = (capacity = 100) => createEventWizardForm(id => (id === venueId ? capacity : null), () => now);
 
   const editedEvent: EventForEdit = {
@@ -32,6 +32,39 @@ describe('event wizard form', () => {
 
     schedule.patchValue({ time: '13:00' });
     expect(schedule.controls.date.hasError('past')).toBeFalse();
+  });
+
+  it('takes the start as a 24-hour time and sends it with two-digit hours', () => {
+    const form = createForm();
+    const { schedule } = form.controls;
+
+    for (const time of ['25:00', '20.00', '8 pm', '20:7']) {
+      schedule.patchValue({ time });
+      expect(errorText(schedule.controls.time, 'Start time')).withContext(time).toBe('Enter the time as hours and minutes, e.g. 20:00.');
+    }
+
+    fillFromEvent(form, editedEvent);
+    schedule.patchValue({ time: ' 9:30 ' });
+
+    expect(schedule.controls.time.valid).toBeTrue();
+    expect(toEventInput(form).date).toBe('2026-11-14T09:30:00');
+  });
+
+  it('rejects a past start even when the accepted time has surrounding spaces', () => {
+    const { schedule } = createForm().controls;
+    schedule.patchValue({ date: '2026-10-05', time: ' 9:30 ' });
+    expect(schedule.controls.time.valid).toBeTrue();
+    expect(schedule.controls.date.hasError('past')).toBeTrue();
+  });
+
+  it('explains a date that could not be read or lies before today', () => {
+    const { date } = createForm().controls.schedule.controls;
+
+    date.setErrors({ required: true, matDatepickerParse: { text: '31. 2. 2026.' } });
+    expect(errorText(date, 'Date')).toBe('Enter the date as d. m. yyyy.');
+
+    date.setErrors({ matDatepickerMin: { min: '2026-10-05' } });
+    expect(errorText(date, 'Date')).toBe('Pick a date and time in the future.');
   });
 
   it('refuses ticket names that repeat, ignoring case and spaces', () => {

@@ -21,7 +21,7 @@ public class UploadEventPosterCommandValidator : AbstractValidator<UploadEventPo
             .Must(file => file!.Length > 0).WithMessage("The poster file is empty.")
             .Must(file => file!.Length <= options.MaxFileSizeBytes)
             .WithMessage($"The poster can be at most {maxMegabytes} MB.")
-            .Must(file => options.AllowedImageTypes.Contains(Path.GetExtension(file!.FileName), StringComparer.OrdinalIgnoreCase))
+            .Must(file => options.AllowedImageTypes.Contains(file!.Extension, StringComparer.OrdinalIgnoreCase))
             .WithMessage($"The poster must be one of: {allowedTypes}.")
             .MustAsync((file, cancellationToken) => ImageSignatures.MatchesExtensionAsync(file!, cancellationToken))
             .WithMessage("The file is not a valid image of its type.");

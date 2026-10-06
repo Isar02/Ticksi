@@ -27,6 +27,16 @@ public class UpdateProfileCommandHandlerTests : AuthHandlerTestBase
     }
 
     [Fact]
+    public async Task Handle_PaddedValues_AreSavedTrimmed()
+    {
+        var user = await AddUserAsync();
+
+        var profile = await HandleAsync(user.PublicId, new UpdateProfileCommand { FirstName = " Lejla ", LastName = "Begic  ", Phone = " 061-987-654 " });
+
+        Assert.Equal(("Lejla", "Begic", "061-987-654"), (profile.FirstName, profile.LastName, profile.Phone));
+    }
+
+    [Fact]
     public async Task Handle_DeactivatedUser_ThrowsUnauthorizedAndSavesNothing()
     {
         var user = await AddUserAsync();

@@ -1,4 +1,5 @@
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { endDateNotBeforeStart } from '../shared/form-rules';
 
 export type CatalogueFilterForm = ReturnType<typeof catalogueFilterForm>;
 
@@ -12,13 +13,8 @@ export function catalogueFilterForm() {
       minPrice: new FormControl<number | null>(null, Validators.min(0)),
       maxPrice: new FormControl<number | null>(null, Validators.min(0))
     },
-    { validators: [endNotBeforeStart, maxNotBelowMin] }
+    { validators: [endDateNotBeforeStart(), maxNotBelowMin] }
   );
-}
-
-function endNotBeforeStart(group: AbstractControl): ValidationErrors | null {
-  const { dateFrom, dateTo } = group.value as { dateFrom: string; dateTo: string };
-  return dateFrom && dateTo && dateTo < dateFrom ? { dateRange: true } : null;
 }
 
 function maxNotBelowMin(group: AbstractControl): ValidationErrors | null {

@@ -12,6 +12,6 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
 
         RuleFor(x => x.LastName).PersonName("Last name", AppUser.Constraints.LastNameMaxLength);
 
-        RuleFor(x => x.Phone).PhoneNumber(AppUser.Constraints.PhoneMaxLength);
+        RuleFor(x => x.Phone).PhoneNumber();
     }
 }

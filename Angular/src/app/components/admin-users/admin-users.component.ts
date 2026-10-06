@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -17,6 +18,7 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EMPTY, Observable, Subject, catchError, combineLatest, debounceTime, filter, map, of, startWith, switchMap, tap } from 'rxjs';
+import { provideIsoDates } from '../../core/dates/iso-date-adapter';
 import { ApiError } from '../../core/models/api-error';
 import { ToastService } from '../../core/services/toast.service';
 import { ROLE_DESCRIPTIONS, RoleOption, UserAccount, UserSort, UsersQuery } from '../../models/user.model';
@@ -24,6 +26,7 @@ import { AuthService } from '../../services/auth.service';
 import { PagedResult } from '../../services/event.service';
 import { UserService } from '../../services/user.service';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
+import { endDateNotBeforeStart } from '../shared/form-rules';
 import { PAGE_SIZES } from '../shared/list-params';
 import { readUsersQuery, toUsersParams } from './users-url';
 
@@ -40,6 +43,7 @@ type FilterValues = Pick<UsersQuery, 'search' | 'roleId' | 'status' | 'registere
     RouterLink,
     MatButtonModule,
     MatButtonToggleModule,
+    MatDatepickerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -52,6 +56,7 @@ type FilterValues = Pick<UsersQuery, 'search' | 'roleId' | 'status' | 'registere
     MatTableModule,
     MatTooltipModule
   ],
+  providers: [provideIsoDates()],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -91,7 +96,7 @@ export class AdminUsersComponent {
       registeredFrom: new FormControl('', { nonNullable: true }),
       registeredTo: new FormControl('', { nonNullable: true })
     },
-    { validators: endNotBeforeStart }
+    { validators: endDateNotBeforeStart('registeredFrom', 'registeredTo') }
   );
 
   constructor() {
@@ -363,11 +368,6 @@ export class AdminUsersComponent {
   private navigate(query: UsersQuery, replaceUrl = false): void {
     this.router.navigate([], { relativeTo: this.route, queryParams: toUsersParams(query), replaceUrl });
   }
-}
-
-function endNotBeforeStart(group: AbstractControl): ValidationErrors | null {
-  const { registeredFrom, registeredTo } = group.value as { registeredFrom: string; registeredTo: string };
-  return registeredFrom && registeredTo && registeredTo < registeredFrom ? { dateRange: true } : null;
 }
 
 function fullName(user: UserAccount): string {

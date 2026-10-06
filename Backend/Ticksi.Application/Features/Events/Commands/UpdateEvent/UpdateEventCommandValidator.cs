@@ -1,10 +1,11 @@
 using FluentValidation;
+using Ticksi.Application.Interfaces;
 
 namespace Ticksi.Application.Features.Events.Commands.UpdateEvent;
 
 public class UpdateEventCommandValidator : EventInputValidator<UpdateEventCommand>
 {
-    public UpdateEventCommandValidator(TimeProvider timeProvider) : base(timeProvider)
+    public UpdateEventCommandValidator(IEventClock eventClock) : base(eventClock)
     {
         RuleFor(x => x.PublicId).NotEmpty().WithMessage("Event is required.");
     }

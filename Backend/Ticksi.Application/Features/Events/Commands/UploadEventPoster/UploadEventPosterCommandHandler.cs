@@ -37,7 +37,11 @@ public class UploadEventPosterCommandHandler : IRequestHandler<UploadEventPoster
         editor.EnsureCanManage(item.AppUserId);
 
         var previousUrl = item.PosterUrl;
-        var posterUrl = await _files.SaveFileAsync(request.File!, _uploadOptions.EventPosterPath, cancellationToken);
+        string posterUrl;
+        await using (var content = request.File!.OpenReadStream())
+        {
+            posterUrl = await _files.SaveFileAsync(content, request.File.Extension, _uploadOptions.EventPosterPath, cancellationToken);
+        }
         item.PosterUrl = posterUrl;
 
         try

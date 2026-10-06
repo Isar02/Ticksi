@@ -4,6 +4,7 @@ using Ticksi.Application.Features.Dashboard;
 using Ticksi.Application.Features.Dashboard.Queries.GetDashboard;
 using Ticksi.Domain.Enums;
 using Ticksi.Tests.EventTests.UnitTests;
+using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.DashboardTests.UnitTests;
 
@@ -194,6 +195,6 @@ public class GetDashboardQueryHandlerTests : EventHandlerTestBase
     private async Task<DashboardDto> HandleAsync(AppUser user)
     {
         await using var context = Database.CreateContext();
-        return await new GetDashboardQueryHandler(context, SignedIn(user), _clock).Handle(new GetDashboardQuery(), CancellationToken.None);
+        return await new GetDashboardQueryHandler(context, SignedIn(user), EventClocks.Utc(_clock)).Handle(new GetDashboardQuery(), CancellationToken.None);
     }
 }

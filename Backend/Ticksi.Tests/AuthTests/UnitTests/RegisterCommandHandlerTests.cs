@@ -24,6 +24,16 @@ public class RegisterCommandHandlerTests : AuthHandlerTestBase
     }
 
     [Fact]
+    public async Task Handle_PaddedValues_AreStoredTrimmedWithTheRegistrationTime()
+    {
+        await RegisterAsync("  marko@ticksi.com ", firstName: " Marko ", phone: " 061-123-456 ");
+
+        await using var context = Database.CreateContext();
+        var user = await context.AppUsers.SingleAsync();
+        Assert.Equal(("marko@ticksi.com", "Marko", "061-123-456", Now), (user.Email, user.FirstName, user.Phone, user.RegistrationDate));
+    }
+
+    [Fact]
     public async Task Handle_EmailTaken_FailsOnEmailAndAddsNoUser()
     {
         var existing = await AddUserAsync();
@@ -39,17 +49,17 @@ public class RegisterCommandHandlerTests : AuthHandlerTestBase
         Assert.Empty(await RefreshTokensOfAsync(existing));
     }
 
-    private async Task<AuthResponseDto> RegisterAsync(string email)
+    private async Task<AuthResponseDto> RegisterAsync(string email, string firstName = "Marko", string phone = "061-123-456")
     {
         await using var context = Database.CreateContext();
-        var handler = new RegisterCommandHandler(context, TokenService, PasswordHasher);
+        var handler = new RegisterCommandHandler(context, TokenService, PasswordHasher, Clock);
         var command = new RegisterCommand
         {
-            FirstName = "Marko",
+            FirstName = firstName,
             LastName = "Peric",
             Email = email,
             Password = Password,
-            Phone = "061-123-456"
+            Phone = phone
         };
 
         return await handler.Handle(command, CancellationToken.None);

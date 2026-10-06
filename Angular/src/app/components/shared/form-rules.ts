@@ -1,4 +1,5 @@
 import { AbstractControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { isIsoDate } from '../../core/dates/iso-date-adapter';
 
 // FluentValidation's NotEmpty rejects whitespace-only strings; Angular's required does not.
 export function requiredText(control: AbstractControl<string>): ValidationErrors | null {
@@ -12,6 +13,14 @@ export function apiEmail(control: AbstractControl<string>): ValidationErrors | n
 
   const at = value.indexOf('@');
   return at > 0 && at < value.length - 1 && at === value.lastIndexOf('@') ? null : { email: true };
+}
+
+// Checks the value as it is sent, without the spaces around it.
+export function trimmedPattern(pattern: RegExp): ValidatorFn {
+  return (control: AbstractControl<string>): ValidationErrors | null => {
+    const value = control.value?.trim() ?? '';
+    return value && !pattern.test(value) ? { pattern: true } : null;
+  };
 }
 
 export function trimmedMinLength(requiredLength: number): ValidatorFn {
@@ -42,8 +51,11 @@ export function applyServerErrors(form: FormGroup, fieldErrors: Readonly<Record<
   return unplaced;
 }
 
-// For a group with dateFrom and dateTo as a date input gives them (yyyy-MM-dd), so text order is date order.
-export function endDateNotBeforeStart(group: AbstractControl): ValidationErrors | null {
-  const { dateFrom, dateTo } = group.value as { dateFrom?: string; dateTo?: string };
-  return dateFrom && dateTo && dateTo < dateFrom ? { dateRange: true } : null;
+// Dates are yyyy-MM-dd, so text order is date order; a date that cannot be read is left to its own field.
+export function endDateNotBeforeStart(start = 'dateFrom', end = 'dateTo'): ValidatorFn {
+  return (group: AbstractControl): ValidationErrors | null => {
+    const from: unknown = group.get(start)?.value;
+    const to: unknown = group.get(end)?.value;
+    return isIsoDate(from) && isIsoDate(to) && to < from ? { dateRange: true } : null;
+  };
 }

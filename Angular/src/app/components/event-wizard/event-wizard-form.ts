@@ -1,5 +1,6 @@
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { EventForEdit, EventInput, TicketTypeForEdit } from '../../models/event.model';
+import { eventLocalNow, eventWallClockValue, normalizeEventTime } from '../../core/dates/event-time';
 
 export const EVENT_LIMITS = { name: 200, description: 4000, contact: 200, ticketName: 100 } as const;
 
@@ -33,7 +34,7 @@ export function createEventWizardForm(capacityOf: (locationId: string) => number
     schedule: new FormGroup({
       locationId: choice(),
       date: new FormControl('', { nonNullable: true, validators: [Validators.required, inFuture(now)] }),
-      time: new FormControl('', { nonNullable: true, validators: Validators.required })
+      time: new FormControl('', { nonNullable: true, validators: [Validators.required, timeOfDay] })
     }),
     tickets: new FormArray<TicketTypeForm>([createTicketTypeForm()], {
       validators: [Validators.required, uniqueTicketNames, withinVenueCapacity(capacityOf)]
@@ -96,7 +97,7 @@ export function toEventInput(form: EventWizardForm): EventInput {
     eventTypeId: details.eventTypeId,
     organizerCompanyId: details.organizerCompanyId,
     locationId: schedule.locationId,
-    date: `${schedule.date}T${schedule.time}:00`,
+    date: `${schedule.date}T${normalizeEventTime(schedule.time)}:00`,
     ticketTypes: tickets.map(ticket => ({
       publicId: ticket.publicId,
       name: ticket.name.trim(),
@@ -147,9 +148,12 @@ export function errorText(control: AbstractControl, label: string): string {
   const errors = control.errors ?? {};
 
   if (errors['server']) return errors['server'];
+  // A date that cannot be read leaves the field empty, so its own message comes before the required one.
+  if (errors['matDatepickerParse']) return 'Enter the date as d. m. yyyy.';
   if (errors['required']) return `${label} is required.`;
-  if (errors['maxlength']) return `${label} can have at most ${errors['maxlength'].requiredLength} characters.`;
-  if (errors['past']) return 'Pick a date and time in the future.';
+  if (errors['maxlength']) return `${label} cannot exceed ${errors['maxlength'].requiredLength} characters.`;
+  if (errors['time']) return 'Enter the time as hours and minutes, e.g. 20:00.';
+  if (errors['past'] || errors['matDatepickerMin']) return 'Pick a date and time in the future.';
   if (errors['wholeNumber']) return `${label} must be a whole number.`;
   if (errors['decimals']) return `${label} can have at most two decimals.`;
   if (errors['min']) return `${label} must be at least ${errors['min'].min}.`;
@@ -191,9 +195,14 @@ function atMostTwoDecimals(control: AbstractControl<number | null>): ValidationE
 // Until a time is picked, any moment left in the chosen day still counts as the future.
 function inFuture(now: () => Date): ValidatorFn {
   return (control: AbstractControl<string>) => {
-    const time = control.parent?.get('time')?.value || '23:59';
-    return control.value && new Date(`${control.value}T${time}`) <= now() ? { past: true } : null;
+    const time = control.parent?.get('time')?.value;
+    const start = normalizeEventTime(time ?? '') ?? '23:59';
+    return control.value && eventWallClockValue(`${control.value}T${start}:00`) <= eventWallClockValue(eventLocalNow(now())) ? { past: true } : null;
   };
+}
+
+function timeOfDay(control: AbstractControl<string>): ValidationErrors | null {
+  return control.value && normalizeEventTime(control.value) === null ? { time: true } : null;
 }
 
 function uniqueTicketNames(control: AbstractControl): ValidationErrors | null {

@@ -69,6 +69,18 @@ public class CreateOrderCommandHandlerTests : EventHandlerTestBase
     }
 
     [Fact]
+    public async Task Handle_EventStartedInItsTimeZone_ThrowsConflictThoughLaterInUtc()
+    {
+        var buyer = await AddUserAsync(Role.Names.User);
+        var item = await AddEventAsync(buyer, await AddReferencesAsync(), date: new DateTime(2026, 10, 6, 13, 30, 0));
+        _timeZone = "Europe/Sarajevo";
+
+        await Assert.ThrowsAsync<ConflictException>(() => CreateAsync(buyer, Line(item, "Standard", 1)));
+
+        Assert.False(await AnyOrderAsync());
+    }
+
+    [Fact]
     public async Task Handle_UnknownTicketType_ThrowsNotFound()
     {
         var (buyer, item) = await AddBuyerAndEventAsync();
@@ -166,12 +178,14 @@ public class CreateOrderCommandHandlerTests : EventHandlerTestBase
         return await context.Orders.AnyAsync();
     }
 
+    private string _timeZone = "UTC";
+
     private Task<OrderDto> CreateAsync(AppUser buyer, params OrderItemInput[] items) => CreateAsync(buyer, [], items);
 
     private async Task<OrderDto> CreateAsync(AppUser buyer, IInterceptor[] interceptors, params OrderItemInput[] items)
     {
         await using var context = Database.CreateContext(interceptors);
-        var handler = new CreateOrderCommandHandler(context, SignedIn(buyer), new FakeTimeProvider(Now));
+        var handler = new CreateOrderCommandHandler(context, SignedIn(buyer), new FakeTimeProvider(Now), EventClocks.In(_timeZone, new FakeTimeProvider(Now)));
         return await handler.Handle(new CreateOrderCommand { Items = [.. items] }, CancellationToken.None);
     }
 }

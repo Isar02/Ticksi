@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -15,6 +16,7 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, catchError, combineLatest, debounceTime, filter, map, of, startWith, switchMap, tap } from 'rxjs';
+import { provideIsoDates } from '../../core/dates/iso-date-adapter';
 import { ApiError } from '../../core/models/api-error';
 import { Role } from '../../core/models/role';
 import { ToastService } from '../../core/services/toast.service';
@@ -25,6 +27,7 @@ import { CategoryService } from '../../services/category.service';
 import { EventService, PagedResult } from '../../services/event.service';
 import { ReportDialogService } from '../reports/report-dialog.service';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
+import { endDateNotBeforeStart } from '../shared/form-rules';
 import { PAGE_SIZES } from '../shared/list-params';
 import { readManagedEventsQuery, toManagedEventsParams } from './managed-events-url';
 
@@ -41,6 +44,7 @@ type FilterValues = Pick<ManagedEventsQuery, 'name' | 'categoryId' | 'locationId
     RouterLink,
     MatButtonModule,
     MatButtonToggleModule,
+    MatDatepickerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -51,6 +55,7 @@ type FilterValues = Pick<ManagedEventsQuery, 'name' | 'categoryId' | 'locationId
     MatTableModule,
     MatTooltipModule
   ],
+  providers: [provideIsoDates()],
   templateUrl: './organizer-events.component.html',
   styleUrl: './organizer-events.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -94,7 +99,7 @@ export class OrganizerEventsComponent {
       dateTo: new FormControl('', { nonNullable: true }),
       period: new FormControl<EventPeriod | ''>('', { nonNullable: true })
     },
-    { validators: endNotBeforeStart }
+    { validators: endDateNotBeforeStart() }
   );
 
   constructor() {
@@ -273,11 +278,6 @@ export class OrganizerEventsComponent {
   private navigate(query: ManagedEventsQuery, replaceUrl = false): void {
     this.router.navigate([], { relativeTo: this.route, queryParams: toManagedEventsParams(query), replaceUrl });
   }
-}
-
-function endNotBeforeStart(group: AbstractControl): ValidationErrors | null {
-  const { dateFrom, dateTo } = group.value as { dateFrom: string; dateTo: string };
-  return dateFrom && dateTo && dateTo < dateFrom ? { dateRange: true } : null;
 }
 
 function messageOf(error: unknown): string {

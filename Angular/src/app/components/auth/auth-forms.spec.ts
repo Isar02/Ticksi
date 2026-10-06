@@ -44,6 +44,14 @@ describe('auth forms', () => {
     });
   });
 
+  it('accepts a phone number with spaces around it and sends it trimmed', () => {
+    const form = createRegisterForm(free);
+    form.patchValue({ phone: ' +387 61 123 456 ' });
+
+    expect(form.controls.phone.valid).toBeTrue();
+    expect(toRegisterRequest(form).phone).toBe('+387 61 123 456');
+  });
+
   it('asks for the password and an email in the API format on login, and sends the email trimmed', () => {
     const form = createLoginForm();
     form.setValue({ email: 'ana.ticksi.com', password: '  ' });

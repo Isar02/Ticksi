@@ -27,7 +27,14 @@
   </header>
   <dl class="facts">
     <div><dt>Venue</dt><dd>{{ event.venue?.name }}, {{ event.venue?.city }}</dd></div>
-    <div><dt>Starts</dt><dd>{{ event.startsAt | date: 'd. M. y. · HH:mm' }}</dd></div>
+    <div>
+      <dt>Starts</dt>
+      <dd>
+        @if (event.startsAt; as start) {
+          {{ start.day }}. {{ start.month }}. {{ start.year }}. · {{ start.time }}
+        }
+      </dd>
+    </div>
   </dl>
 </section>
 

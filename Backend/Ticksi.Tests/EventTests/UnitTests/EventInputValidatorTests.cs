@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using Ticksi.Application.Features.Events.Commands.CreateEvent;
+using Ticksi.Tests.Common;
 
 namespace Ticksi.Tests.EventTests.UnitTests;
 
@@ -7,7 +8,7 @@ public class EventInputValidatorTests
 {
     private static readonly DateTimeOffset Today = new(2026, 10, 5, 12, 0, 0, TimeSpan.Zero);
 
-    private readonly CreateEventCommandValidator _validator = new(new FakeTimeProvider(Today));
+    private readonly CreateEventCommandValidator _validator = new(EventClocks.In("Europe/Sarajevo", new FakeTimeProvider(Today)));
 
     [Fact]
     public async Task Validate_CompleteInput_Passes()
@@ -27,6 +28,17 @@ public class EventInputValidatorTests
         Assert.Equal(
             ["CategoryId", "Contact", "Date", "Description", "EventTypeId", "LocationId", "Name", "OrganizerCompanyId", "TicketTypes"],
             result.Errors.Select(e => e.PropertyName).Distinct().Order());
+    }
+
+    [Fact]
+    public async Task Validate_TimeEarlierTodayInTheEventTimeZone_IsRejectedThoughLaterInUtc()
+    {
+        var command = ValidCommand();
+        command.Date = new DateTime(2026, 10, 5, 13, 30, 0);
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.Equal("Date", Assert.Single(result.Errors).PropertyName);
     }
 
     [Fact]

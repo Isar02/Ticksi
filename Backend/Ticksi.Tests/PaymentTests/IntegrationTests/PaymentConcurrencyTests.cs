@@ -122,7 +122,7 @@ public class PaymentConcurrencyTests(TicksiApiFactory factory) : IClassFixture<T
 
         var connection = database.Database.GetConnectionString()!;
         await using var context = Context(connection);
-        var order = await new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System).Handle(
+        var order = await new CreateOrderCommandHandler(context, new FakeCurrentUser(buyer.PublicId), TimeProvider.System, EventClocks.Utc(TimeProvider.System)).Handle(
             new CreateOrderCommand { Items = [new() { TicketTypeId = item.TicketTypes.Single().PublicId, Quantity = 3 }] },
             CancellationToken.None);
 

@@ -3,7 +3,7 @@ import { Observable, catchError, map, of, switchMap, timer } from 'rxjs';
 import { ApiError } from '../../core/models/api-error';
 import { LoginRequest, RegisterRequest } from '../../models/auth.models';
 import { PHONE_PATTERN, USER_LIMITS } from '../../models/user.model';
-import { applyServerErrors, apiEmail, requiredText, trimmedMinLength } from '../shared/form-rules';
+import { applyServerErrors, apiEmail, requiredText, trimmedMinLength, trimmedPattern } from '../shared/form-rules';
 
 export const EMAIL_CHECK_DELAY_MS = 400;
 export const EMAIL_TAKEN = 'An account with this email already exists.';
@@ -29,7 +29,7 @@ export function nameControl() {
 export function phoneControl() {
   return new FormControl('', {
     nonNullable: true,
-    validators: [requiredText, Validators.pattern(PHONE_PATTERN), Validators.maxLength(USER_LIMITS.phone)]
+    validators: [requiredText, trimmedPattern(PHONE_PATTERN), Validators.maxLength(USER_LIMITS.phone)]
   });
 }
 

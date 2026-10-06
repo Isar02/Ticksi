@@ -1,10 +1,10 @@
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Ticksi.Application.Common;
 
 namespace Ticksi.Application.Features.Events.Commands.UploadEventPoster;
 
 public class UploadEventPosterCommand : IRequest<EventPosterDto>
 {
     public Guid PublicId { get; set; }
-    public IFormFile? File { get; set; }
+    public FileUpload? File { get; set; }
 }

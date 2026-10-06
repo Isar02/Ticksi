@@ -15,9 +15,9 @@
   <div class="ticket__stub">
     <div class="ticket__when" [class.is-empty]="!event.startsAt">
       @if (event.startsAt; as startsAt) {
-        <span class="ticket__day">{{ startsAt | date: 'd.' }}</span>
-        <span class="ticket__month">{{ startsAt | date: 'M. y.' }}</span>
-        <span class="ticket__time">{{ startsAt | date: 'HH:mm' }}</span>
+        <span class="ticket__day">{{ startsAt.day }}.</span>
+        <span class="ticket__month">{{ startsAt.month }}. {{ startsAt.year }}.</span>
+        <span class="ticket__time">{{ startsAt.time }}</span>
       } @else {
         <span class="ticket__day">--</span>
         <span class="ticket__month">Date</span>

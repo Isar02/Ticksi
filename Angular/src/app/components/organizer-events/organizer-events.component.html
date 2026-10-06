@@ -51,12 +51,22 @@
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>From</mat-label>
-      <input matInput type="date" formControlName="dateFrom" />
+      <input matInput [matDatepicker]="fromPicker" formControlName="dateFrom" placeholder="d. m. yyyy." />
+      <mat-datepicker-toggle matIconSuffix [for]="fromPicker" />
+      <mat-datepicker #fromPicker />
+      @if (filters.controls.dateFrom.hasError('matDatepickerParse')) {
+        <mat-error>Enter the date as d. m. yyyy.</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>To</mat-label>
-      <input matInput type="date" formControlName="dateTo" [min]="filters.controls.dateFrom.value" />
+      <input matInput [matDatepicker]="toPicker" formControlName="dateTo" [min]="filters.controls.dateFrom.value" placeholder="d. m. yyyy." />
+      <mat-datepicker-toggle matIconSuffix [for]="toPicker" />
+      <mat-datepicker #toPicker />
+      @if (filters.controls.dateTo.hasError('matDatepickerParse')) {
+        <mat-error>Enter the date as d. m. yyyy.</mat-error>
+      }
     </mat-form-field>
 
     <mat-button-toggle-group

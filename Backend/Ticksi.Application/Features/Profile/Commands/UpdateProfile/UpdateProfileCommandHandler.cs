@@ -18,9 +18,9 @@ public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand,
     {
         var user = await ProfileOwner.LoadAsync(_context, _currentUser, cancellationToken);
 
-        user.FirstName = request.FirstName;
-        user.LastName = request.LastName;
-        user.Phone = request.Phone;
+        user.FirstName = request.FirstName.Trim();
+        user.LastName = request.LastName.Trim();
+        user.Phone = request.Phone.Trim();
         await _context.SaveChangesAsync(cancellationToken);
 
         return ProfileDto.From(user);
