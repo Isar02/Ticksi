@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, finalize, firstValueFrom, from, map, shareReplay, throwError } from 'rxjs';
+import { Observable, finalize, firstValueFrom, from, map, shareReplay, throwError, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { loginUrl } from '../core/guards/return-url';
 import { withoutErrorToast } from '../core/interceptors/error.interceptor';
@@ -26,6 +26,7 @@ interface RefreshInFlight {
 
 const SESSION_KEY = 'ticksi_session';
 const REFRESH_LOCK = 'ticksi_session_refresh';
+const REFRESH_REQUEST_TIMEOUT_MS = 15_000;
 const SESSION_EXPIRED_MESSAGE = 'Your session has expired. Please sign in again.';
 
 @Injectable({
@@ -40,6 +41,10 @@ export class AuthService {
   private refreshInFlight: RefreshInFlight | null = null;
 
   readonly currentUser = computed(() => this.session()?.user ?? null);
+  readonly sessionExpiresAt = computed(() => {
+    const session = this.session();
+    return session ? Date.parse(session.refreshTokenExpiresAtUtc) : null;
+  });
 
   constructor() {
     // Another tab may rotate, replace or end the session; this tab must not keep using the old one.
@@ -98,6 +103,28 @@ export class AuthService {
     return this.refreshInFlight.accessToken$;
   }
 
+  extendSession(): Observable<void> {
+    const sessionId = this.sessionId();
+    return sessionId ? this.refreshSession(sessionId).pipe(map(() => undefined)) : throwError(() => sessionChanged());
+  }
+
+  // Wait for an in-flight refresh, including in another tab, before deciding whether the session expired.
+  expireIfDue(): Promise<void> {
+    return navigator.locks.request(REFRESH_LOCK, () => {
+      if (!this.session()) {
+        return;
+      }
+
+      const stored = parseSession(localStorage.getItem(SESSION_KEY));
+      if (stored?.id && isLive(stored)) {
+        this.session.set(stored);
+        return;
+      }
+
+      this.expireSession();
+    });
+  }
+
   sessionId(): string | null {
     return this.session()?.id ?? null;
   }
@@ -125,7 +152,7 @@ export class AuthService {
       throw sessionChanged();
     }
 
-    if (!(Date.parse(stored.refreshTokenExpiresAtUtc) > Date.now())) {
+    if (!isLive(stored)) {
       this.expireSession();
       throw new ApiError(401, 'unauthorized', SESSION_EXPIRED_MESSAGE);
     }
@@ -142,7 +169,7 @@ export class AuthService {
           `${this.authUrl}/refresh`,
           { refreshToken: original.refreshToken },
           { context: withoutErrorToast() }
-        )
+        ).pipe(timeout(REFRESH_REQUEST_TIMEOUT_MS))
       );
     } catch (error) {
       if (error instanceof ApiError && error.status === 401 && isStored(original)) {
@@ -205,12 +232,16 @@ function isStored(session: StoredSession): boolean {
 
 function readStoredSession(): StoredSession | null {
   const session = parseSession(localStorage.getItem(SESSION_KEY));
-  if (session?.id && Date.parse(session.refreshTokenExpiresAtUtc) > Date.now()) {
+  if (session?.id && isLive(session)) {
     return session;
   }
 
   localStorage.removeItem(SESSION_KEY);
   return null;
+}
+
+function isLive(session: StoredSession): boolean {
+  return Date.parse(session.refreshTokenExpiresAtUtc) > Date.now();
 }
 
 function parseSession(json: string | null): StoredSession | null {

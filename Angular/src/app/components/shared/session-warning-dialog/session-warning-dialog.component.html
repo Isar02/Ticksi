@@ -1,0 +1,48 @@
+<div class="ticket">
+  <div class="ticket__body">
+    <div class="session__head">
+      <div class="session__timer" [class.session__timer--urgent]="urgent()" aria-hidden="true">
+        <svg class="session__ring" viewBox="0 0 72 72">
+          <circle class="session__track" cx="36" cy="36" r="32" />
+          <circle
+            class="session__progress"
+            cx="36"
+            cy="36"
+            r="32"
+            [attr.stroke-dasharray]="ringLength"
+            [style.stroke-dashoffset]="ringOffset()"
+          />
+        </svg>
+        <span class="session__time">{{ countdown() }}</span>
+      </div>
+      <div>
+        <p class="session__eyebrow">Session ending</p>
+        <h2 id="session-dialog-title" class="session__title">Still there?</h2>
+      </div>
+    </div>
+
+    <p id="session-dialog-message" class="ticket__message">
+      You have not been active for a while. To keep your account safe, you will be signed out when the timer runs out.
+    </p>
+
+    @if (error(); as message) {
+      <p class="session__error" role="alert">{{ message }}</p>
+    }
+
+    <span class="cdk-visually-hidden" aria-live="polite">{{ announcement() }}</span>
+  </div>
+
+  <div class="ticket__stub">
+    <button type="button" class="ticket__button ticket__button--cancel" [disabled]="extending()" (click)="signOut()">
+      Sign out
+    </button>
+    <button type="button" class="ticket__button ticket__button--confirm" [disabled]="extending()" (click)="stay()">
+      @if (extending()) {
+        <mat-spinner diameter="16" aria-hidden="true" />
+        Extending…
+      } @else {
+        Stay signed in
+      }
+    </button>
+  </div>
+</div>
